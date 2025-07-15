@@ -1,0 +1,201 @@
+"use client";
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/ui/logo';
+import { useAuthStore } from '@/lib/store';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { User, Settings, LogOut, Heart, Eye, Plus, BarChart3, Menu, X } from 'lucide-react';
+
+export function Header() {
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navigationItems = [
+    { label: 'Buy', href: '/properties?type=sell' },
+    { label: 'Rent', href: '/properties?type=rent' },
+    { label: 'Commercial', href: '/properties?type=commercial' },
+    { label: 'PG/Co-living', href: '/properties?type=pg_co_living' },
+    { label: 'Plots', href: '/properties?type=plots' },
+  ];
+
+  return (
+    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Logo />
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-gray-700 hover:text-red-500 transition-colors duration-200 font-medium"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Desktop Auth & Actions */}
+          <div className="hidden md:flex items-center space-x-4">
+            {isAuthenticated && user ? (
+              <>
+                {user.role === 'builder' && (
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/dashboard/property/create">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Property
+                    </Link>
+                  </Button>
+                )}
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback>
+                          {user.firstName?.[0]}{user.lastName?.[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end">
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <div className="flex flex-col space-y-1 leading-none">
+                        <p className="font-medium">{user.firstName} {user.lastName}</p>
+                        <p className="w-[200px] truncate text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard">
+                        <BarChart3 className="mr-2 h-4 w-4" />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile">
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/favourites">
+                        <Heart className="mr-2 h-4 w-4" />
+                        Favourites
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/viewed-properties">
+                        <Eye className="mr-2 h-4 w-4" />
+                        Recently Viewed
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <div className="flex items-center space-x-3">
+                <Button variant="ghost" asChild>
+                  <Link href="/auth/login">Sign In</Link>
+                </Button>
+                <Button className="bg-red-500 hover:bg-red-600" asChild>
+                  <Link href="/auth/signup">Sign Up</Link>
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-500 hover:bg-gray-50 rounded-md"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              
+              {!isAuthenticated ? (
+                <div className="pt-4 border-t border-gray-200 space-y-2">
+                  <Button variant="ghost" className="w-full justify-start" asChild>
+                    <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>
+                      Sign In
+                    </Link>
+                  </Button>
+                  <Button className="w-full bg-red-500 hover:bg-red-600" asChild>
+                    <Link href="/auth/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                      Sign Up
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="pt-4 border-t border-gray-200 space-y-2">
+                  <Button variant="ghost" className="w-full justify-start" asChild>
+                    <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start" asChild>
+                    <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                  </Button>
+                  {user?.role === 'builder' && (
+                    <Button variant="ghost" className="w-full justify-start" asChild>
+                      <Link href="/dashboard/property/create" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Property
+                      </Link>
+                    </Button>
+                  )}
+                  <Button variant="ghost" className="w-full justify-start text-red-600" onClick={logout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log out
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+}
