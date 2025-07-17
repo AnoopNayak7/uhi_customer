@@ -16,8 +16,8 @@ export const PROPERTY_TYPES = [
   { value: 'sell', label: 'Buy' },
   { value: 'rent', label: 'Rent' },
   { value: 'commercial', label: 'Commercial' },
-  { value: 'pg_co_living', label: 'PG/Co-living' },
-  { value: 'plots', label: 'Plots' }
+  // { value: 'pg_co_living', label: 'PG/Co-living' },
+  // { value: 'plots', label: 'Plots' }
 ];
 
 export const PROPERTY_CATEGORIES = [

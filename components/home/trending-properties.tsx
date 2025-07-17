@@ -27,7 +27,7 @@ export function TrendingProperties() {
     try {
       const response:any = await apiClient.getProperties({ 
         limit: 4,
-        sortBy: 'views', // Sort by most viewed for trending
+        sortBy: 'views',
         order: 'desc',
         city: 'Bangalore'
       });

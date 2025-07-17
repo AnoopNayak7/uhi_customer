@@ -1,6 +1,15 @@
 import { APP_CONFIG } from './config';
 import { useAuthStore } from './store';
 
+const BYPASS_AUTH_ENDPOINTS = [
+  '/auth/login',
+  '/auth/signup', 
+  '/auth/send-otp',
+  '/auth/verify-otp',
+  '/properties',
+  '/properties/'
+];
+
 class ApiClient {
   private baseUrl: string;
 
@@ -18,12 +27,32 @@ class ApiClient {
     const { checkTokenExpiry } = useAuthStore.getState();
     return checkTokenExpiry();
   }
+
+  private shouldBypassAuth(endpoint: string, method: string = 'GET'): boolean {
+    // Check exact matches first
+    if (BYPASS_AUTH_ENDPOINTS.includes(endpoint)) {
+      return true;
+    }
+    
+    // Check for GET requests to single property endpoint
+    if (method === 'GET' && endpoint.startsWith('/properties/') && endpoint.split('/').length === 3) {
+      return true;
+    }
+    
+    if (method === 'GET' && endpoint.startsWith('/properties?')) {
+      return true;
+    }
+    
+    return false;
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    // Check token validity before making request
-    if (endpoint !== '/auth/login' && endpoint !== '/auth/signup' && endpoint !== '/auth/send-otp' && endpoint !== '/auth/verify-otp') {
+    const method = options.method || 'GET';
+    
+    if (!this.shouldBypassAuth(endpoint, method)) {
       if (!this.checkAuth()) {
         throw new Error('Authentication required');
       }
@@ -47,7 +76,6 @@ class ApiClient {
 
     if (!response.ok) {
       if (response.status === 401) {
-        // Token expired or invalid, logout user
         useAuthStore.getState().logout();
         throw new Error('Session expired. Please login again.');
       }
@@ -57,7 +85,6 @@ class ApiClient {
     return response.json();
   }
 
-  // Auth methods
   async signup(data: {
     email: string;
     firstName: string;
@@ -168,7 +195,6 @@ class ApiClient {
     return result.data?.urls || [];
   }
   
-  // Analytics methods
   async getBuilderAnalytics(params: any = {}) {
     const searchParams = new URLSearchParams(params);
     return this.request(`/leads/analytics?${searchParams}`);
