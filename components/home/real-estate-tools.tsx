@@ -1,9 +1,37 @@
+"use client";
+
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Calculator, MapPin, BookOpen } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { TrendingUp, Calculator, MapPin, BookOpen, Phone, Building, Users, Award } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
+import { CITIES } from '@/lib/config';
 
 export function RealEstateTools() {
+  const [consultationOpen, setConsultationOpen] = useState(false);
+  const [partnerOpen, setPartnerOpen] = useState(false);
+  const [consultationForm, setConsultationForm] = useState({
+    name: '',
+    phone: '',
+    city: ''
+  });
+  const [partnerForm, setPartnerForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    city: '',
+    propertyTypes: '',
+    experience: '',
+    message: ''
+  });
+
   const tools = [
     {
       icon: TrendingUp,
@@ -38,6 +66,51 @@ export function RealEstateTools() {
       bgColor: 'bg-orange-50'
     }
   ];
+
+  const handleConsultationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!consultationForm.name || !consultationForm.phone || !consultationForm.city) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+
+    try {
+      // Here you would typically send the data to your API
+      console.log('Consultation request:', consultationForm);
+      toast.success('Consultation request submitted! Our team will contact you soon.');
+      setConsultationForm({ name: '', phone: '', city: '' });
+      setConsultationOpen(false);
+    } catch (error) {
+      toast.error('Failed to submit request. Please try again.');
+    }
+  };
+
+  const handlePartnerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!partnerForm.name || !partnerForm.email || !partnerForm.phone || !partnerForm.company) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+
+    try {
+      // Here you would typically send the data to your API
+      console.log('Partnership request:', partnerForm);
+      toast.success('Partnership request submitted! We will review and contact you soon.');
+      setPartnerForm({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        city: '',
+        propertyTypes: '',
+        experience: '',
+        message: ''
+      });
+      setPartnerOpen(false);
+    } catch (error) {
+      toast.error('Failed to submit request. Please try again.');
+    }
+  };
 
   return (
     <section className="py-16 bg-white">
@@ -86,12 +159,81 @@ export function RealEstateTools() {
                   Get expert guidance from our property consultants and find your perfect home
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button className="bg-red-500 hover:bg-red-600">
-                    Speak to Consultant
-                  </Button>
-                  <Button variant="outline">
-                    Request Callback
-                  </Button>
+                  {/* Consultation Dialog */}
+                  <Dialog open={consultationOpen} onOpenChange={setConsultationOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-red-500 hover:bg-red-600">
+                        <Phone className="w-4 h-4 mr-2" />
+                        Speak to Consultant
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center space-x-2">
+                          <Phone className="w-5 h-5 text-red-500" />
+                          <span>Request Consultation</span>
+                        </DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleConsultationSubmit} className="space-y-4">
+                        <div>
+                          <Label htmlFor="consultation-name">Full Name *</Label>
+                          <Input
+                            id="consultation-name"
+                            placeholder="Enter your full name"
+                            value={consultationForm.name}
+                            onChange={(e) => setConsultationForm(prev => ({ ...prev, name: e.target.value }))}
+                            className="mt-1"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="consultation-phone">Phone Number *</Label>
+                          <Input
+                            id="consultation-phone"
+                            placeholder="+91 9876543210"
+                            value={consultationForm.phone}
+                            onChange={(e) => setConsultationForm(prev => ({ ...prev, phone: e.target.value }))}
+                            className="mt-1"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="consultation-city">City *</Label>
+                          <Select 
+                            value={consultationForm.city} 
+                            onValueChange={(value) => setConsultationForm(prev => ({ ...prev, city: value }))}
+                          >
+                            <SelectTrigger className="mt-1">
+                              <SelectValue placeholder="Select your city" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CITIES.map((city) => (
+                                <SelectItem key={city} value={city}>
+                                  {city}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="flex space-x-3 pt-4">
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => setConsultationOpen(false)}
+                            className="flex-1"
+                          >
+                            Cancel
+                          </Button>
+                          <Button type="submit" className="flex-1 bg-red-500 hover:bg-red-600">
+                            Submit Request
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
               
@@ -103,12 +245,160 @@ export function RealEstateTools() {
                   Partner with us to showcase your properties to millions of potential buyers
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button variant="outline">
-                    List Your Property
+                  <Button variant="outline" asChild>
+                    <Link href="/dashboard/property/create">
+                      List Your Property
+                    </Link>
                   </Button>
-                  <Button variant="outline">
-                    Become Partner
-                  </Button>
+                  
+                  {/* Partnership Dialog */}
+                  <Dialog open={partnerOpen} onOpenChange={setPartnerOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline">
+                        <Building className="w-4 h-4 mr-2" />
+                        Become Partner
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center space-x-2">
+                          <Building className="w-5 h-5 text-blue-500" />
+                          <span>Partnership Application</span>
+                        </DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handlePartnerSubmit} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="partner-name">Full Name *</Label>
+                            <Input
+                              id="partner-name"
+                              placeholder="Enter your full name"
+                              value={partnerForm.name}
+                              onChange={(e) => setPartnerForm(prev => ({ ...prev, name: e.target.value }))}
+                              className="mt-1"
+                              required
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="partner-email">Email Address *</Label>
+                            <Input
+                              id="partner-email"
+                              type="email"
+                              placeholder="your.email@example.com"
+                              value={partnerForm.email}
+                              onChange={(e) => setPartnerForm(prev => ({ ...prev, email: e.target.value }))}
+                              className="mt-1"
+                              required
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="partner-phone">Phone Number *</Label>
+                            <Input
+                              id="partner-phone"
+                              placeholder="+91 9876543210"
+                              value={partnerForm.phone}
+                              onChange={(e) => setPartnerForm(prev => ({ ...prev, phone: e.target.value }))}
+                              className="mt-1"
+                              required
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="partner-company">Company Name *</Label>
+                            <Input
+                              id="partner-company"
+                              placeholder="Your company name"
+                              value={partnerForm.company}
+                              onChange={(e) => setPartnerForm(prev => ({ ...prev, company: e.target.value }))}
+                              className="mt-1"
+                              required
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="partner-city">City</Label>
+                            <Select 
+                              value={partnerForm.city} 
+                              onValueChange={(value) => setPartnerForm(prev => ({ ...prev, city: value }))}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue placeholder="Select your city" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {CITIES.map((city) => (
+                                  <SelectItem key={city} value={city}>
+                                    {city}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="partner-experience">Experience</Label>
+                            <Select 
+                              value={partnerForm.experience} 
+                              onValueChange={(value) => setPartnerForm(prev => ({ ...prev, experience: value }))}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue placeholder="Years of experience" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="0-1">0-1 years</SelectItem>
+                                <SelectItem value="1-3">1-3 years</SelectItem>
+                                <SelectItem value="3-5">3-5 years</SelectItem>
+                                <SelectItem value="5-10">5-10 years</SelectItem>
+                                <SelectItem value="10+">10+ years</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="partner-property-types">Property Types</Label>
+                          <Input
+                            id="partner-property-types"
+                            placeholder="e.g., Residential, Commercial, Plots"
+                            value={partnerForm.propertyTypes}
+                            onChange={(e) => setPartnerForm(prev => ({ ...prev, propertyTypes: e.target.value }))}
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="partner-message">Message</Label>
+                          <Textarea
+                            id="partner-message"
+                            placeholder="Tell us about your business and why you want to partner with us..."
+                            value={partnerForm.message}
+                            onChange={(e) => setPartnerForm(prev => ({ ...prev, message: e.target.value }))}
+                            rows={3}
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div className="flex space-x-3 pt-4">
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => setPartnerOpen(false)}
+                            className="flex-1"
+                          >
+                            Cancel
+                          </Button>
+                          <Button type="submit" className="flex-1 bg-blue-500 hover:bg-blue-600">
+                            Submit Application
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </div>

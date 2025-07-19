@@ -160,8 +160,10 @@ export function PropertyWizard() {
         // Step 2: Upload images if any
         if (formData.imageFiles && formData.imageFiles.length > 0) {
           try {
-            await apiClient.uploadPropertyImages(propertyId, formData.imageFiles);
-            toast.success('Property created and images uploaded successfully!');
+            toast.info(`Uploading ${formData.imageFiles.length} images...`);
+            const imageUrls = await apiClient.uploadPropertyImages(propertyId, formData.imageFiles);
+            console.log('Uploaded image URLs:', imageUrls);
+            toast.success(`Property created and ${formData.imageFiles.length} images uploaded successfully!`);
           } catch (imageError) {
             console.error('Error uploading images:', imageError);
             toast.warning('Property created but some images failed to upload. You can add them later.');
@@ -170,6 +172,7 @@ export function PropertyWizard() {
           toast.success('Property created successfully!');
         }
         
+        // Navigate to the property dashboard after successful creation
         router.push('/dashboard/properties');
       } else {
         throw new Error('Failed to create property');

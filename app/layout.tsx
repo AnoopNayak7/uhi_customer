@@ -1,10 +1,11 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Montserrat } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/components/auth/auth-provider';
 
 const inter = Inter({ subsets: ['latin'] });
+const montserrat = Montserrat({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'UrbanHouseIN - Find Your Dream Property | Real Estate Platform',
@@ -34,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={montserrat.className}>
         <AuthProvider>
         {children}
         </AuthProvider>

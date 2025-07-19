@@ -57,13 +57,14 @@ export function FeaturedProperties() {
     } catch (error) {
       console.error('Error fetching featured properties:', error);
       setError('Failed to load featured properties');
-      // Fallback to empty array instead of mock data
       setProperties([]);
       toast.error('Failed to load featured properties');
     } finally {
       setLoading(false);
     }
   };
+
+
 
   const formatPrice = (price: number) => {
     if (price >= 10000000) {
@@ -146,6 +147,7 @@ export function FeaturedProperties() {
       </section>
     );
   }
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -180,7 +182,7 @@ export function FeaturedProperties() {
         </div>
 
         {visibleProperties.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {visibleProperties.map((property) => (
               <PropertyCard
                 key={property.id}
@@ -216,79 +218,103 @@ function PropertyCard({
   isFavourite: boolean;
 }) {
   const defaultImage = `https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop&crop=center`;
-  
+  const formatPrice = (price: number) => {
+    if (price >= 10000000) {
+      return `₹${(price / 10000000).toFixed(1)} Cr`;
+    } else if (price >= 100000) {
+      return `₹${(price / 100000).toFixed(1)} L`;
+    }
+    return `₹${price.toLocaleString()}`;
+  };
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
+    <Card className="group cursor-pointer bg-white border-0 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden rounded-xl">
       <div className="relative">
-        <div className="relative h-48 overflow-hidden">
+        {/* Image Container with perfect aspect ratio */}
+        <div className="relative h-44 overflow-hidden rounded-t-xl">
           <Image
             src={property.images?.[0] || defaultImage}
             alt={property.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
         </div>
         
+        {/* Badges - Modern pill design */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1">
           {property.isFeatured && (
-            <Badge className="bg-yellow-500 text-white border-0">Featured</Badge>
+            <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 text-xs font-medium px-2 py-0.5 rounded-full shadow-sm">
+              Featured
+            </Badge>
           )}
           {property.isHotSelling && (
-            <Badge className="bg-red-500 text-white border-0">Hot</Badge>
+            <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 text-xs font-medium px-2 py-0.5 rounded-full shadow-sm">
+              Hot
+            </Badge>
           )}
           {property.isNewlyAdded && (
-            <Badge className="bg-green-500 text-white border-0">New</Badge>
+            <Badge className="bg-gradient-to-r from-emerald-400 to-teal-500 text-white border-0 text-xs font-medium px-2 py-0.5 rounded-full shadow-sm">
+              New
+            </Badge>
           )}
         </div>
         
+        {/* Heart Button - Improved positioning */}
         <Button
           variant="ghost"
           size="sm"
-          className={`absolute top-3 right-3 h-8 w-8 p-0 ${
-            isFavourite ? 'text-red-500' : 'text-white hover:text-red-500'
+          className={`absolute top-3 right-3 h-8 w-8 p-0 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all ${
+            isFavourite ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
           }`}
           onClick={onFavourite}
         >
-          <Heart className={`w-4 h-4 ${isFavourite ? 'fill-current' : ''}`} />
+          <Heart className={`w-3.5 h-3.5 ${isFavourite ? 'fill-current' : ''}`} />
         </Button>
       </div>
       
       <CardContent className="p-4">
-        <div className="mb-2">
-          <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 mb-1">
+        {/* Title & Location */}
+        <div className="mb-3">
+          <h3 className="font-semibold text-base text-gray-900 line-clamp-1 mb-1.5 leading-tight">
             {property.title}
           </h3>
-          <div className="flex items-center text-gray-500 text-sm">
-            <MapPin className="w-3 h-3 mr-1" />
-            <span className="line-clamp-1">{property.address}, {property.city}</span>
+          <div className="flex items-start text-gray-500 text-xs">
+            <MapPin className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
+            <span className="line-clamp-1 leading-relaxed">{property.address}, {property.city}</span>
           </div>
         </div>
         
-        <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
-          <div className="flex items-center space-x-3">
+        {/* Property Features - Compact grid */}
+        <div className="flex items-center justify-between text-xs text-gray-600 mb-4">
+          <div className="flex items-center space-x-4">
             <div className="flex items-center">
-              <Bed className="w-4 h-4 mr-1" />
-              <span>{property.bedrooms}</span>
+              <Bed className="w-3 h-3 mr-1 text-gray-400" />
+              <span className="font-medium">{property.bedrooms}</span>
             </div>
             <div className="flex items-center">
-              <Bath className="w-4 h-4 mr-1" />
-              <span>{property.bathrooms}</span>
+              <Bath className="w-3 h-3 mr-1 text-gray-400" />
+              <span className="font-medium">{property.bathrooms}</span>
             </div>
             <div className="flex items-center">
-              <Square className="w-4 h-4 mr-1" />
-              <span>{property.area} {property.areaUnit}</span>
+              <Square className="w-3 h-3 mr-1 text-gray-400" />
+              <span className="font-medium">{property.area} {property.areaUnit}</span>
             </div>
           </div>
         </div>
         
-        <div className="flex items-center justify-between">
-          <div className="text-xl font-bold text-gray-900">
-            {property.price}
+        {/* Price & CTA */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <div className="text-lg font-bold text-gray-900">
+            {formatPrice(property.price)}
           </div>
-          <Button size="sm" variant="outline" asChild>
+          <Button 
+            size="sm" 
+            variant="default" 
+            className="text-xs h-7 px-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md"
+            asChild
+          >
             <Link href={`/properties/${property.id}`}>
-              View Details
+              View
             </Link>
           </Button>
         </div>
