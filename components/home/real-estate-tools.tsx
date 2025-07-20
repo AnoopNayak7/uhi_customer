@@ -126,15 +126,15 @@ export function RealEstateTools() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {tools.map((tool) => (
-            <Card key={tool.title} className="group hover:shadow-lg transition-all duration-300 cursor-pointer">
-              <CardContent className="p-6 text-center">
+            <Card key={tool.title} className="group hover:shadow-lg transition-all duration-300 cursor-pointer h-full">
+              <CardContent className="p-6 text-center h-full flex flex-col">
                 <div className={`w-16 h-16 ${tool.bgColor} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}>
                   <tool.icon className={`w-8 h-8 ${tool.color}`} />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   {tool.title}
                 </h3>
-                <p className="text-gray-600 text-sm mb-4">
+                <p className="text-gray-600 text-sm mb-4 flex-grow">
                   {tool.description}
                 </p>
                 <Button variant="outline" size="sm" asChild>
