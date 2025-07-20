@@ -54,16 +54,16 @@ export function PropertyListings() {
       bgColor: 'bg-purple-50',
       iconColor: 'text-purple-500'
     },
-    {
-      icon: Users,
-      title: 'Co-living in Bangalore',
-      subtitle: 'PG & Co-living Spaces',
-      count: '1,200+ Spaces',
-      description: 'PG in Koramangala',
-      link: '/properties?city=Bangalore&type=pg_co_living',
-      bgColor: 'bg-pink-50',
-      iconColor: 'text-pink-500'
-    },
+    // {
+    //   icon: Users,
+    //   title: 'Co-living in Bangalore',
+    //   subtitle: 'PG & Co-living Spaces',
+    //   count: '1,200+ Spaces',
+    //   description: 'PG in Koramangala',
+    //   link: '/properties?city=Bangalore&type=pg_co_living',
+    //   bgColor: 'bg-pink-50',
+    //   iconColor: 'text-pink-500'
+    // },
     {
       icon: Building,
       title: 'Builder Floors in Bangalore',
