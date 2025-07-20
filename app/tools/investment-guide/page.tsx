@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { 
   BookOpen, 
   TrendingUp, 
@@ -35,7 +36,8 @@ import {
   Calendar,
   IndianRupee,
   Users,
-  Star
+  Star,
+  Settings
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
@@ -72,6 +74,7 @@ export default function InvestmentGuidePage() {
   const [timeHorizon, setTimeHorizon] = useState([5]); // 5 years default
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<any>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const generateRecommendations = async () => {
     if (!investmentGoal || !riskProfile || !propertyType) return;
@@ -317,6 +320,149 @@ export default function InvestmentGuidePage() {
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
+  // Reusable form content component
+  const InvestmentProfileForm = () => (
+    <div className="space-y-6">
+      {/* City Selection */}
+      <div>
+        <Label>Preferred City *</Label>
+        <Select value={selectedCity} onValueChange={setSelectedCity}>
+          <SelectTrigger className="mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {cities.map((city) => (
+              <SelectItem key={city} value={city}>
+                <div className="flex items-center">
+                  <MapPin className="w-4 h-4 mr-2" />
+                  {city}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Investment Goal */}
+      <div>
+        <Label>Investment Goal *</Label>
+        <Select value={investmentGoal} onValueChange={setInvestmentGoal}>
+          <SelectTrigger className="mt-1">
+            <SelectValue placeholder="Select your goal" />
+          </SelectTrigger>
+          <SelectContent>
+            {investmentGoals.map((goal) => (
+              <SelectItem key={goal.value} value={goal.value}>
+                <div className="flex items-center">
+                  <goal.icon className="w-4 h-4 mr-2" />
+                  {goal.label}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Risk Profile */}
+      <div>
+        <Label>Risk Profile *</Label>
+        <div className="grid grid-cols-1 gap-2 mt-2">
+          {riskProfiles.map((risk) => (
+            <button
+              key={risk.value}
+              onClick={() => setRiskProfile(risk.value)}
+              className={`p-3 rounded-lg border text-left transition-all ${
+                riskProfile === risk.value
+                  ? 'border-orange-500 bg-orange-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className={`font-medium ${risk.color}`}>
+                {risk.label}
+              </div>
+              <div className="text-xs text-gray-600 mt-1">
+                {risk.value === 'conservative' && 'Low risk, steady returns'}
+                {risk.value === 'moderate' && 'Balanced risk and returns'}
+                {risk.value === 'aggressive' && 'High risk, high returns'}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Property Type */}
+      <div>
+        <Label>Property Type *</Label>
+        <Select value={propertyType} onValueChange={setPropertyType}>
+          <SelectTrigger className="mt-1">
+            <SelectValue placeholder="Select property type" />
+          </SelectTrigger>
+          <SelectContent>
+            {propertyTypes.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                <div className="flex items-center">
+                  <type.icon className="w-4 h-4 mr-2" />
+                  {type.label}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Budget */}
+      <div>
+        <Label>Investment Budget</Label>
+        <div className="mt-2">
+          <Slider
+            value={budget}
+            onValueChange={setBudget}
+            max={50000000}
+            min={1000000}
+            step={500000}
+            className="mb-2"
+          />
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>₹10L</span>
+            <span className="font-medium">{formatPrice(budget[0])}</span>
+            <span>₹5Cr</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Time Horizon */}
+      <div>
+        <Label>Investment Time Horizon</Label>
+        <div className="mt-2">
+          <Slider
+            value={timeHorizon}
+            onValueChange={setTimeHorizon}
+            max={20}
+            min={1}
+            step={1}
+            className="mb-2"
+          />
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>1 year</span>
+            <span className="font-medium">{timeHorizon[0]} years</span>
+            <span>20 years</span>
+          </div>
+        </div>
+      </div>
+
+      <Button 
+        onClick={() => {
+          generateRecommendations();
+          setSheetOpen(false);
+        }}
+        disabled={!investmentGoal || !riskProfile || !propertyType || loading}
+        className="w-full bg-orange-500 hover:bg-orange-600"
+      >
+        {loading ? 'Generating Recommendations...' : 'Get Investment Guide'}
+      </Button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -339,9 +485,32 @@ export default function InvestmentGuidePage() {
         {/* Investment Form */}
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Mobile: Bottom Sheet Trigger */}
+            <div className="lg:hidden mb-6">
+              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button className="w-full bg-orange-500 hover:bg-orange-600" size="lg">
+                    <Settings className="w-5 h-5 mr-2" />
+                    Set Investment Profile
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle className="flex items-center space-x-2">
+                      <Target className="w-5 h-5" />
+                      <span>Investment Profile</span>
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    <InvestmentProfileForm />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Input Form */}
-              <div className="lg:col-span-1">
+              {/* Desktop: Input Form Sidebar */}
+              <div className="hidden lg:block lg:col-span-1">
                 <Card className="sticky top-8">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
@@ -349,141 +518,8 @@ export default function InvestmentGuidePage() {
                       <span>Investment Profile</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* City Selection */}
-                    <div>
-                      <Label>Preferred City *</Label>
-                      <Select value={selectedCity} onValueChange={setSelectedCity}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {cities.map((city) => (
-                            <SelectItem key={city} value={city}>
-                              <div className="flex items-center">
-                                <MapPin className="w-4 h-4 mr-2" />
-                                {city}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Investment Goal */}
-                    <div>
-                      <Label>Investment Goal *</Label>
-                      <Select value={investmentGoal} onValueChange={setInvestmentGoal}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select your goal" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {investmentGoals.map((goal) => (
-                            <SelectItem key={goal.value} value={goal.value}>
-                              <div className="flex items-center">
-                                <goal.icon className="w-4 h-4 mr-2" />
-                                {goal.label}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Risk Profile */}
-                    <div>
-                      <Label>Risk Profile *</Label>
-                      <div className="grid grid-cols-1 gap-2 mt-2">
-                        {riskProfiles.map((risk) => (
-                          <button
-                            key={risk.value}
-                            onClick={() => setRiskProfile(risk.value)}
-                            className={`p-3 rounded-lg border text-left transition-all ${
-                              riskProfile === risk.value
-                                ? 'border-orange-500 bg-orange-50'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                          >
-                            <div className={`font-medium ${risk.color}`}>
-                              {risk.label}
-                            </div>
-                            <div className="text-xs text-gray-600 mt-1">
-                              {risk.value === 'conservative' && 'Low risk, steady returns'}
-                              {risk.value === 'moderate' && 'Balanced risk and returns'}
-                              {risk.value === 'aggressive' && 'High risk, high returns'}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Property Type */}
-                    <div>
-                      <Label>Property Type *</Label>
-                      <Select value={propertyType} onValueChange={setPropertyType}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select property type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {propertyTypes.map((type) => (
-                            <SelectItem key={type.value} value={type.value}>
-                              <div className="flex items-center">
-                                <type.icon className="w-4 h-4 mr-2" />
-                                {type.label}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Budget */}
-                    <div>
-                      <Label>Investment Budget</Label>
-                      <div className="mt-2">
-                        <Slider
-                          value={budget}
-                          onValueChange={setBudget}
-                          max={50000000}
-                          min={1000000}
-                          step={500000}
-                          className="mb-2"
-                        />
-                        <div className="flex justify-between text-sm text-gray-600">
-                          <span>₹10L</span>
-                          <span className="font-medium">{formatPrice(budget[0])}</span>
-                          <span>₹5Cr</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Time Horizon */}
-                    <div>
-                      <Label>Investment Time Horizon</Label>
-                      <div className="mt-2">
-                        <Slider
-                          value={timeHorizon}
-                          onValueChange={setTimeHorizon}
-                          max={20}
-                          min={1}
-                          step={1}
-                          className="mb-2"
-                        />
-                        <div className="flex justify-between text-sm text-gray-600">
-                          <span>1 year</span>
-                          <span className="font-medium">{timeHorizon[0]} years</span>
-                          <span>20 years</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button 
-                      onClick={generateRecommendations}
-                      disabled={!investmentGoal || !riskProfile || !propertyType || loading}
-                      className="w-full bg-orange-500 hover:bg-orange-600"
-                    >
-                      {loading ? 'Generating Recommendations...' : 'Get Investment Guide'}
-                    </Button>
+                  <CardContent>
+                    <InvestmentProfileForm />
                   </CardContent>
                 </Card>
               </div>
