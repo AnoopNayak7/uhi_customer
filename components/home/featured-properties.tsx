@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, MapPin, Bath, Bed, Square, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { usePropertyStore } from '@/lib/store';
 import { toast } from 'sonner';
@@ -217,7 +218,9 @@ function PropertyCard({
   onFavourite: () => void;
   isFavourite: boolean;
 }) {
+  const router = useRouter();
   const defaultImage = `https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop&crop=center`;
+  
   const formatPrice = (price: number) => {
     if (price >= 10000000) {
       return `₹${(price / 10000000).toFixed(1)} Cr`;
@@ -226,8 +229,21 @@ function PropertyCard({
     }
     return `₹${price.toLocaleString()}`;
   };
+
+  const handleCardClick = () => {
+    router.push(`/properties/${property.id}`);
+  };
+
+  const handleFavouriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onFavourite();
+  };
+
   return (
-    <Card className="group cursor-pointer bg-white border-0 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden rounded-xl">
+    <Card 
+      className="group cursor-pointer bg-white border-0 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden rounded-xl"
+      onClick={handleCardClick}
+    >
       <div className="relative">
         {/* Image Container with perfect aspect ratio */}
         <div className="relative h-44 overflow-hidden rounded-t-xl">
@@ -266,7 +282,7 @@ function PropertyCard({
           className={`absolute top-3 right-3 h-8 w-8 p-0 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all ${
             isFavourite ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
           }`}
-          onClick={onFavourite}
+          onClick={handleFavouriteClick}
         >
           <Heart className={`w-3.5 h-3.5 ${isFavourite ? 'fill-current' : ''}`} />
         </Button>
@@ -302,21 +318,11 @@ function PropertyCard({
           </div>
         </div>
         
-        {/* Price & CTA */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+        {/* Price */}
+        <div className="pt-2 border-t border-gray-100">
           <div className="text-lg font-bold text-gray-900">
             {formatPrice(property.price)}
           </div>
-          <Button 
-            size="sm" 
-            variant="default" 
-            className="text-xs h-7 px-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md"
-            asChild
-          >
-            <Link href={`/properties/${property.id}`}>
-              View
-            </Link>
-          </Button>
         </div>
       </CardContent>
     </Card>
