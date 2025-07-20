@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { 
   Calculator, 
   MapPin, 
@@ -23,7 +24,8 @@ import {
   Square,
   Calendar,
   Award,
-  AlertCircle
+  AlertCircle,
+  Settings
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
@@ -68,6 +70,7 @@ export default function PropertyValuePage() {
   const [loading, setLoading] = useState(false);
   const [valuation, setValuation] = useState<any>(null);
   const [areas, setAreas] = useState<any[]>([]);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     setAreas(getAreasForCity(selectedCity));
@@ -222,6 +225,204 @@ export default function PropertyValuePage() {
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
+  // Reusable form content component
+  const PropertyDetailsForm = () => (
+    <div className="space-y-6">
+      {/* Location */}
+      <div className="space-y-4">
+        <div>
+          <Label>City *</Label>
+          <Select value={selectedCity} onValueChange={setSelectedCity}>
+            <SelectTrigger className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {cities.map((city) => (
+                <SelectItem key={city} value={city}>
+                  <div className="flex items-center">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    {city}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label>Area/Locality *</Label>
+          <Select value={selectedArea} onValueChange={setSelectedArea}>
+            <SelectTrigger className="mt-1">
+              <SelectValue placeholder="Select area" />
+            </SelectTrigger>
+            <SelectContent>
+              {areas.map((area) => (
+                <SelectItem key={area.name} value={area.name}>
+                  <div className="flex items-center justify-between w-full">
+                    <span>{area.name}</span>
+                    <Badge variant="outline" className="ml-2">
+                      ₹{area.basePrice.toLocaleString()}/sqft
+                    </Badge>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Property Type */}
+      <div>
+        <Label>Property Type *</Label>
+        <Select value={selectedPropertyType} onValueChange={setSelectedPropertyType}>
+          <SelectTrigger className="mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {propertyTypes.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                <div className="flex items-center">
+                  <type.icon className="w-4 h-4 mr-2" />
+                  {type.label}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Area */}
+      <div>
+        <Label>Built-up Area (sqft) *</Label>
+        <div className="mt-2">
+          <Slider
+            value={[builtUpArea]}
+            onValueChange={(value) => setBuiltUpArea(value[0])}
+            max={5000}
+            min={300}
+            step={50}
+            className="mb-2"
+          />
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>300 sqft</span>
+            <span className="font-medium">{builtUpArea} sqft</span>
+            <span>5000 sqft</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bedrooms & Bathrooms */}
+      {selectedPropertyType !== 'plot' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Bedrooms</Label>
+            <Select value={bedrooms.toString()} onValueChange={(value) => setBedrooms(parseInt(value))}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 3, 4, 5, 6].map((num) => (
+                  <SelectItem key={num} value={num.toString()}>
+                    {num} BHK
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>Bathrooms</Label>
+            <Select value={bathrooms.toString()} onValueChange={(value) => setBathrooms(parseInt(value))}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <SelectItem key={num} value={num.toString()}>
+                    {num}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+
+      {/* Property Age */}
+      <div>
+        <Label>Property Age</Label>
+        <Select value={propertyAge} onValueChange={setPropertyAge}>
+          <SelectTrigger className="mt-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ageOptions.map((age) => (
+              <SelectItem key={age.value} value={age.value}>
+                {age.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Furnishing */}
+      {selectedPropertyType !== 'plot' && (
+        <div>
+          <Label>Furnishing Status</Label>
+          <Select value={furnishing} onValueChange={setFurnishing}>
+            <SelectTrigger className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {furnishingOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* Floor Details */}
+      {selectedPropertyType !== 'plot' && selectedPropertyType !== 'house' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Floor</Label>
+            <Input
+              type="number"
+              value={floor}
+              onChange={(e) => setFloor(parseInt(e.target.value) || 1)}
+              min={1}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label>Total Floors</Label>
+            <Input
+              type="number"
+              value={totalFloors}
+              onChange={(e) => setTotalFloors(parseInt(e.target.value) || 1)}
+              min={1}
+              className="mt-1"
+            />
+          </div>
+        </div>
+      )}
+
+      <Button 
+        onClick={() => {
+          calculatePropertyValue();
+          setSheetOpen(false);
+        }}
+        disabled={!selectedArea || loading}
+        className="w-full bg-green-500 hover:bg-green-600"
+      >
+        {loading ? 'Calculating...' : 'Calculate Property Value'}
+      </Button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -244,9 +445,32 @@ export default function PropertyValuePage() {
         {/* Calculator Section */}
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Mobile: Bottom Sheet Trigger */}
+            <div className="lg:hidden mb-6">
+              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button className="w-full bg-green-500 hover:bg-green-600" size="lg">
+                    <Settings className="w-5 h-5 mr-2" />
+                    Set Property Details
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle className="flex items-center space-x-2">
+                      <Calculator className="w-5 h-5" />
+                      <span>Property Details</span>
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    <PropertyDetailsForm />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Input Form */}
-              <div className="lg:col-span-1">
+              {/* Desktop: Input Form Sidebar */}
+              <div className="hidden lg:block lg:col-span-1">
                 <Card className="sticky top-8">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
@@ -254,196 +478,8 @@ export default function PropertyValuePage() {
                       <span>Property Details</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Location */}
-                    <div className="space-y-4">
-                      <div>
-                        <Label>City *</Label>
-                        <Select value={selectedCity} onValueChange={setSelectedCity}>
-                          <SelectTrigger className="mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {cities.map((city) => (
-                              <SelectItem key={city} value={city}>
-                                <div className="flex items-center">
-                                  <MapPin className="w-4 h-4 mr-2" />
-                                  {city}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label>Area/Locality *</Label>
-                        <Select value={selectedArea} onValueChange={setSelectedArea}>
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Select area" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {areas.map((area) => (
-                              <SelectItem key={area.name} value={area.name}>
-                                <div className="flex items-center justify-between w-full">
-                                  <span>{area.name}</span>
-                                  <Badge variant="outline" className="ml-2">
-                                    ₹{area.basePrice.toLocaleString()}/sqft
-                                  </Badge>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {/* Property Type */}
-                    <div>
-                      <Label>Property Type *</Label>
-                      <Select value={selectedPropertyType} onValueChange={setSelectedPropertyType}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {propertyTypes.map((type) => (
-                            <SelectItem key={type.value} value={type.value}>
-                              <div className="flex items-center">
-                                <type.icon className="w-4 h-4 mr-2" />
-                                {type.label}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Area */}
-                    <div>
-                      <Label>Built-up Area (sqft) *</Label>
-                      <div className="mt-2">
-                        <Slider
-                          value={[builtUpArea]}
-                          onValueChange={(value) => setBuiltUpArea(value[0])}
-                          max={5000}
-                          min={300}
-                          step={50}
-                          className="mb-2"
-                        />
-                        <div className="flex justify-between text-sm text-gray-600">
-                          <span>300 sqft</span>
-                          <span className="font-medium">{builtUpArea} sqft</span>
-                          <span>5000 sqft</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bedrooms & Bathrooms */}
-                    {selectedPropertyType !== 'plot' && (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label>Bedrooms</Label>
-                          <Select value={bedrooms.toString()} onValueChange={(value) => setBedrooms(parseInt(value))}>
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {[1, 2, 3, 4, 5, 6].map((num) => (
-                                <SelectItem key={num} value={num.toString()}>
-                                  {num} BHK
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <Label>Bathrooms</Label>
-                          <Select value={bathrooms.toString()} onValueChange={(value) => setBathrooms(parseInt(value))}>
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {[1, 2, 3, 4, 5].map((num) => (
-                                <SelectItem key={num} value={num.toString()}>
-                                  {num}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Property Age */}
-                    <div>
-                      <Label>Property Age</Label>
-                      <Select value={propertyAge} onValueChange={setPropertyAge}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ageOptions.map((age) => (
-                            <SelectItem key={age.value} value={age.value}>
-                              {age.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Furnishing */}
-                    {selectedPropertyType !== 'plot' && (
-                      <div>
-                        <Label>Furnishing Status</Label>
-                        <Select value={furnishing} onValueChange={setFurnishing}>
-                          <SelectTrigger className="mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {furnishingOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-
-                    {/* Floor Details */}
-                    {selectedPropertyType !== 'plot' && selectedPropertyType !== 'house' && (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label>Floor</Label>
-                          <Input
-                            type="number"
-                            value={floor}
-                            onChange={(e) => setFloor(parseInt(e.target.value) || 1)}
-                            min={1}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label>Total Floors</Label>
-                          <Input
-                            type="number"
-                            value={totalFloors}
-                            onChange={(e) => setTotalFloors(parseInt(e.target.value) || 1)}
-                            min={1}
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    <Button 
-                      onClick={calculatePropertyValue}
-                      disabled={!selectedArea || loading}
-                      className="w-full bg-green-500 hover:bg-green-600"
-                    >
-                      {loading ? 'Calculating...' : 'Calculate Property Value'}
-                    </Button>
+                  <CardContent>
+                    <PropertyDetailsForm />
                   </CardContent>
                 </Card>
               </div>
