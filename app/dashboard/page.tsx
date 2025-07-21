@@ -40,8 +40,7 @@ export default function DashboardPage() {
       setLoading(true);
       
       if (user?.role === 'builder') {
-        // Fetch builder analytics and properties
-        const [analyticsRes, propertiesRes, leadsRes] = await Promise.all([
+        const [analyticsRes, propertiesRes, leadsRes]:any = await Promise.all([
           apiClient.getBuilderAnalytics(),
           apiClient.getMyProperties({ limit: 5 }),
           apiClient.getMyLeads({ limit: 5 })
@@ -51,8 +50,7 @@ export default function DashboardPage() {
         setProperties(propertiesRes.data || []);
         setLeads(leadsRes.data || []);
       } else {
-        // Fetch user data (viewed properties, favourites, etc.)
-        const propertiesRes = await apiClient.getProperties({ limit: 5 });
+        const propertiesRes:any = await apiClient.getProperties({ limit: 5 });
         setProperties(propertiesRes.data || []);
       }
     } catch (error) {

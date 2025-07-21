@@ -53,14 +53,16 @@ export default function PropertyDetailPage() {
         addToViewed(response.data);
       } else {
         // Use mock data if API fails
-        setProperty(mockProperty);
-        addToViewed(mockProperty);
+        const mockPropertyWithId = { ...mockProperty, id };
+        setProperty(mockPropertyWithId);
+        addToViewed(mockPropertyWithId);
       }
     } catch (error) {
       console.error('Error fetching property:', error);
-      // Fallback to mock data
-      setProperty(mockProperty);
-      addToViewed(mockProperty);
+      // Fallback to mock data with the correct ID
+      const mockPropertyWithId = { ...mockProperty, id };
+      setProperty(mockPropertyWithId);
+      addToViewed(mockPropertyWithId);
     } finally {
       setLoading(false);
     }
