@@ -23,7 +23,7 @@ export function Header() {
     { label: 'Buy', href: '/properties?type=sell' },
     { label: 'Rent', href: '/properties?type=rent' },
     { label: 'Commercial', href: '/properties?type=commercial' },
-    { label: 'PG/Co-living', href: '/properties?type=pg_co_living' },
+    // { label: 'PG/Co-living', href: '/properties?type=pg_co_living' },
     { label: 'Plots', href: '/properties?type=plots' },
   ];
 

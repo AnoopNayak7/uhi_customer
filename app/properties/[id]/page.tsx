@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
@@ -26,9 +24,47 @@ import {
   Mail,
   Calendar,
   Home,
-  Building
+  Building,
+  Info,
+  Clock,
+  ChevronRight,
+  ImageIcon,
+  Wifi,
+  Trees,
+  Waves,
+  Users,
+  Zap,
+  ShieldCheck,
+  Camera,
+  PlayCircle,
+  Maximize2
 } from 'lucide-react';
 import Image from 'next/image';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import 'leaflet/dist/leaflet.css';
+import dynamic from 'next/dynamic';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
+import TimeTravel from '@/components/TimeTravel';
+
+// Dynamically import the Map component to avoid SSR issues with Leaflet
+const Map = dynamic(() => import('@/components/Map'), { ssr: false });
+
+// Amenity icons mapping
+const amenityIcons: { [key: string]: any } = {
+  'Parking': Car,
+  'Security': Shield,
+  'Gym': Dumbbell,
+  'Garden': Trees,
+  'Swimming Pool': Waves,
+  'Clubhouse': Users,
+  'Power Backup': Zap,
+  'Lift': Building,
+  'WiFi': Wifi,
+  'CCTV': ShieldCheck
+};
 
 export default function PropertyDetailPage() {
   const params = useParams();
@@ -37,6 +73,9 @@ export default function PropertyDetailPage() {
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showReraDialog, setShowReraDialog] = useState(false);
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (params.id) {
@@ -52,14 +91,12 @@ export default function PropertyDetailPage() {
         setProperty(response.data);
         addToViewed(response.data);
       } else {
-        // Use mock data if API fails
         const mockPropertyWithId = { ...mockProperty, id };
         setProperty(mockPropertyWithId);
         addToViewed(mockPropertyWithId);
       }
     } catch (error) {
       console.error('Error fetching property:', error);
-      // Fallback to mock data with the correct ID
       const mockPropertyWithId = { ...mockProperty, id };
       setProperty(mockPropertyWithId);
       addToViewed(mockPropertyWithId);
@@ -76,6 +113,41 @@ export default function PropertyDetailPage() {
       removeFromFavourites(property.id);
     } else {
       addToFavourites(property);
+    }
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: property.title,
+        text: `Check out this property: ${property.title}`,
+        url: window.location.href,
+      }).catch(err => {
+        console.error('Error sharing:', err);
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert('Link copied to clipboard!');
+    }
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    setActiveTab(sectionId);
+    const element = document.getElementById(sectionId);
+    const tabsElement = tabsRef.current;
+    
+    if (element && tabsElement) {
+      const tabsHeight = tabsElement.offsetHeight;
+      const headerHeight = 80; // Approximate header height
+      const offset = headerHeight + tabsHeight + 20; // Add some padding
+      
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -130,13 +202,15 @@ export default function PropertyDetailPage() {
 
   const isFavorite = favourites.some(p => p.id === property.id);
   const images = property.images || [
-    'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop&crop=center',
-    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop&crop=center',
-    'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop&crop=center'
+    '/api/placeholder/800/600',
+    '/api/placeholder/800/600',
+    '/api/placeholder/800/600',
+    '/api/placeholder/800/600',
+    '/api/placeholder/800/600'
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
       
       <main className="flex-1">
@@ -151,153 +225,342 @@ export default function PropertyDetailPage() {
             Back to Properties
           </Button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2">
-              {/* Image Gallery */}
-              <div className="mb-8">
-                <div className="relative h-96 rounded-lg overflow-hidden mb-4">
-                  <Image
-                    src={images[currentImageIndex]}
-                    alt={property.title}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <Badge className="bg-green-500 text-white border-0">
-                      For {property.propertyType === 'sell' ? 'Sale' : 'Rent'}
-                    </Badge>
+          {/* Image Gallery Section - New Layout */}
+          <div className="mb-8 bg-white rounded-2xl overflow-hidden shadow-sm">
+            <div className="relative">
+              {/* Main Image Grid - 3 Images Layout */}
+              <div className="grid grid-cols-3 gap-2 h-[400px]">
+                {/* Large Main Image - Takes 2 columns */}
+                <div className="col-span-2 relative group cursor-pointer" onClick={() => setCurrentImageIndex(0)}>
+                  <div className="w-full h-full bg-gray-200 rounded-l-xl flex items-center justify-center">
+                    <div className="text-center">
+                      <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-500 text-sm">Property Image 1</p>
+                    </div>
                   </div>
-                  <div className="absolute top-4 right-4 flex space-x-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleFavorite}
-                      className={isFavorite ? 'text-red-500' : ''}
-                    >
-                      <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
-                    </Button>
-                    <Button variant="secondary" size="sm">
-                      <Share2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 rounded-l-xl" />
                 </div>
-                
-                {/* Thumbnail Gallery */}
-                <div className="flex space-x-2 overflow-x-auto">
-                  {images.map((image:any, index:any) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`relative w-20 h-16 rounded-md overflow-hidden flex-shrink-0 ${
-                        currentImageIndex === index ? 'ring-2 ring-red-500' : ''
-                      }`}
-                    >
-                      <Image
-                        src={image}
-                        alt={`Property image ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </button>
-                  ))}
+
+                {/* Right Side - 2 Images Stacked */}
+                <div className="flex flex-col gap-2">
+                  {/* Top Right Image */}
+                  <div className="relative group cursor-pointer flex-1" onClick={() => setCurrentImageIndex(1)}>
+                    <div className="w-full h-full bg-gray-200 rounded-tr-xl flex items-center justify-center">
+                      <div className="text-center">
+                        <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-1" />
+                        <p className="text-gray-500 text-xs">Property Image 2</p>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 rounded-tr-xl" />
+                  </div>
+
+                  {/* Bottom Right Image with Overlay */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <div className="relative group cursor-pointer flex-1">
+                        <div className="w-full h-full bg-gray-200 rounded-br-xl flex items-center justify-center">
+                          <div className="text-center">
+                            <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-1" />
+                            <p className="text-gray-500 text-xs">Property Image 3</p>
+                          </div>
+                        </div>
+                        {/* Show All Photos Overlay */}
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-br-xl">
+                          <div className="text-white text-center">
+                            <ImageIcon className="w-8 h-8 mx-auto mb-2" />
+                            <div className="text-sm font-semibold">Show all photos</div>
+                            <div className="text-xs opacity-90">{images.length} images</div>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-6xl max-h-[90vh]">
+                      <div className="p-2">
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-xl font-semibold">{property.title}</h2>
+                          <div className="text-sm text-gray-500">{images.length} photos</div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
+                          {images.map((image:any, index:any) => (
+                            <div key={index} className="relative h-64 w-full rounded-lg overflow-hidden bg-gray-100">
+                              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                <div className="text-center">
+                                  <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                  <p className="text-gray-500 text-sm">Property Image {index + 1}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
 
-              {/* Property Details */}
-              <div className="space-y-6">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {property.title}
-                  </h1>
-                  <div className="flex items-center text-gray-600 mb-4">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    <span>{property.address}, {property.city}, {property.state}</span>
-                  </div>
-                  <div className="text-3xl font-bold text-red-500 mb-4">
-                    {formatPrice(property.price)}
-                  </div>
+              {/* Floating Action Buttons */}
+              <div className="absolute top-4 right-4 flex space-x-2">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="bg-white/90 backdrop-blur-sm">
+                      <Maximize2 className="w-4 h-4 mr-2" />
+                      Show all photos
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl">
+                    <div className="p-1">
+                      <h2 className="text-xl font-semibold mb-4">{property.title}</h2>
+                      <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
+                        {images.map((image:any, index:any) => (
+                          <div key={index} className="relative h-48 w-full rounded-md overflow-hidden bg-gray-200">
+                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                              <div className="text-center">
+                                <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-1" />
+                                <p className="text-gray-500 text-sm">Image {index + 1}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleShare}
+                  className="bg-white/90 backdrop-blur-sm"
+                >
+                  <Share2 className="w-4 h-4" />
+                </Button>
+                
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleFavorite}
+                  className={`bg-white/90 backdrop-blur-sm ${isFavorite ? 'text-red-500' : ''}`}
+                >
+                  <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500' : ''}`} />
+                </Button>
+              </div>
+
+              {/* Property Status Badge */}
+              <div className="absolute top-4 left-4">
+                <Badge className="bg-green-500 text-white border-0 px-3 py-1">
+                  For {property.propertyType === 'sell' ? 'Sale' : 'Rent'}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Property Header */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                  {property.title}
+                </h1>
+                <div className="flex items-center text-gray-600 mb-4">
+                  <MapPin className="w-5 h-5 mr-2" />
+                  <span className="text-lg">{property.address}, {property.city}, {property.state}</span>
+                </div>
+                <div className="text-3xl font-bold text-red-500 mb-6">
+                  {formatPrice(property.price)}
                 </div>
 
                 {/* Key Features */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <Bed className="w-6 h-6 mx-auto mb-2 text-gray-600" />
-                    <div className="font-semibold">{property.bedrooms}</div>
+                  <div className="text-center p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <Bed className="w-6 h-6 mx-auto mb-2 text-gray-700" />
+                    <div className="text-lg font-bold text-gray-900">{property.bedrooms}</div>
                     <div className="text-sm text-gray-600">Bedrooms</div>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <Bath className="w-6 h-6 mx-auto mb-2 text-gray-600" />
-                    <div className="font-semibold">{property.bathrooms}</div>
+                  <div className="text-center p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <Bath className="w-6 h-6 mx-auto mb-2 text-gray-700" />
+                    <div className="text-lg font-bold text-gray-900">{property.bathrooms}</div>
                     <div className="text-sm text-gray-600">Bathrooms</div>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <Square className="w-6 h-6 mx-auto mb-2 text-gray-600" />
-                    <div className="font-semibold">{property.area}</div>
-                    <div className="text-sm text-gray-600">{property.areaUnit}</div>
+                  <div className="text-center p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <Square className="w-6 h-6 mx-auto mb-2 text-gray-700" />
+                    <div className="text-lg font-bold text-gray-900">{property.area}</div>
+                    <div className="text-sm text-gray-600">Sq. Ft.</div>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <Building className="w-6 h-6 mx-auto mb-2 text-gray-600" />
-                    <div className="font-semibold">{property.category}</div>
-                    <div className="text-sm text-gray-600">Type</div>
+                  <div className="text-center p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <Car className="w-6 h-6 mx-auto mb-2 text-gray-700" />
+                    <div className="text-lg font-bold text-gray-900">{property.parking || 1}</div>
+                    <div className="text-sm text-gray-600">Parking</div>
                   </div>
                 </div>
+              </div>
 
-                <Separator />
-
-                {/* Description */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Description</h2>
-                  <p className="text-gray-600 leading-relaxed">
-                    {property.description || 'This beautiful property offers modern living with all the amenities you need. Located in a prime area with excellent connectivity and infrastructure.'}
-                  </p>
-                </div>
-
-                {/* Features & Amenities */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Features & Amenities</h2>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {(property.features || ['Parking', 'Security', 'Gym', 'Garden', 'Swimming Pool', 'Clubhouse']).map((feature:any, index:any) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-gray-700">{feature}</span>
+              {/* RERA Status */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Shield className="w-6 h-6 text-green-600 mr-3" />
+                    <div>
+                      <span className="font-semibold text-gray-900">RERA Registered</span>
+                      <p className="text-sm text-gray-600">Government approved project</p>
+                    </div>
+                  </div>
+                  <Dialog open={showReraDialog} onOpenChange={setShowReraDialog}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        View Details
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <div className="p-1">
+                        <h3 className="text-lg font-semibold mb-4">RERA Details</h3>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="text-sm text-gray-600">RERA Number:</div>
+                            <div className="text-sm font-medium">{property.reraNumber || 'PRM/KA/RERA/1251/446/2020'}</div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="text-sm text-gray-600">Status:</div>
+                            <div className="text-sm font-medium text-green-600">{property.reraStatus || 'Approved'}</div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="text-sm text-gray-600">Validity:</div>
+                            <div className="text-sm font-medium">31 Dec, 2025</div>
+                          </div>
+                          <div className="mt-4 text-xs text-gray-500">
+                            RERA registration ensures that this property complies with all regulatory requirements and provides buyer protection under the Real Estate (Regulation and Development) Act.
+                          </div>
+                        </div>
                       </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+
+              {/* Sticky Tabs Navigation */}
+              <div 
+                ref={tabsRef}
+                className="sticky top-20 z-40 bg-white rounded-2xl shadow-sm border border-gray-100 mb-6"
+              >
+                <div className="px-6 py-4">
+                  <div className="flex space-x-8">
+                    {[
+                      { id: 'overview', label: 'Overview' },
+                      { id: 'amenities', label: 'Amenities' },
+                      { id: 'details', label: 'Details' },
+                      { id: 'location', label: 'Location' },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => scrollToSection(tab.id)}
+                        className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+                          activeTab === tab.id
+                            ? 'border-red-500 text-red-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
                     ))}
                   </div>
                 </div>
+              </div>
 
-                {/* Property Details */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Property Details</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
+              {/* Content Sections */}
+              <div className="space-y-8">
+                {/* Overview Section */}
+                <section id="overview" className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-900">Overview</h2>
+                  <p className="text-gray-700 leading-relaxed">
+                    {property.description}
+                  </p>
+                </section>
+                
+                {/* Amenities Section */}
+                <section id="amenities" className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <h2 className="text-xl font-semibold mb-6 text-gray-900">Amenities & Features</h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {(property.features || ['Parking', 'Security', 'Gym', 'Garden', 'Swimming Pool', 'Clubhouse', 'Power Backup', 'Lift']).map((feature:any, index:any) => {
+                      const IconComponent = amenityIcons[feature] || Building;
+                      return (
+                        <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                          <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <IconComponent className="w-4 h-4 text-red-600" />
+                          </div>
+                          <span className="text-gray-800 font-medium text-sm">{feature}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+                
+                {/* Details Section */}
+                <section id="details" className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <h2 className="text-xl font-semibold mb-6 text-gray-900">Property Details</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="flex justify-between py-2 border-b border-gray-100">
                         <span className="text-gray-600">Property Type:</span>
-                        <span className="font-medium">{property.category}</span>
+                        <span className="font-medium text-gray-900">{property.category}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Construction Status:</span>
-                        <span className="font-medium">{property.constructionStatus || 'Ready to Move'}</span>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Year Built:</span>
+                        <span className="font-medium text-gray-900">{property.yearBuilt || '2022'}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">RERA Status:</span>
+                        <span className="font-medium text-green-600">{property.reraStatus || 'Approved'}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between py-2 border-b border-gray-100">
                         <span className="text-gray-600">Furnishing:</span>
-                        <span className="font-medium">{property.furnishingStatus || 'Semi Furnished'}</span>
+                        <span className="font-medium text-gray-900">{property.furnishingStatus || 'Semi-Furnished'}</span>
                       </div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Total Area:</span>
-                        <span className="font-medium">{property.area} {property.areaUnit}</span>
-                      </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between py-2 border-b border-gray-100">
                         <span className="text-gray-600">Possession:</span>
-                        <span className="font-medium">{property.possessionDate || 'Immediate'}</span>
+                        <span className="font-medium text-gray-900">{property.possessionDate || 'Ready to Move'}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Facing:</span>
-                        <span className="font-medium">East</span>
+                      <div className="flex justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Developer:</span>
+                        <span className="font-medium text-gray-900">{property.developer || 'Prestige Group'}</span>
                       </div>
                     </div>
+                  </div>
+                </section>
+                
+                {/* Location Section */}
+                <section id="location" className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <h2 className="text-xl font-semibold mb-6 text-gray-900">Location</h2>
+                  <div className="h-96 rounded-xl overflow-hidden bg-gray-200 mb-4 flex items-center justify-center">
+                    <div className="text-center">
+                      <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-500">Interactive Map</p>
+                      <p className="text-sm text-gray-400">Map will load here</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <MapPin className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-gray-900">{property.address}</p>
+                        <p className="text-sm text-gray-600">{property.city}, {property.state}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <Building className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-gray-900">Nearby</p>
+                        <p className="text-sm text-gray-600">Schools, Hospitals, Shopping Malls, Parks, Public Transport</p>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+                
+                {/* Time Travel Section */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+                  <div className="p-6">
+                    <TimeTravel />
                   </div>
                 </div>
               </div>
@@ -306,26 +569,26 @@ export default function PropertyDetailPage() {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Contact Card */}
-              <Card>
+              <Card className="border border-gray-200 shadow-sm">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Contact Agent</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                        <Home className="w-6 h-6 text-gray-600" />
+                  <h3 className="text-xl font-semibold mb-6 text-gray-900">Contact Agent</h3>
+                  <div className="space-y-6">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
+                        <Home className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <div className="font-medium">Property Agent</div>
+                        <div className="font-semibold text-gray-900">Property Agent</div>
                         <div className="text-sm text-gray-600">UrbanHouseIN</div>
                       </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Button className="w-full bg-red-500 hover:bg-red-600">
+                    <div className="space-y-3">
+                      <Button className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-medium">
                         <Phone className="w-4 h-4 mr-2" />
                         Call Now
                       </Button>
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full py-3 rounded-xl font-medium border-gray-300">
                         <Mail className="w-4 h-4 mr-2" />
                         Send Message
                       </Button>
@@ -335,35 +598,37 @@ export default function PropertyDetailPage() {
               </Card>
 
               {/* EMI Calculator */}
-              <Card>
+              <Card className="border border-gray-200 shadow-sm">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">EMI Calculator</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Loan Amount
-                      </label>
-                      <div className="text-lg font-semibold text-gray-900">
-                        {formatPrice(property.price * 0.8)}
+                  <h3 className="text-xl font-semibold mb-6 text-gray-900">EMI Calculator</h3>
+                  <div className="space-y-6">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-700">Loan Amount</span>
+                        <span className="text-lg font-bold text-gray-900">₹1,20,00,000</span>
                       </div>
-                      <div className="text-sm text-gray-600">
-                        (80% of property value)
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full w-3/4"></div>
                       </div>
                     </div>
                     
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Estimated EMI
-                      </label>
-                      <div className="text-xl font-bold text-red-500">
-                        ₹{Math.round((property.price * 0.8 * 0.009) / 1000)}K/month
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="text-sm text-gray-600 mb-1">Interest Rate</div>
+                        <div className="text-lg font-bold text-gray-900">8.5%</div>
                       </div>
-                      <div className="text-sm text-gray-600">
-                        @ 9% for 20 years
+                      <div className="text-center p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="text-sm text-gray-600 mb-1">Tenure</div>
+                        <div className="text-lg font-bold text-gray-900">20 Years</div>
                       </div>
                     </div>
                     
-                    <Button variant="outline" className="w-full">
+                    <div className="p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200">
+                      <div className="text-sm text-red-700 mb-1 font-medium">Monthly EMI</div>
+                      <div className="text-2xl font-bold text-red-600">₹1,04,296</div>
+                    </div>
+                    
+                    <Button variant="outline" className="w-full py-3 rounded-xl font-medium border-gray-300">
                       <Calendar className="w-4 h-4 mr-2" />
                       Calculate EMI
                     </Button>
@@ -372,20 +637,80 @@ export default function PropertyDetailPage() {
               </Card>
 
               {/* Similar Properties */}
-              <Card>
+              <Card className="border border-gray-200 shadow-sm">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Similar Properties</h3>
+                  <h3 className="text-xl font-semibold mb-6 text-gray-900">Similar Properties</h3>
                   <div className="space-y-4">
                     {[1, 2, 3].map((item) => (
-                      <div key={item} className="flex space-x-3">
-                        <div className="w-16 h-12 bg-gray-200 rounded-md flex-shrink-0"></div>
-                        <div className="flex-1">
-                          <div className="font-medium text-sm">Similar Property {item}</div>
-                          <div className="text-xs text-gray-600">2 BHK • 1200 sqft</div>
-                          <div className="text-sm font-semibold text-red-500">₹85L</div>
+                      <div key={item} className="flex space-x-4 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors cursor-pointer">
+                        <div className="w-20 h-16 bg-gray-200 rounded-lg flex-shrink-0 relative overflow-hidden flex items-center justify-center">
+                          <div className="text-center">
+                            <ImageIcon className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                            <p className="text-xs text-gray-500">Image</p>
+                          </div>
                         </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900 text-sm mb-1">Similar Property {item}</div>
+                          <div className="flex items-center space-x-2 text-xs text-gray-600 mb-2">
+                            <span className="flex items-center">
+                              <Bed className="w-3 h-3 mr-1" />
+                              2 BHK
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center">
+                              <Square className="w-3 h-3 mr-1" />
+                              1200 sqft
+                            </span>
+                          </div>
+                          <div className="text-sm font-bold text-red-500">₹85L</div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-400 self-center" />
                       </div>
                     ))}
+                    
+                    <Button variant="outline" className="w-full mt-4 py-2 rounded-xl font-medium border-gray-300">
+                      View More Properties
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Stats */}
+              <Card className="border border-gray-200 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold mb-6 text-gray-900">Property Insights</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-sm text-gray-600 flex items-center">
+                        <Clock className="w-4 h-4 mr-2" />
+                        Listed
+                      </span>
+                      <span className="text-sm font-medium text-gray-900">2 days ago</span>
+                    </div>
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-sm text-gray-600 flex items-center">
+                        <Users className="w-4 h-4 mr-2" />
+                        Views
+                      </span>
+                      <span className="text-sm font-medium text-gray-900">1,234</span>
+                    </div>
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-sm text-gray-600 flex items-center">
+                        <Heart className="w-4 h-4 mr-2" />
+                        Interested
+                      </span>
+                      <span className="text-sm font-medium text-gray-900">89 people</span>
+                    </div>
+                    
+                    <div className="mt-6 p-4 bg-green-50 rounded-xl border border-green-200">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Shield className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-800">Verified Property</span>
+                      </div>
+                      <p className="text-xs text-green-700">
+                        This property has been verified by our team and meets all quality standards.
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -403,7 +728,7 @@ export default function PropertyDetailPage() {
 const mockProperty = {
   id: '1',
   title: 'Luxury 3BHK Apartment in Whitefield',
-  description: 'This stunning 3BHK apartment in Whitefield offers modern living with premium amenities. Located in a prime area with excellent connectivity to IT hubs and shopping centers.',
+  description: 'This stunning 3BHK apartment in Whitefield offers modern living with premium amenities. Located in a prime area with excellent connectivity to IT hubs and shopping centers. The property features spacious rooms, modern fittings, and access to world-class amenities including swimming pool, gym, and landscaped gardens. Perfect for families looking for a comfortable and luxurious lifestyle in one of Bangalore\'s most sought-after locations.',
   price: 11600000,
   address: 'Electronic City Phase II',
   city: 'Bangalore',
@@ -417,10 +742,13 @@ const mockProperty = {
   constructionStatus: 'Ready to Move',
   furnishingStatus: 'Semi Furnished',
   possessionDate: 'Immediate',
-  features: ['Parking', 'Security', 'Gym', 'Garden', 'Swimming Pool', 'Clubhouse', 'Power Backup', 'Lift'],
+  features: ['Parking', 'Security', 'Gym', 'Garden', 'Swimming Pool', 'Clubhouse', 'Power Backup', 'Lift', 'WiFi', 'CCTV'],
+  location: [12.9716, 77.5946],
   images: [
-    'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop&crop=center',
-    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop&crop=center',
-    'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop&crop=center'
+    '/api/placeholder/800/600',
+    '/api/placeholder/800/600',
+    '/api/placeholder/800/600',
+    '/api/placeholder/800/600',
+    '/api/placeholder/800/600'
   ]
 };
