@@ -457,7 +457,7 @@ function PropertyCard({
       
       <CardContent className="p-4">
         <div className="mb-2">
-          <h3 className={`font-semibold text-gray-900 line-clamp-2 mb-1 ${compact ? 'text-base' : 'text-lg'}`}>
+          <h3 className={`font-semibold text-gray-900 line-clamp-2 mb-1 ${compact ? 'text-base' : 'text-xl'}`}>
             {property.title}
           </h3>
           <div className="flex items-center text-gray-500 text-sm">

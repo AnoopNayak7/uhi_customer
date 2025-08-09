@@ -9,15 +9,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { apiClient } from '@/lib/api';
 import { usePropertyStore } from '@/lib/store';
-import { 
-  Heart, 
-  Share2, 
-  MapPin, 
-  Bath, 
-  Bed, 
-  Square, 
-  Car, 
-  Shield, 
+import {
+  Heart,
+  Share2,
+  MapPin,
+  Bath,
+  Bed,
+  Square,
+  Car,
+  Shield,
   Dumbbell,
   ArrowLeft,
   Phone,
@@ -49,8 +49,9 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import TimeTravel from '@/components/TimeTravel';
 
-// Dynamically import the Map component to avoid SSR issues with Leaflet
+// Dynamically import the Map and NearbyPlaces components to avoid SSR issues with Leaflet
 const Map = dynamic(() => import('@/components/Map'), { ssr: false });
+const NearbyPlaces = dynamic(() => import('@/components/NearbyPlaces'), { ssr: false });
 
 // Amenity icons mapping
 const amenityIcons: { [key: string]: any } = {
@@ -86,7 +87,7 @@ export default function PropertyDetailPage() {
   const fetchProperty = async (id: string) => {
     setLoading(true);
     try {
-      const response:any = await apiClient.getProperty(id);
+      const response: any = await apiClient.getProperty(id);
       if (response.success && response.data) {
         setProperty(response.data);
         addToViewed(response.data);
@@ -107,7 +108,7 @@ export default function PropertyDetailPage() {
 
   const handleFavorite = () => {
     if (!property) return;
-    
+
     const isFavorite = favourites.some(p => p.id === property.id);
     if (isFavorite) {
       removeFromFavourites(property.id);
@@ -135,12 +136,12 @@ export default function PropertyDetailPage() {
     setActiveTab(sectionId);
     const element = document.getElementById(sectionId);
     const tabsElement = tabsRef.current;
-    
+
     if (element && tabsElement) {
       const tabsHeight = tabsElement.offsetHeight;
       const headerHeight = 80; // Approximate header height
       const offset = headerHeight + tabsHeight + 20; // Add some padding
-      
+
       const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
       const offsetPosition = elementPosition - offset;
 
@@ -212,18 +213,18 @@ export default function PropertyDetailPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
-      
+
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           {/* Back Button */}
-          <Button 
+          {/* <Button 
             variant="ghost" 
             onClick={() => router.back()}
             className="mb-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Properties
-          </Button>
+          </Button> */}
 
           {/* Image Gallery Section - New Layout */}
           <div className="mb-8 bg-white rounded-2xl overflow-hidden shadow-sm">
@@ -281,7 +282,7 @@ export default function PropertyDetailPage() {
                           <div className="text-sm text-gray-500">{images.length} photos</div>
                         </div>
                         <div className="grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
-                          {images.map((image:any, index:any) => (
+                          {images.map((image: any, index: any) => (
                             <div key={index} className="relative h-64 w-full rounded-lg overflow-hidden bg-gray-100">
                               <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                                 <div className="text-center">
@@ -311,7 +312,7 @@ export default function PropertyDetailPage() {
                     <div className="p-1">
                       <h2 className="text-xl font-semibold mb-4">{property.title}</h2>
                       <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
-                        {images.map((image:any, index:any) => (
+                        {images.map((image: any, index: any) => (
                           <div key={index} className="relative h-48 w-full rounded-md overflow-hidden bg-gray-200">
                             <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                               <div className="text-center">
@@ -325,7 +326,7 @@ export default function PropertyDetailPage() {
                     </div>
                   </DialogContent>
                 </Dialog>
-                
+
                 <Button
                   variant="secondary"
                   size="sm"
@@ -334,7 +335,7 @@ export default function PropertyDetailPage() {
                 >
                   <Share2 className="w-4 h-4" />
                 </Button>
-                
+
                 <Button
                   variant="secondary"
                   size="sm"
@@ -359,14 +360,14 @@ export default function PropertyDetailPage() {
             <div className="lg:col-span-2 space-y-6">
               {/* Property Header */}
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                <h1 className="text-xl font-bold text-gray-900 mb-3">
                   {property.title}
                 </h1>
                 <div className="flex items-center text-gray-600 mb-4">
                   <MapPin className="w-5 h-5 mr-2" />
-                  <span className="text-lg">{property.address}, {property.city}, {property.state}</span>
+                  <span className="text-sm">{property.address}, {property.city}, {property.state}</span>
                 </div>
-                <div className="text-3xl font-bold text-red-500 mb-6">
+                <div className="text-2xl font-bold text-red-500 mb-6">
                   {formatPrice(property.price)}
                 </div>
 
@@ -438,7 +439,7 @@ export default function PropertyDetailPage() {
               </div>
 
               {/* Sticky Tabs Navigation */}
-              <div 
+              <div
                 ref={tabsRef}
                 className="sticky top-20 z-40 bg-white rounded-2xl shadow-sm border border-gray-100 mb-6"
               >
@@ -453,11 +454,10 @@ export default function PropertyDetailPage() {
                       <button
                         key={tab.id}
                         onClick={() => scrollToSection(tab.id)}
-                        className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
-                          activeTab === tab.id
-                            ? 'border-red-500 text-red-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                        }`}
+                        className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
+                          ? 'border-red-500 text-red-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          }`}
                       >
                         {tab.label}
                       </button>
@@ -475,12 +475,12 @@ export default function PropertyDetailPage() {
                     {property.description}
                   </p>
                 </section>
-                
+
                 {/* Amenities Section */}
                 <section id="amenities" className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                   <h2 className="text-xl font-semibold mb-6 text-gray-900">Amenities & Features</h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {(property.features || ['Parking', 'Security', 'Gym', 'Garden', 'Swimming Pool', 'Clubhouse', 'Power Backup', 'Lift']).map((feature:any, index:any) => {
+                    {(property.features || ['Parking', 'Security', 'Gym', 'Garden', 'Swimming Pool', 'Clubhouse', 'Power Backup', 'Lift']).map((feature: any, index: any) => {
                       const IconComponent = amenityIcons[feature] || Building;
                       return (
                         <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
@@ -493,7 +493,7 @@ export default function PropertyDetailPage() {
                     })}
                   </div>
                 </section>
-                
+
                 {/* Details Section */}
                 <section id="details" className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                   <h2 className="text-xl font-semibold mb-6 text-gray-900">Property Details</h2>
@@ -528,18 +528,13 @@ export default function PropertyDetailPage() {
                     </div>
                   </div>
                 </section>
-                
-                {/* Location Section */}
+
+
                 <section id="location" className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                   <h2 className="text-xl font-semibold mb-6 text-gray-900">Location</h2>
-                  <div className="h-96 rounded-xl overflow-hidden bg-gray-200 mb-4 flex items-center justify-center">
-                    <div className="text-center">
-                      <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-500">Interactive Map</p>
-                      <p className="text-sm text-gray-400">Map will load here</p>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
+
+                  {/* Address Information */}
+                  <div className="space-y-3 mb-6">
                     <div className="flex items-start space-x-3">
                       <MapPin className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
                       <div>
@@ -555,8 +550,15 @@ export default function PropertyDetailPage() {
                       </div>
                     </div>
                   </div>
+
+                  <NearbyPlaces
+                  // @ts-ignore
+                    center={[12.9716, 77.6412]}
+                    locationName="Your Location Name"
+                    radius={2}
+                  />
                 </section>
-                
+
                 {/* Time Travel Section */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
                   <div className="p-6">
@@ -582,7 +584,7 @@ export default function PropertyDetailPage() {
                         <div className="text-sm text-gray-600">UrbanHouseIN</div>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-3">
                       <Button className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-medium">
                         <Phone className="w-4 h-4 mr-2" />
@@ -611,7 +613,7 @@ export default function PropertyDetailPage() {
                         <div className="h-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full w-3/4"></div>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center p-3 bg-gray-50 rounded-xl border border-gray-100">
                         <div className="text-sm text-gray-600 mb-1">Interest Rate</div>
@@ -622,12 +624,12 @@ export default function PropertyDetailPage() {
                         <div className="text-lg font-bold text-gray-900">20 Years</div>
                       </div>
                     </div>
-                    
+
                     <div className="p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200">
                       <div className="text-sm text-red-700 mb-1 font-medium">Monthly EMI</div>
                       <div className="text-2xl font-bold text-red-600">₹1,04,296</div>
                     </div>
-                    
+
                     <Button variant="outline" className="w-full py-3 rounded-xl font-medium border-gray-300">
                       <Calendar className="w-4 h-4 mr-2" />
                       Calculate EMI
@@ -667,7 +669,7 @@ export default function PropertyDetailPage() {
                         <ChevronRight className="w-4 h-4 text-gray-400 self-center" />
                       </div>
                     ))}
-                    
+
                     <Button variant="outline" className="w-full mt-4 py-2 rounded-xl font-medium border-gray-300">
                       View More Properties
                     </Button>
@@ -701,7 +703,7 @@ export default function PropertyDetailPage() {
                       </span>
                       <span className="text-sm font-medium text-gray-900">89 people</span>
                     </div>
-                    
+
                     <div className="mt-6 p-4 bg-green-50 rounded-xl border border-green-200">
                       <div className="flex items-center space-x-2 mb-2">
                         <Shield className="w-4 h-4 text-green-600" />
@@ -718,7 +720,7 @@ export default function PropertyDetailPage() {
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
