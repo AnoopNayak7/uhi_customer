@@ -1,47 +1,65 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Heart, MapPin, Bath, Bed, Square, TrendingUp } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { apiClient } from "@/lib/api";
-import { usePropertyStore } from "@/lib/store";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Heart, MapPin, Bath, Bed, Square, ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/api';
+import { usePropertyStore } from '@/lib/store';
+import { toast } from 'sonner';
+
+interface Property {
+  id: string;
+  title: string;
+  price: number;
+  address: string;
+  city: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  areaUnit: string;
+  images?: string[];
+  isFeatured?: boolean;
+  isHotSelling?: boolean;
+  isFastSelling?: boolean;
+  isNewlyAdded?: boolean;
+}
 
 export function TrendingProperties() {
-  const [properties, setProperties] = useState<any[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const { addToFavourites, favourites } = usePropertyStore();
 
   useEffect(() => {
-    fetchTrendingProperties();
+    fetchFeaturedProperties();
   }, []);
 
-  const fetchTrendingProperties = async () => {
+  const fetchFeaturedProperties = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response: any = await apiClient.getProperties({
-        limit: 4,
-        sortBy: "views",
-        order: "desc",
-        city: "Bangalore",
+      const response:any = await apiClient.getProperties({ 
+        isFeatured: true, 
+        limit: 8,
+        city: 'Bangalore'
       });
-
+      
       if (response.success && response.data) {
         setProperties(response.data);
       } else {
-        throw new Error("Failed to fetch trending properties");
+        throw new Error('Failed to fetch featured properties');
       }
     } catch (error) {
-      console.error("Error fetching trending properties:", error);
-      setError("Failed to load trending properties");
+      console.error('Error fetching featured properties:', error);
+      setError('Failed to load featured properties');
       setProperties([]);
-      toast.error("Failed to load trending properties");
+      toast.error('Failed to load featured properties');
     } finally {
       setLoading(false);
     }
@@ -49,24 +67,35 @@ export function TrendingProperties() {
 
   const formatPrice = (price: number) => {
     if (price >= 10000000) {
-      return `₹${(price / 10000000).toFixed(1)} Cr`;
+      return `INR ${(price / 10000000).toFixed(2)} Cr`;
     } else if (price >= 100000) {
-      return `₹${(price / 100000).toFixed(1)} L`;
+      return `INR ${(price / 100000).toFixed(1)} L`;
     }
-    return `₹${price.toLocaleString()}`;
+    return `INR ${price.toLocaleString()}`;
   };
 
-  if (loading) {
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % Math.ceil(properties.length / 4));
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + Math.ceil(properties.length / 4)) % Math.ceil(properties.length / 4));
+  };
+
+  const visibleProperties = properties.slice(currentSlide * 4, (currentSlide + 1) * 4);
+
+  if (error) {
+    if (loading) {
     return (
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-medium text-gray-900 mb-3">
               Trending Properties
             </h2>
-            <p className="text-gray-600">Loading trending properties...</p>
+            <p className="text-gray-500 text-sm">Loading featured properties...</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <div className="h-48 bg-gray-200 rounded-t-lg" />
@@ -83,16 +112,15 @@ export function TrendingProperties() {
     );
   }
 
-  if (error) {
-    return (
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  return (
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
           <div className="text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-medium text-gray-900 mb-3">
               Trending Properties
             </h2>
-            <p className="text-gray-600 mb-6">{error}</p>
-            <Button onClick={fetchTrendingProperties} variant="outline">
+            <p className="text-gray-500 text-sm mb-6">{error}</p>
+            <Button onClick={fetchFeaturedProperties} variant="outline">
               Try Again
             </Button>
           </div>
@@ -103,15 +131,13 @@ export function TrendingProperties() {
 
   if (properties.length === 0) {
     return (
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
           <div className="text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-medium text-gray-900 mb-3">
               Trending Properties
             </h2>
-            <p className="text-gray-600 mb-6">
-              No trending properties available at the moment.
-            </p>
+            <p className="text-gray-500 text-sm mb-6">No featured properties available at the moment.</p>
             <Button asChild>
               <Link href="/properties">Browse All Properties</Link>
             </Button>
@@ -120,122 +146,204 @@ export function TrendingProperties() {
       </section>
     );
   }
-  return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-4">
-            <Badge
-              variant="outline"
-              className="text-green-600 border-green-200 bg-green-50"
-            >
-              <TrendingUp className="w-3 h-3 mr-1" />
-              Hot Properties
-            </Badge>
+
+  if (error) {
+    return (
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-medium text-gray-900 mb-3">
+              Trending Properties
+            </h2>
+            <p className="text-gray-500 text-sm mb-6">{error}</p>
+            <Button onClick={fetchFeaturedProperties} variant="outline">
+              Try Again
+            </Button>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Trending Properties
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Most viewed and enquired properties this week
-          </p>
+        </div>
+      </section>
+    );
+  }
+
+  if (properties.length === 0) {
+    return (
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-medium text-gray-900 mb-3">
+              Trending Properties
+            </h2>
+            <p className="text-gray-500 text-sm mb-6">No featured properties available at the moment.</p>
+            <Button asChild>
+              <Link href="/properties">Browse All Properties</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="py-12 px-[8%] bg-gray-50">
+      <div className=" mx-auto px-4">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              Trending Properties
+            </h2>
+            <p className="text-gray-500 text-sm">
+              Most viewed and enquired properties this week
+            </p>
+          </div>
+          
+          <div className="hidden md:flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={prevSlide}
+              disabled={properties.length <= 4}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={nextSlide}
+              disabled={properties.length <= 4}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {properties.map((property, index) => (
-            <Link
-              key={property.id}
-              href={`/properties/${property.id}`}
-              className="block"
-            >
-              <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer h-full flex flex-col">
-                <div className="relative">
-                  <div className="relative h-48 overflow-hidden">
-                    <Image
-                      src={
-                        property.images?.[0] ||
-                        `https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop&crop=center`
-                      }
-                      alt={property.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                  </div>
+        {visibleProperties.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {visibleProperties.map((property) => (
+              <PropertyCard
+                key={property.id}
+                property={property}
+                onFavourite={() => addToFavourites(property)}
+                isFavourite={favourites.some(p => p.id === property.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500 text-sm">No properties to display</p>
+          </div>
+        )}
 
-                  <div className="absolute top-3 left-3">
-                    <Badge className="bg-orange-500 text-white border-0">
-                      Trending #{index + 1}
-                    </Badge>
-                  </div>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`absolute top-3 right-3 h-8 w-8 p-0 ${
-                      favourites.some((p) => p.id === property.id)
-                        ? "text-red-500"
-                        : "text-white hover:text-red-500"
-                    }`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      addToFavourites(property);
-                    }}
-                  >
-                    <Heart
-                      className={`w-4 h-4 ${
-                        favourites.some((p) => p.id === property.id)
-                          ? "fill-current"
-                          : ""
-                      }`}
-                    />
-                  </Button>
-                </div>
-
-                <CardContent className="p-4 flex flex-col justify-between h-full flex flex-col">
-                  <div className="space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">
-                        {property.title.slice(0, 20)}...
-                      </h3>
-                      <div className="flex items-start text-gray-500 text-sm">
-                        <MapPin className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
-                        <span className="line-clamp-2">
-                          {property.address}, {property.city}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-center sm:justify-start">
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <div className="flex items-center">
-                          <Bed className="w-4 h-4 mr-1" />
-                          <span>{property.bedrooms}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Bath className="w-4 h-4 mr-1" />
-                          <span>{property.bathrooms}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Square className="w-4 h-4 mr-1" />
-                          <span>{property.area} {property.areaUnit}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-1 pt-3 border-t border-gray-100">
-                    <div className="text-2xl font-bold text-gray-900 text-center sm:text-left">
-                      {formatPrice(property.price)}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+        <div className="text-center mt-8">
+          <Button variant="outline" size="lg" asChild>
+            <Link href="/properties">View All Properties</Link>
+          </Button>
         </div>
       </div>
     </section>
+  );
+}
+
+function PropertyCard({ 
+  property, 
+  onFavourite, 
+  isFavourite 
+}: { 
+  property: Property;
+  onFavourite: () => void;
+  isFavourite: boolean;
+}) {
+  const router = useRouter();
+  const defaultImage = `https://www.jllhomes.co.in/_next/image?url=https%3A%2F%2Fjll-global-gdim-res.cloudinary.com%2Fimage%2Fupload%2Fv1706009716%2FIN%2FHorizon%2FResi%2FPROD%2FJLL_Bengaluru_Concorde%2520Antares_9706_EXT_1.jpg&w=3840&q=75`;
+  
+  const formatPrice = (price: number) => {
+    if (price >= 10000000) {
+      return `INR ${(price / 10000000).toFixed(2)} Cr`;
+    } else if (price >= 100000) {
+      return `INR ${(price / 100000).toFixed(1)} L`;
+    }
+    return `INR ${price.toLocaleString()}`;
+  };
+
+  const handleCardClick = () => {
+    router.push(`/properties/${property.id}`);
+  };
+
+  const handleFavouriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onFavourite();
+  };
+
+  return (
+    <Card 
+      className="cursor-pointer bg-white border border-gray-200 hover:shadow-md transition-shadow duration-200 overflow-hidden rounded-lg"
+      onClick={handleCardClick}
+    >
+      <div className="relative">
+        <div className="relative h-[160px] overflow-hidden m-[4px] rounded-t-md">
+          <Image
+            src={property.images?.[0] || defaultImage}
+            alt={property.title}
+            fill
+            className="object-cover"
+          />
+        </div>
+        
+        <div className="absolute top-3 left-3">
+          <Badge className="bg-white/90 text-gray-700 border-0 text-[10px] font-normal px-2 py-1 rounded shadow-sm">
+            APARTMENTS
+          </Badge>
+        </div>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`absolute top-3 right-3 h-8 w-8 p-0 rounded-full bg-white/90 hover:bg-white transition-colors ${
+            isFavourite ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
+          }`}
+          onClick={handleFavouriteClick}
+        >
+          <Heart className={`w-4 h-4 ${isFavourite ? 'fill-current' : ''}`} />
+        </Button>
+      </div>
+      
+      <CardContent className="p-4">
+        <div className="mb-3">
+          <h3 className="text-base font-semibold text-gray-900 mb-2 truncate">
+            {property.title}
+          </h3>
+          
+          <div className="flex items-center text-gray-500 text-xs mb-4"><MapPin className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" /><span className="truncate">{property.address}, {property.city}</span></div>
+        </div>
+        
+        <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+          <div className="flex items-center">
+            <Bed className="w-4 h-4 mr-1" />
+            <span>{property.bedrooms},{property.bathrooms}</span>
+          </div>
+          <div className="flex items-center">
+            <Square className="w-3 h-3 mr-1" />
+            <span className='text-[13px]'>{property.area} {property.areaUnit} - 1037 {property.areaUnit}</span>
+          </div>
+        </div>
+        
+        <hr />
+        <div className="flex items-end justify-between pt-2">
+          <div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">STARTING PRICE</div>
+            <div className="text-lg font-medium text-gray-900">
+              {formatPrice(property.price)}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">POSSESSION</div>
+            <div className="text-sm font-normal text-gray-900">
+              Feb 2021
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

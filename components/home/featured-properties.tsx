@@ -65,15 +65,13 @@ export function FeaturedProperties() {
     }
   };
 
-
-
   const formatPrice = (price: number) => {
     if (price >= 10000000) {
-      return `₹${(price / 10000000).toFixed(1)} Cr`;
+      return `INR ${(price / 10000000).toFixed(2)} Cr`;
     } else if (price >= 100000) {
-      return `₹${(price / 100000).toFixed(1)} L`;
+      return `INR ${(price / 100000).toFixed(1)} L`;
     }
-    return `₹${price.toLocaleString()}`;
+    return `INR ${price.toLocaleString()}`;
   };
 
   const nextSlide = () => {
@@ -86,42 +84,42 @@ export function FeaturedProperties() {
 
   const visibleProperties = properties.slice(currentSlide * 4, (currentSlide + 1) * 4);
 
-  if (loading) {
+  if (error) {
+    if (loading) {
     return (
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-medium text-gray-900 mb-3">
               Featured Properties in Bangalore
             </h2>
-            <p className="text-gray-600">Loading featured properties...</p>
+            <p className="text-gray-500 text-sm">Loading featured properties...</p>
           </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <div className="h-48 bg-gray-200 rounded-t-lg" />
-                  <CardContent className="p-4">
-                    <div className="h-4 bg-gray-200 rounded mb-2" />
-                    <div className="h-3 bg-gray-200 rounded mb-4" />
-                    <div className="h-6 bg-gray-200 rounded" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <div className="h-48 bg-gray-200 rounded-t-lg" />
+                <CardContent className="p-4">
+                  <div className="h-4 bg-gray-200 rounded mb-2" />
+                  <div className="h-3 bg-gray-200 rounded mb-4" />
+                  <div className="h-6 bg-gray-200 rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
     );
   }
 
-  if (error) {
-    return (
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  return (
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
           <div className="text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-medium text-gray-900 mb-3">
               Featured Properties in Bangalore
             </h2>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <p className="text-gray-500 text-sm mb-6">{error}</p>
             <Button onClick={fetchFeaturedProperties} variant="outline">
               Try Again
             </Button>
@@ -133,13 +131,49 @@ export function FeaturedProperties() {
 
   if (properties.length === 0) {
     return (
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
           <div className="text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-medium text-gray-900 mb-3">
               Featured Properties in Bangalore
             </h2>
-            <p className="text-gray-600 mb-6">No featured properties available at the moment.</p>
+            <p className="text-gray-500 text-sm mb-6">No featured properties available at the moment.</p>
+            <Button asChild>
+              <Link href="/properties">Browse All Properties</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-medium text-gray-900 mb-3">
+              Featured Properties in Bangalore
+            </h2>
+            <p className="text-gray-500 text-sm mb-6">{error}</p>
+            <Button onClick={fetchFeaturedProperties} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (properties.length === 0) {
+    return (
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-medium text-gray-900 mb-3">
+              Featured Properties in Bangalore
+            </h2>
+            <p className="text-gray-500 text-sm mb-6">No featured properties available at the moment.</p>
             <Button asChild>
               <Link href="/properties">Browse All Properties</Link>
             </Button>
@@ -150,14 +184,14 @@ export function FeaturedProperties() {
   }
 
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-12">
+    <section className="py-12 px-[8%] bg-gray-50">
+      <div className=" mx-auto px-4">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
               Featured Properties in Bangalore
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-500 text-sm">
               Handpicked premium properties for discerning buyers
             </p>
           </div>
@@ -168,6 +202,7 @@ export function FeaturedProperties() {
               size="sm"
               onClick={prevSlide}
               disabled={properties.length <= 4}
+              className="h-8 w-8 p-0"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -176,6 +211,7 @@ export function FeaturedProperties() {
               size="sm"
               onClick={nextSlide}
               disabled={properties.length <= 4}
+              className="h-8 w-8 p-0"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -183,7 +219,7 @@ export function FeaturedProperties() {
         </div>
 
         {visibleProperties.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {visibleProperties.map((property) => (
               <PropertyCard
                 key={property.id}
@@ -195,11 +231,11 @@ export function FeaturedProperties() {
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-gray-600">No properties to display</p>
+            <p className="text-gray-500 text-sm">No properties to display</p>
           </div>
         )}
 
-        <div className="text-center mt-12">
+        <div className="text-center mt-8">
           <Button variant="outline" size="lg" asChild>
             <Link href="/properties">View All Properties</Link>
           </Button>
@@ -219,15 +255,15 @@ function PropertyCard({
   isFavourite: boolean;
 }) {
   const router = useRouter();
-  const defaultImage = `https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop&crop=center`;
+  const defaultImage = `https://www.jllhomes.co.in/_next/image?url=https%3A%2F%2Fjll-global-gdim-res.cloudinary.com%2Fimage%2Fupload%2Fv1706009716%2FIN%2FHorizon%2FResi%2FPROD%2FJLL_Bengaluru_Concorde%2520Antares_9706_EXT_1.jpg&w=3840&q=75`;
   
   const formatPrice = (price: number) => {
     if (price >= 10000000) {
-      return `₹${(price / 10000000).toFixed(1)} Cr`;
+      return `INR ${(price / 10000000).toFixed(2)} Cr`;
     } else if (price >= 100000) {
-      return `₹${(price / 100000).toFixed(1)} L`;
+      return `INR ${(price / 100000).toFixed(1)} L`;
     }
-    return `₹${price.toLocaleString()}`;
+    return `INR ${price.toLocaleString()}`;
   };
 
   const handleCardClick = () => {
@@ -241,87 +277,70 @@ function PropertyCard({
 
   return (
     <Card 
-      className="group cursor-pointer bg-white border-0 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden rounded-xl"
+      className="cursor-pointer bg-white border border-gray-200 hover:shadow-md transition-shadow duration-200 overflow-hidden rounded-lg"
       onClick={handleCardClick}
     >
       <div className="relative">
-        {/* Image Container with perfect aspect ratio */}
-        <div className="relative h-44 overflow-hidden rounded-t-xl">
+        <div className="relative h-[160px] overflow-hidden m-[4px] rounded-t-md">
           <Image
             src={property.images?.[0] || defaultImage}
             alt={property.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
         </div>
         
-        {/* Badges - Modern pill design */}
-        <div className="absolute top-3 left-3 flex flex-wrap gap-1">
-          {property.isFeatured && (
-            <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 text-xs font-medium px-2 py-0.5 rounded-full shadow-sm">
-              Featured
-            </Badge>
-          )}
-          {property.isHotSelling && (
-            <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 text-xs font-medium px-2 py-0.5 rounded-full shadow-sm">
-              Hot
-            </Badge>
-          )}
-          {property.isNewlyAdded && (
-            <Badge className="bg-gradient-to-r from-emerald-400 to-teal-500 text-white border-0 text-xs font-medium px-2 py-0.5 rounded-full shadow-sm">
-              New
-            </Badge>
-          )}
+        <div className="absolute top-3 left-3">
+          <Badge className="bg-white/90 text-gray-700 border-0 text-[10px] font-normal px-2 py-1 rounded shadow-sm">
+            APARTMENTS
+          </Badge>
         </div>
         
-        {/* Heart Button - Improved positioning */}
         <Button
           variant="ghost"
           size="sm"
-          className={`absolute top-3 right-3 h-8 w-8 p-0 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-all ${
+          className={`absolute top-3 right-3 h-8 w-8 p-0 rounded-full bg-white/90 hover:bg-white transition-colors ${
             isFavourite ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
           }`}
           onClick={handleFavouriteClick}
         >
-          <Heart className={`w-3.5 h-3.5 ${isFavourite ? 'fill-current' : ''}`} />
+          <Heart className={`w-4 h-4 ${isFavourite ? 'fill-current' : ''}`} />
         </Button>
       </div>
       
       <CardContent className="p-4">
-        {/* Title & Location */}
         <div className="mb-3">
-          <h3 className="font-semibold text-base text-gray-900 line-clamp-1 mb-1.5 leading-tight">
+          <h3 className="text-base font-semibold text-gray-900 mb-2 truncate">
             {property.title}
           </h3>
-          <div className="flex items-start text-gray-500 text-xs">
-            <MapPin className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
-            <span className="line-clamp-1 leading-relaxed">{property.address}, {property.city}</span>
+          
+          <div className="flex items-center text-gray-500 text-xs mb-4"><MapPin className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" /><span className="truncate">{property.address}, {property.city}</span></div>
+        </div>
+        
+        <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+          <div className="flex items-center">
+            <Bed className="w-4 h-4 mr-1" />
+            <span>{property.bedrooms},{property.bathrooms}</span>
+          </div>
+          <div className="flex items-center">
+            <Square className="w-3 h-3 mr-1" />
+            <span className='text-[13px]'>{property.area} {property.areaUnit} - 1037 {property.areaUnit}</span>
           </div>
         </div>
         
-        {/* Property Features - Compact grid */}
-        <div className="flex items-center justify-between text-xs text-gray-600 mb-4">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <Bed className="w-3 h-3 mr-1 text-gray-400" />
-              <span className="font-medium">{property.bedrooms}</span>
-            </div>
-            <div className="flex items-center">
-              <Bath className="w-3 h-3 mr-1 text-gray-400" />
-              <span className="font-medium">{property.bathrooms}</span>
-            </div>
-            <div className="flex items-center">
-              <Square className="w-3 h-3 mr-1 text-gray-400" />
-              <span className="font-medium">{property.area} {property.areaUnit}</span>
+        <hr />
+        <div className="flex items-end justify-between pt-2">
+          <div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">STARTING PRICE</div>
+            <div className="text-lg font-medium text-gray-900">
+              {formatPrice(property.price)}
             </div>
           </div>
-        </div>
-        
-        {/* Price */}
-        <div className="pt-2 border-t border-gray-100">
-          <div className="text-lg font-bold text-gray-900">
-            {formatPrice(property.price)}
+          <div className="text-right">
+            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">POSSESSION</div>
+            <div className="text-sm font-normal text-gray-900">
+              Feb 2021
+            </div>
           </div>
         </div>
       </CardContent>

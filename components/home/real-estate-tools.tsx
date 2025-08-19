@@ -259,10 +259,9 @@ export function RealEstateTools() {
                         Become Partner
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="sm:max-w-xl overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle className="flex items-center space-x-2">
-                          <Building className="w-5 h-5 text-blue-500" />
                           <span>Partnership Application</span>
                         </DialogTitle>
                       </DialogHeader>
@@ -392,7 +391,7 @@ export function RealEstateTools() {
                           >
                             Cancel
                           </Button>
-                          <Button type="submit" className="flex-1 bg-blue-500 hover:bg-blue-600">
+                          <Button type="submit" className="flex-1 bg-red-500">
                             Submit Application
                           </Button>
                         </div>
