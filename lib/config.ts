@@ -45,5 +45,23 @@ export const BHK_OPTIONS = [
   { value: '2', label: '2 BHK' },
   { value: '3', label: '3 BHK' },
   { value: '4', label: '4 BHK' },
-  { value: '5+', label: '5+ BHK' }
+  { value: '5', label: '5 BHK' },
+  { value: '6', label: '6 BHK' },
+  { value: '7', label: '7 BHK' },
+  { value: '8', label: '8 BHK' },
+  { value: '9', label: '9 BHK' },
+  { value: '10+', label: '10+ BHK' }
+];
+
+export const FURNISHING_STATUS = [
+  { value: 'furnished', label: 'Furnished' },
+  { value: 'semi_furnished', label: 'Semi-Furnished' },
+  { value: 'unfurnished', label: 'Unfurnished' },
+  { value: 'gated_communities', label: 'Gated Communities' }
+];
+
+export const POSSESSION_STATUS = [
+  { value: 'ready_to_move', label: 'Ready To Move' },
+  { value: 'under_construction', label: 'Under Construction' },
+  { value: 'new_launch', label: 'New Launch' }
 ];
