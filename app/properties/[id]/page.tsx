@@ -1,33 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
 import { apiClient } from "@/lib/api";
 import { usePropertyStore } from "@/lib/store";
 import {
   Heart,
   Share2,
-  MapPin,
-  Bath,
-  Bed,
-  Square,
   Car,
   Shield,
   Dumbbell,
-  ArrowLeft,
-  Phone,
-  Mail,
-  Calendar,
-  Home,
   Building,
-  Info,
-  Clock,
   ChevronRight,
   ImageIcon,
   Wifi,
@@ -36,34 +24,24 @@ import {
   Users,
   Zap,
   ShieldCheck,
-  Camera,
-  PlayCircle,
   Maximize2,
-  TrendingUp,
-  Award,
-  Building2,
-  Star,
+  CalendarDays,
+  User,
+  CheckCircle,
+  X,
+  Calendar,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from "recharts";
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
 import "leaflet/dist/leaflet.css";
 import dynamic from "next/dynamic";
 import { Header } from "@/components/layout/header";
@@ -76,7 +54,6 @@ import { PriceTrends } from "@/components/property/PriceTrends";
 import { FloorPlans } from "@/components/property/FloorPlans";
 import { BuilderInfo } from "@/components/property/BuilderInfo";
 import { ContactAgent } from "@/components/property/ContactAgent";
-import { SimilarProperties } from "@/components/property/SimilarProperties";
 import { PropertyInsights } from "@/components/property/PropertyInsights";
 
 // Dynamically import the Map and NearbyPlaces components to avoid SSR issues with Leaflet
@@ -93,6 +70,7 @@ const ImageGallery = ({
 }: any) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState<any>({});
+  const [showMobileGallery, setShowMobileGallery] = useState(false);
 
   // Use actual property images or fallback to placeholders
   const propertyImages =
@@ -145,75 +123,54 @@ const ImageGallery = ({
   };
 
   return (
-    <div className="mb-6 bg-white rounded-xl overflow-hidden shadow-sm">
-      <div className="relative">
-        {/* Main Image Grid */}
-        <div className="grid grid-cols-3 gap-2 h-[350px]">
-          {/* Large Main Image */}
-          <div
-            className="col-span-2 relative group cursor-pointer overflow-hidden rounded-l-lg"
-            onClick={() => setCurrentImageIndex(0)}
-          >
-            <ImageWithFallback
-              src={propertyImages[0]}
-              alt={`${property.title} - Main Image`}
-              index={0}
-              fill={true}
-              className="transition-transform duration-300 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
+    <div className="mb-4 sm:mb-6">
+      {/* Mobile Image Gallery */}
+      <div className="block md:hidden">
+        <div className="relative h-[280px] sm:h-[320px] bg-white rounded-xl overflow-hidden shadow-sm">
+          <ImageWithFallback
+            src={propertyImages[currentImageIndex]}
+            alt={`${property.title} - Image ${currentImageIndex + 1}`}
+            index={currentImageIndex}
+            fill={true}
+            className="transition-transform duration-300"
+          />
+
+          {/* Mobile Navigation Dots */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            {propertyImages.slice(0, 5).map((_: any, index: number) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-200 active:scale-125 ${
+                  currentImageIndex === index
+                    ? "bg-white scale-110"
+                    : "bg-white/50 hover:bg-white/75"
+                }`}
+              />
+            ))}
           </div>
 
-          {/* Right Side Images */}
-          <div className="flex flex-col gap-2">
-            <div
-              className="relative group cursor-pointer flex-1 overflow-hidden rounded-tr-lg"
-              onClick={() => setCurrentImageIndex(1)}
-            >
-              <ImageWithFallback
-                src={propertyImages[1] || propertyImages[0]}
-                alt={`${property.title} - Image 2`}
-                index={1}
-                fill={true}
-                className="transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
-            </div>
-
+          {/* Mobile Action Buttons */}
+          <div className="absolute top-4 right-4 flex space-x-2">
             <Dialog>
               <DialogTrigger asChild>
-                <div className="relative group cursor-pointer flex-1 overflow-hidden rounded-br-lg">
-                  <ImageWithFallback
-                    src={propertyImages[2] || propertyImages[0]}
-                    alt={`${property.title} - Image 3`}
-                    index={2}
-                    fill={true}
-                    className="transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <div className="text-white text-center">
-                      <ImageIcon className="w-6 h-6 mx-auto mb-1" />
-                      <div className="text-xs font-medium">Show all photos</div>
-                      <div className="text-xs opacity-90">
-                        {propertyImages.length} images
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="bg-white/90 backdrop-blur-sm text-xs h-8 px-3"
+                >
+                  <ImageIcon className="w-3 h-3 mr-1" />
+                  {propertyImages.length}
+                </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-6xl max-h-[90vh]">
-                <div className="p-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold">{property.title}</h2>
-                    <div className="text-sm text-gray-500">
-                      {propertyImages.length} photos
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
+              <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
+                <div className="space-y-3">
+                  <h2 className="text-lg font-semibold">{property.title}</h2>
+                  <div className="grid grid-cols-1 gap-3 max-h-[80vh] overflow-y-auto">
                     {propertyImages.map((image: any, index: any) => (
                       <div
                         key={index}
-                        className="relative h-48 w-full rounded-lg overflow-hidden"
+                        className="relative h-64 w-full rounded-lg overflow-hidden"
                       >
                         <ImageWithFallback
                           src={image}
@@ -228,71 +185,257 @@ const ImageGallery = ({
                 </div>
               </DialogContent>
             </Dialog>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleShare}
+              className="bg-white/90 backdrop-blur-sm h-8 w-8 p-0"
+            >
+              <Share2 className="w-3 h-3" />
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleFavorite}
+              className={`bg-white/90 backdrop-blur-sm h-8 w-8 p-0 ${
+                isFavorite ? "text-red-500" : ""
+              }`}
+            >
+              <Heart
+                className={`w-3 h-3 ${isFavorite ? "fill-red-500" : ""}`}
+              />
+            </Button>
           </div>
-        </div>
 
-        {/* Floating Action Buttons */}
-        <div className="absolute top-3 right-3 flex space-x-2">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-white/90 backdrop-blur-sm text-xs h-8"
+          {/* Property Status Badge */}
+          <div className="absolute top-4 left-4">
+            <Badge className="bg-green-500 text-white border-0 px-2 py-1 text-xs">
+              For {property.propertyType === "sell" ? "Sale" : "Rent"}
+            </Badge>
+          </div>
+
+          {/* Mobile Swipe Navigation */}
+          {propertyImages.length > 1 && (
+            <>
+              <button
+                onClick={() =>
+                  setCurrentImageIndex(Math.max(0, currentImageIndex - 1))
+                }
+                className={`absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 active:scale-95 ${
+                  currentImageIndex === 0 ? "opacity-50" : "hover:bg-white/90"
+                }`}
+                disabled={currentImageIndex === 0}
               >
-                <Maximize2 className="w-3 h-3 mr-1" />
-                Show all
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl">
-              <div className="p-1">
-                <h2 className="text-lg font-semibold mb-4">{property.title}</h2>
-                <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
-                  {propertyImages.map((image: any, index: any) => (
-                    <div
-                      key={index}
-                      className="relative h-40 w-full rounded-md overflow-hidden"
-                    >
-                      <ImageWithFallback
-                        src={image}
-                        alt={`${property.title} - Image ${index + 1}`}
-                        index={index}
-                        fill={true}
-                        className="hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleShare}
-            className="bg-white/90 backdrop-blur-sm h-8 w-8 p-0"
-          >
-            <Share2 className="w-3 h-3" />
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleFavorite}
-            className={`bg-white/90 backdrop-blur-sm h-8 w-8 p-0 ${
-              isFavorite ? "text-red-500" : ""
-            }`}
-          >
-            <Heart className={`w-3 h-3 ${isFavorite ? "fill-red-500" : ""}`} />
-          </Button>
+                <ChevronRight className="w-4 h-4 rotate-180" />
+              </button>
+              <button
+                onClick={() =>
+                  setCurrentImageIndex(
+                    Math.min(propertyImages.length - 1, currentImageIndex + 1)
+                  )
+                }
+                className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 active:scale-95 ${
+                  currentImageIndex === propertyImages.length - 1
+                    ? "opacity-50"
+                    : "hover:bg-white/90"
+                }`}
+                disabled={currentImageIndex === propertyImages.length - 1}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </>
+          )}
         </div>
+      </div>
 
-        {/* Property Status Badge */}
-        <div className="absolute top-3 left-3">
-          <Badge className="bg-green-500 text-white border-0 px-2 py-1 text-xs">
-            For {property.propertyType === "sell" ? "Sale" : "Rent"}
-          </Badge>
+      {/* Desktop Image Gallery */}
+      <div className="hidden md:block bg-white rounded-xl overflow-hidden shadow-sm">
+        <div className="relative">
+          {/* Main Image Grid */}
+          <div className="grid grid-cols-4 gap-2 h-[350px] lg:h-[400px]">
+            {/* Large Main Image */}
+            <div
+              className="col-span-2 relative group cursor-pointer overflow-hidden rounded-l-lg"
+              onClick={() => setCurrentImageIndex(0)}
+            >
+              <ImageWithFallback
+                src={propertyImages[0]}
+                alt={`${property.title} - Main Image`}
+                index={0}
+                fill={true}
+                className="transition-transform duration-300 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
+            </div>
+
+            {/* Right Side Images */}
+            <div className="col-span-2 grid grid-cols-2 gap-2">
+              <div
+                className="relative group cursor-pointer overflow-hidden"
+                onClick={() => setCurrentImageIndex(1)}
+              >
+                <ImageWithFallback
+                  src={propertyImages[1] || propertyImages[0]}
+                  alt={`${property.title} - Image 2`}
+                  index={1}
+                  fill={true}
+                  className="transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
+              </div>
+
+              <div
+                className="relative group cursor-pointer overflow-hidden rounded-tr-lg"
+                onClick={() => setCurrentImageIndex(2)}
+              >
+                <ImageWithFallback
+                  src={propertyImages[2] || propertyImages[0]}
+                  alt={`${property.title} - Image 3`}
+                  index={2}
+                  fill={true}
+                  className="transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
+              </div>
+
+              <div
+                className="relative group cursor-pointer overflow-hidden"
+                onClick={() => setCurrentImageIndex(3)}
+              >
+                <ImageWithFallback
+                  src={propertyImages[3] || propertyImages[0]}
+                  alt={`${property.title} - Image 4`}
+                  index={3}
+                  fill={true}
+                  className="transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
+              </div>
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <div className="relative group cursor-pointer overflow-hidden rounded-br-lg">
+                    <ImageWithFallback
+                      src={propertyImages[4] || propertyImages[0]}
+                      alt={`${property.title} - Image 5`}
+                      index={4}
+                      fill={true}
+                      className="transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <div className="text-white text-center">
+                        <ImageIcon className="w-6 h-6 mx-auto mb-1" />
+                        <div className="text-xs font-medium">
+                          Show all photos
+                        </div>
+                        <div className="text-xs opacity-90">
+                          {propertyImages.length} images
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="max-w-6xl max-h-[90vh]">
+                  <div className="p-2">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-lg font-semibold">
+                        {property.title}
+                      </h2>
+                      <div className="text-sm text-gray-500">
+                        {propertyImages.length} photos
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
+                      {propertyImages.map((image: any, index: any) => (
+                        <div
+                          key={index}
+                          className="relative h-48 w-full rounded-lg overflow-hidden"
+                        >
+                          <ImageWithFallback
+                            src={image}
+                            alt={`${property.title} - Image ${index + 1}`}
+                            index={index}
+                            fill={true}
+                            className="hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+
+          {/* Desktop Floating Action Buttons */}
+          <div className="absolute top-4 right-4 flex space-x-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="bg-white/90 backdrop-blur-sm text-xs h-8 px-3"
+                >
+                  <Maximize2 className="w-3 h-3 mr-1" />
+                  Show all
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-5xl max-h-[90vh]">
+                <div className="p-2">
+                  <h2 className="text-lg font-semibold mb-4">
+                    {property.title}
+                  </h2>
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 max-h-[75vh] overflow-y-auto">
+                    {propertyImages.map((image: any, index: any) => (
+                      <div
+                        key={index}
+                        className="relative h-48 lg:h-56 w-full rounded-lg overflow-hidden"
+                      >
+                        <ImageWithFallback
+                          src={image}
+                          alt={`${property.title} - Image ${index + 1}`}
+                          index={index}
+                          fill={true}
+                          className="hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleShare}
+              className="bg-white/90 backdrop-blur-sm h-8 w-8 p-0"
+            >
+              <Share2 className="w-3 h-3" />
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleFavorite}
+              className={`bg-white/90 backdrop-blur-sm h-8 w-8 p-0 ${
+                isFavorite ? "text-red-500" : ""
+              }`}
+            >
+              <Heart
+                className={`w-3 h-3 ${isFavorite ? "fill-red-500" : ""}`}
+              />
+            </Button>
+          </div>
+
+          {/* Property Status Badge */}
+          <div className="absolute top-4 left-4">
+            <Badge className="bg-green-500 text-white border-0 px-2 py-1 text-xs">
+              For {property.propertyType === "sell" ? "Sale" : "Rent"}
+            </Badge>
+          </div>
         </div>
       </div>
     </div>
@@ -367,26 +510,26 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
 
   return (
     <Card className="border border-gray-200 shadow-sm">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-gray-900">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h3 className="text-sm sm:text-base font-semibold text-gray-900">
             EMI Calculator
           </h3>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-xs p-1"
+            className="text-xs p-1 h-7 sm:h-8"
           >
             {isExpanded ? "Simple" : "Advanced"}
           </Button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {/* Property Price Display */}
-          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="p-2 sm:p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="text-xs text-blue-700 mb-1">Property Price</div>
-            <div className="text-lg font-bold text-blue-800">
+            <div className="text-base sm:text-lg font-bold text-blue-800">
               {formatPrice(propertyPrice)}
             </div>
           </div>
@@ -398,7 +541,7 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
                 Down Payment
               </span>
               <div className="text-right">
-                <div className="text-sm font-bold text-gray-900">
+                <div className="text-xs sm:text-sm font-bold text-gray-900">
                   {formatPrice(downPayment)}
                 </div>
                 <div className="text-xs text-gray-600">
@@ -442,9 +585,9 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
           </div>
 
           {/* Loan Amount Display */}
-          <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+          <div className="p-2 sm:p-3 bg-orange-50 rounded-lg border border-orange-200">
             <div className="text-xs text-orange-700 mb-1">Loan Amount</div>
-            <div className="text-lg font-bold text-orange-800">
+            <div className="text-base sm:text-lg font-bold text-orange-800">
               {formatPrice(loanAmount)}
             </div>
           </div>
@@ -507,13 +650,13 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
             <div className="grid grid-cols-2 gap-2">
               <div className="text-center p-2 bg-gray-50 rounded-lg">
                 <div className="text-xs text-gray-600 mb-1">Interest Rate</div>
-                <div className="text-sm font-bold text-gray-900">
+                <div className="text-xs sm:text-sm font-bold text-gray-900">
                   {interestRate}%
                 </div>
               </div>
               <div className="text-center p-2 bg-gray-50 rounded-lg">
                 <div className="text-xs text-gray-600 mb-1">Tenure</div>
-                <div className="text-sm font-bold text-gray-900">
+                <div className="text-xs sm:text-sm font-bold text-gray-900">
                   {tenure} Years
                 </div>
               </div>
@@ -525,16 +668,16 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
             <div className="text-xs text-red-700 mb-1 font-medium">
               Monthly EMI
             </div>
-            <div className="text-xl font-bold text-red-600">
+            <div className="text-lg sm:text-xl font-bold text-red-600">
               {formatEMI(monthlyEMI)}
             </div>
           </div>
 
           {isExpanded && (
-            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
+            <div className="space-y-2 p-2 sm:p-3 bg-gray-50 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-600">Total Interest</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-xs sm:text-sm font-medium text-gray-900">
                   {formatPrice(totalInterest)}
                 </span>
               </div>
@@ -542,7 +685,7 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
                 <span className="text-xs text-gray-600">
                   Total Amount Payable
                 </span>
-                <span className="text-sm font-bold text-gray-900">
+                <span className="text-xs sm:text-sm font-bold text-gray-900">
                   {formatPrice(totalAmount)}
                 </span>
               </div>
@@ -563,22 +706,39 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
         <style jsx>{`
           .slider::-webkit-slider-thumb {
             appearance: none;
-            height: 16px;
-            width: 16px;
+            height: 18px;
+            width: 18px;
             border-radius: 50%;
             background: #ef4444;
             cursor: pointer;
             border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease;
+          }
+          .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
           }
           .slider::-moz-range-thumb {
-            height: 16px;
-            width: 16px;
+            height: 18px;
+            width: 18px;
             border-radius: 50%;
             background: #ef4444;
             cursor: pointer;
             border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease;
+          }
+          .slider::-moz-range-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          }
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
           }
         `}</style>
       </CardContent>
@@ -596,35 +756,49 @@ export default function PropertyDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("overview");
   const [showReraDialog, setShowReraDialog] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingForm, setBookingForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    date: "",
+    time: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
+
+  const fetchProperty = useCallback(
+    async (id: string) => {
+      setLoading(true);
+      try {
+        const response: any = await apiClient.getProperty(id);
+        if (response.success && response.data) {
+          setProperty(response.data);
+          addToViewed(response.data);
+        } else {
+          const mockPropertyWithId = { ...mockProperty, id };
+          setProperty(mockPropertyWithId);
+          addToViewed(mockPropertyWithId);
+        }
+      } catch (error) {
+        console.error("Error fetching property:", error);
+        const mockPropertyWithId = { ...mockProperty, id };
+        setProperty(mockPropertyWithId);
+        addToViewed(mockPropertyWithId);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [addToViewed]
+  );
 
   useEffect(() => {
     if (params.id) {
       fetchProperty(params.id as string);
     }
-  }, [params.id]);
-
-  const fetchProperty = async (id: string) => {
-    setLoading(true);
-    try {
-      const response: any = await apiClient.getProperty(id);
-      if (response.success && response.data) {
-        setProperty(response.data);
-        addToViewed(response.data);
-      } else {
-        const mockPropertyWithId = { ...mockProperty, id };
-        setProperty(mockPropertyWithId);
-        addToViewed(mockPropertyWithId);
-      }
-    } catch (error) {
-      console.error("Error fetching property:", error);
-      const mockPropertyWithId = { ...mockProperty, id };
-      setProperty(mockPropertyWithId);
-      addToViewed(mockPropertyWithId);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [params.id, fetchProperty]);
 
   const handleFavorite = () => {
     if (!property) return;
@@ -654,6 +828,35 @@ export default function PropertyDetailPage() {
         .then(() => alert("Link copied to clipboard!"))
         .catch((error) => console.error("Could not copy text: ", error));
     }
+  };
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    setIsSubmitting(false);
+    setBookingSuccess(true);
+
+    // Reset form after success
+    setTimeout(() => {
+      setBookingSuccess(false);
+      setShowBookingModal(false);
+      setBookingForm({
+        name: "",
+        email: "",
+        phone: "",
+        date: "",
+        time: "",
+        message: "",
+      });
+    }, 2000);
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setBookingForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -946,7 +1149,7 @@ export default function PropertyDetailPage() {
       <Header />
 
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
           <ImageGallery
             property={property}
             isFavorite={isFavorite}
@@ -954,19 +1157,19 @@ export default function PropertyDetailPage() {
             handleFavorite={handleFavorite}
           />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-5">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            <div className="xl:col-span-2 space-y-4 sm:space-y-6">
               <PropertyHeader property={property} formatPrice={formatPrice} />
 
-              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Shield className="w-5 h-5 text-green-600 mr-3" />
                     <div>
-                      <span className="font-medium text-gray-900 text-sm">
+                      <span className="font-medium text-gray-900 text-sm sm:text-base">
                         RERA Registered
                       </span>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs sm:text-sm text-gray-600">
                         Government approved project
                       </p>
                     </div>
@@ -979,7 +1182,7 @@ export default function PropertyDetailPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-xs h-8"
+                        className="text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
                       >
                         View Details
                       </Button>
@@ -1025,12 +1228,14 @@ export default function PropertyDetailPage() {
                 </div>
               </div>
 
+              {/* Responsive Navigation Tabs */}
               <div
                 ref={tabsRef}
-                className="sticky top-20 z-40 bg-white rounded-xl shadow-sm border border-gray-100 mb-5"
+                className="sticky top-16 sm:top-20 z-40 bg-white rounded-xl shadow-sm border border-gray-100 mb-4 sm:mb-6"
               >
-                <div className="px-5 py-3">
-                  <div className="flex space-x-6">
+                <div className="px-3 sm:px-5 py-3">
+                  {/* Mobile Horizontal Scroll */}
+                  <div className="flex space-x-4 sm:space-x-6 overflow-x-auto scrollbar-hide">
                     {[
                       { id: "overview", label: "Overview" },
                       { id: "amenities", label: "Amenities" },
@@ -1041,7 +1246,7 @@ export default function PropertyDetailPage() {
                       <button
                         key={tab.id}
                         onClick={() => scrollToSection(tab.id)}
-                        className={`pb-2 px-1 text-xs font-medium border-b-2 transition-colors ${
+                        className={`pb-2 px-1 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                           activeTab === tab.id
                             ? "border-red-500 text-red-600"
                             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -1055,16 +1260,16 @@ export default function PropertyDetailPage() {
               </div>
 
               {/* Content Sections */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Overview Section */}
                 <section
                   id="overview"
-                  className="bg-white rounded-xl p-5 shadow-sm border border-gray-100"
+                  className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100"
                 >
-                  <h2 className="text-base font-semibold mb-3 text-gray-900">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-gray-900">
                     Overview
                   </h2>
-                  <p className="text-sm text-gray-700 leading-relaxed">
+                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
                     {property.description}
                   </p>
                 </section>
@@ -1084,15 +1289,280 @@ export default function PropertyDetailPage() {
               </div>
             </div>
 
-            <div className="space-y-5">
+            {/* Mobile: Bottom Sheet Style Sidebar */}
+            <div className="xl:hidden">
+              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 space-y-4">
+                <ContactAgent property={property} />
+                <EMICalculator propertyPrice={property.price} />
+              </div>
+            </div>
+
+            {/* Desktop: Traditional Sidebar */}
+            <div className="hidden xl:block space-y-6">
               <ContactAgent property={property} />
               <EMICalculator propertyPrice={property.price} />
               <BuilderInfo property={property} />
               <PropertyInsights property={property} />
             </div>
           </div>
+
+          {/* Mobile: Additional Sections */}
+          <div className="xl:hidden mt-6 space-y-4">
+            <BuilderInfo property={property} />
+            <PropertyInsights property={property} />
+          </div>
         </div>
       </main>
+
+      {/* Floating Book Visit Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Dialog open={showBookingModal} onOpenChange={setShowBookingModal}>
+          <DialogTrigger asChild>
+            <Button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-2xl hover:shadow-red-500/25 transition-all duration-300 transform hover:scale-105 active:scale-95 px-6 py-3 rounded-full font-semibold text-sm flex items-center space-x-2 group">
+              <CalendarDays className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+              <span>Book Visit</span>
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent className="max-w-md mx-auto bg-white rounded-2xl shadow-2xl border-0 p-0 overflow-hidden">
+            {!bookingSuccess ? (
+              <>
+                <DialogHeader className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 pb-8">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-white/20 rounded-lg">
+                        <CalendarDays className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <DialogTitle className="text-xl font-bold">
+                          Book a Visit
+                        </DialogTitle>
+                        <p className="text-red-100 text-sm mt-1">
+                          Schedule your property tour
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </DialogHeader>
+
+                <form onSubmit={handleBookingSubmit} className="p-6 space-y-6">
+                  {/* Personal Information */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <User className="w-4 h-4 text-gray-500" />
+                      <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                        Personal Information
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="name"
+                          className="text-sm font-medium text-gray-700"
+                        >
+                          Full Name
+                        </Label>
+                        <Input
+                          id="name"
+                          type="text"
+                          placeholder="Enter your full name"
+                          value={bookingForm.name}
+                          onChange={(e) =>
+                            handleInputChange("name", e.target.value)
+                          }
+                          className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
+                          required
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="email"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            Email
+                          </Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="your@email.com"
+                            value={bookingForm.email}
+                            onChange={(e) =>
+                              handleInputChange("email", e.target.value)
+                            }
+                            className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="phone"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            Phone
+                          </Label>
+                          <Input
+                            id="phone"
+                            type="tel"
+                            placeholder="+91 98765 43210"
+                            value={bookingForm.phone}
+                            onChange={(e) =>
+                              handleInputChange("phone", e.target.value)
+                            }
+                            className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Visit Schedule */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                      <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                        Visit Schedule
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="date"
+                          className="text-sm font-medium text-gray-700"
+                        >
+                          Preferred Date
+                        </Label>
+                        <Input
+                          id="date"
+                          type="date"
+                          value={bookingForm.date}
+                          onChange={(e) =>
+                            handleInputChange("date", e.target.value)
+                          }
+                          min={new Date().toISOString().split("T")[0]}
+                          className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="time"
+                          className="text-sm font-medium text-gray-700"
+                        >
+                          Preferred Time
+                        </Label>
+                        <select
+                          id="time"
+                          value={bookingForm.time}
+                          onChange={(e) =>
+                            handleInputChange("time", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-red-500 focus:ring-red-500 transition-colors bg-white"
+                          required
+                        >
+                          <option value="">Select time</option>
+                          <option value="09:00">9:00 AM</option>
+                          <option value="10:00">10:00 AM</option>
+                          <option value="11:00">11:00 AM</option>
+                          <option value="12:00">12:00 PM</option>
+                          <option value="14:00">2:00 PM</option>
+                          <option value="15:00">3:00 PM</option>
+                          <option value="16:00">4:00 PM</option>
+                          <option value="17:00">5:00 PM</option>
+                          <option value="18:00">6:00 PM</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Additional Message */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="message"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Additional Message (Optional)
+                    </Label>
+                    <Textarea
+                      id="message"
+                      placeholder="Any specific requirements or questions..."
+                      value={bookingForm.message}
+                      onChange={(e) =>
+                        handleInputChange("message", e.target.value)
+                      }
+                      className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors resize-none"
+                      rows={3}
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="pt-4">
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Booking Visit...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center space-x-2">
+                          <CalendarDays className="w-4 h-4" />
+                          <span>Confirm Visit</span>
+                        </div>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <div className="p-8 text-center">
+                <div className="mb-6">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    Visit Booked Successfully!
+                  </h3>
+                  <p className="text-gray-600">
+                    We&apos;ll contact you shortly to confirm your visit
+                    details.
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p>
+                      <span className="font-medium">Date:</span>{" "}
+                      {new Date(bookingForm.date).toLocaleDateString()}
+                    </p>
+                    <p>
+                      <span className="font-medium">Time:</span>{" "}
+                      {bookingForm.time}
+                    </p>
+                    <p>
+                      <span className="font-medium">Contact:</span>{" "}
+                      {bookingForm.phone}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-xs text-gray-500">
+                  This modal will close automatically in a few seconds...
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
 
       <Footer />
     </div>
