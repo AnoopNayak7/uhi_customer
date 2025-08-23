@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Input } from "@/components/ui/input";
@@ -47,15 +47,6 @@ export default function PropertiesPage() {
   );
   const [isGettingLocation, setIsGettingLocation] = useState(false);
 
-  useEffect(() => {
-    // Update search filters from URL params
-    const params = Object.fromEntries(searchParams.entries());
-    if (Object.keys(params).length > 0) {
-      updateSearchFilters(params);
-    }
-    fetchProperties();
-  }, [searchParams]);
-
   // Cleanup search timeout
   useEffect(() => {
     return () => {
@@ -65,7 +56,7 @@ export default function PropertiesPage() {
     };
   }, []);
 
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async () => {
     setLoading(true);
     try {
       const params: any = {};
@@ -94,7 +85,16 @@ export default function PropertiesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchParams]);
+
+  useEffect(() => {
+    // Update search filters from URL params
+    const params = Object.fromEntries(searchParams.entries());
+    if (Object.keys(params).length > 0) {
+      updateSearchFilters(params);
+    }
+    fetchProperties();
+  }, [searchParams, updateSearchFilters, fetchProperties]);
 
   const handleFilterChange = (key: string, value: string) => {
     // Handle special "all" values by converting them to empty strings
@@ -217,18 +217,18 @@ export default function PropertiesPage() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 container mx-auto px-[3%] py-8">
+      <main className="flex-1 container mx-auto px-3 sm:px-4 md:px-6 lg:px-[3%] py-4 sm:py-6 md:py-8">
         <PageContent>
           {/* Search bar */}
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <div className="relative">
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+                <div className="relative flex-1 order-1 sm:order-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                   <Input
                     type="text"
                     placeholder="Search by location, landmark, project..."
-                    className="pl-10 pr-4 py-2 w-full"
+                    className="pl-10 pr-4 py-3 sm:py-2 w-full text-base sm:text-sm h-12 sm:h-auto"
                     value={searchQuery}
                     onChange={handleSearchInputChange}
                     onFocus={() => setShowSuggestions(true)}
@@ -258,26 +258,34 @@ export default function PropertiesPage() {
                   )}
                 </div>
 
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-1"
-                  onClick={getUserLocation}
-                  disabled={isGettingLocation}
-                >
-                  {isGettingLocation ? (
-                    <Loader2 className="animate-spin h-4 w-4" />
-                  ) : (
-                    <Navigation className="h-4 w-4" />
-                  )}
-                  Near Me
-                </Button>
+                <div className="flex gap-2 order-2 sm:order-2">
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-1 h-12 sm:h-auto px-3 sm:px-4 text-sm sm:text-sm flex-1 sm:flex-none"
+                    onClick={getUserLocation}
+                    disabled={isGettingLocation}
+                  >
+                    {isGettingLocation ? (
+                      <Loader2 className="animate-spin h-4 w-4" />
+                    ) : (
+                      <Navigation className="h-4 w-4" />
+                    )}
+                    <span className="hidden xs:inline">Near Me</span>
+                    <span className="xs:hidden">Near</span>
+                  </Button>
 
-                <Button onClick={handleSearch}>Search</Button>
+                  <Button
+                    onClick={handleSearch}
+                    className="h-12 sm:h-auto px-4 sm:px-6 text-sm sm:text-sm flex-1 sm:flex-none"
+                  >
+                    Search
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
             {/* Filter Section */}
             <FilterSection
               onSearch={handleSearch}
@@ -287,7 +295,7 @@ export default function PropertiesPage() {
             />
 
             {/* Main Content */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               {viewMode === "grid" ? (
                 <PropertyList
                   properties={properties}
@@ -297,9 +305,11 @@ export default function PropertiesPage() {
                 />
               ) : (
                 <div className="flex-1">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <h1 className="text-2xl font-bold">Properties</h1>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
+                    <div className="flex-1">
+                      <h1 className="text-xl sm:text-2xl font-bold">
+                        Properties
+                      </h1>
                       <p className="text-gray-500 text-sm">
                         {
                           properties.filter((p) => p.latitude && p.longitude)
@@ -308,25 +318,25 @@ export default function PropertiesPage() {
                         properties on map
                       </p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="bg-gray-100 rounded-md p-1 flex">
+                    <div className="flex items-center space-x-2 w-full sm:w-auto">
+                      <div className="bg-gray-100 rounded-md p-1 flex w-full sm:w-auto">
                         <Button
                           variant={viewMode === "grid" ? "default" : "ghost"}
                           size="sm"
-                          className="h-8 px-2"
+                          className="h-10 sm:h-8 px-3 sm:px-2 flex-1 sm:flex-none text-sm"
                           onClick={() => setViewMode("grid")}
                         >
                           <Grid3X3 className="w-4 h-4 mr-1" />
-                          Grid
+                          <span className="hidden xs:inline">Grid</span>
                         </Button>
                         <Button
                           variant={viewMode === "map" ? "default" : "ghost"}
                           size="sm"
-                          className="h-8 px-2"
+                          className="h-10 sm:h-8 px-3 sm:px-2 flex-1 sm:flex-none text-sm"
                           onClick={() => setViewMode("map")}
                         >
                           <MapIcon className="w-4 h-4 mr-1" />
-                          Map
+                          <span className="hidden xs:inline">Map</span>
                         </Button>
                       </div>
                     </div>

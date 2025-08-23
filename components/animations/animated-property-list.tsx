@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ReactNode } from "react";
 import { MobileStaggerList } from "./mobile-animations";
+import { useIsMobile } from "./mobile-animations";
 
 interface AnimatedPropertyListProps {
   children: ReactNode[];
@@ -15,21 +16,28 @@ export const AnimatedPropertyList = ({
   loading = false,
   className,
 }: AnimatedPropertyListProps) => {
+  const isMobile = useIsMobile();
+  const skeletonCount = isMobile ? 4 : 6; // Show fewer skeletons on mobile
+  const animationDelay = isMobile ? 0.05 : 0.1; // Faster animations on mobile
+
   if (loading) {
     return (
       <div className={className}>
-        {Array.from({ length: 6 }).map((_, index) => (
+        {Array.from({ length: skeletonCount }).map((_, index) => (
           <motion.div
             key={`skeleton-${index}`}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: isMobile ? 10 : 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="mb-6"
+            transition={{
+              delay: index * animationDelay,
+              duration: isMobile ? 0.3 : 0.5,
+            }}
+            className="mb-4 sm:mb-6"
           >
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="animate-pulse">
-                <div className="h-48 bg-gray-200"></div>
-                <div className="p-4">
+                <div className="h-48 sm:h-52 bg-gray-200"></div>
+                <div className="p-4 sm:p-5">
                   <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
                   <div className="flex justify-between">

@@ -36,32 +36,32 @@ export function PropertyList({
   return (
     <div className="flex-1">
       <MotionWrapper variant="fadeInUp">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-2xl font-bold">Properties</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
+          <div className="flex-1">
+            <h1 className="text-xl sm:text-2xl font-bold">Properties</h1>
             <p className="text-gray-500 text-sm">
               {properties?.length} properties found
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="bg-gray-100 rounded-md p-1 flex">
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
+            <div className="bg-gray-100 rounded-md p-1 flex w-full sm:w-auto">
               <Button
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
-                className="h-8 px-2"
+                className="h-10 sm:h-8 px-3 sm:px-2 flex-1 sm:flex-none text-sm"
                 onClick={() => setViewMode("grid")}
               >
                 <Grid3X3 className="w-4 h-4 mr-1" />
-                Grid
+                <span className="hidden xs:inline">Grid</span>
               </Button>
               <Button
                 variant={viewMode === "map" ? "default" : "ghost"}
                 size="sm"
-                className="h-8 px-2"
+                className="h-10 sm:h-8 px-3 sm:px-2 flex-1 sm:flex-none text-sm"
                 onClick={() => setViewMode("map")}
               >
                 <MapIcon className="w-4 h-4 mr-1" />
-                Map
+                <span className="hidden xs:inline">Map</span>
               </Button>
             </div>
           </div>
@@ -73,7 +73,7 @@ export function PropertyList({
       {viewMode === "grid" ? (
         <AnimatedPropertyGrid
           loading={loading}
-          className="grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2"
+          className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6"
         >
           {properties.length > 0
             ? properties.map((property) => (
@@ -89,9 +89,9 @@ export function PropertyList({
             ? [
                 <Card
                   key="no-results"
-                  className="p-8 text-center col-span-full"
+                  className="p-6 sm:p-8 text-center col-span-full"
                 >
-                  <p className="text-gray-500">
+                  <p className="text-gray-500 text-base sm:text-base">
                     No properties found matching your criteria.
                   </p>
                   <p className="text-gray-500 text-sm mt-2">

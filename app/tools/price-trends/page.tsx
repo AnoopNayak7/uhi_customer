@@ -989,83 +989,151 @@ export default function PriceTrendsPage() {
 
                   {/* Area-wise Pricing */}
                   <MotionWrapper variant="slideInUp" delay={1.4}>
-                    <Card className="mb-8">
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <MapPin className="w-5 h-5" />
-                          <span>Area-wise Pricing in {selectedCity}</span>
-                        </CardTitle>
+                    <Card className="mb-8 border-0 shadow-lg bg-gradient-to-br from-white to-slate-50/30">
+                      <CardHeader className="pb-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
+                              <MapPin className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <CardTitle className="text-xl font-bold text-gray-900">
+                                Area-wise Pricing
+                              </CardTitle>
+                              <p className="text-sm text-gray-500 mt-1">
+                                Compare prices across {selectedCity} localities
+                              </p>
+                            </div>
+                          </div>
+                          <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-500">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span>Price per sqft</span>
+                            <div className="w-2 h-2 bg-green-500 rounded-full ml-3"></div>
+                            <span>Growth %</span>
+                          </div>
+                        </div>
                       </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <CardContent className="pt-0">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                           {trendData.areaData.map(
                             (area: any, index: number) => (
                               <motion.div
                                 key={index}
-                                className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+                                className="group relative bg-white/70 backdrop-blur-sm border border-gray-100/50 rounded-2xl p-6 hover:bg-white hover:border-blue-200/50 transition-all duration-300 hover:shadow-xl"
                                 initial={{ opacity: 0, y: 20, scale: 0.9 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 transition={{ delay: 1.6 + index * 0.1 }}
                                 whileHover={{
-                                  scale: 1.02,
-                                  boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
+                                  scale: 1.03,
+                                  y: -4,
                                 }}
                               >
-                                <motion.h4
-                                  className="font-semibold text-gray-900 mb-2"
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  transition={{ delay: 1.8 + index * 0.1 }}
+                                {/* Area name with ranking */}
+                                <div className="flex items-center justify-between mb-4">
+                                  <motion.h4
+                                    className="font-bold text-gray-900 text-lg leading-tight"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 1.8 + index * 0.1 }}
+                                  >
+                                    {area.area}
+                                  </motion.h4>
+                                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <span className="text-white font-bold text-sm">
+                                      {index + 1}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Price highlight */}
+                                <motion.div
+                                  className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100"
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: 1.9 + index * 0.1 }}
                                 >
-                                  {area.area}
-                                </motion.h4>
-                                <div className="space-y-2">
-                                  <motion.div
-                                    className="flex justify-between items-center"
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 1.9 + index * 0.1 }}
-                                  >
-                                    <span className="text-sm text-gray-600">
-                                      Avg Price/sqft
+                                  <div className="text-xs text-blue-600 font-medium mb-1">
+                                    Average Price per sqft
+                                  </div>
+                                  <div className="text-2xl font-bold text-blue-700">
+                                    ₹{area.avgPrice.toLocaleString()}
+                                  </div>
+                                </motion.div>
+
+                                {/* Growth indicator */}
+                                <motion.div
+                                  className="mb-4"
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: 2.0 + index * 0.1 }}
+                                >
+                                  <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50/50">
+                                    <span className="text-sm font-medium text-gray-600">
+                                      YoY Growth
                                     </span>
-                                    <span className="font-bold text-blue-600">
-                                      ₹{area.avgPrice.toLocaleString()}
-                                    </span>
-                                  </motion.div>
-                                  <motion.div
-                                    className="flex justify-between items-center"
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 2.0 + index * 0.1 }}
-                                  >
-                                    <span className="text-sm text-gray-600">
-                                      Growth
-                                    </span>
-                                    <span
-                                      className={`font-medium ${
-                                        area.growth >= 0
-                                          ? "text-green-600"
-                                          : "text-red-600"
-                                      }`}
-                                    >
-                                      {area.growth >= 0 ? "+" : ""}
-                                      {area.growth}%
-                                    </span>
-                                  </motion.div>
-                                  <motion.div
-                                    className="flex justify-between items-center"
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 2.1 + index * 0.1 }}
-                                  >
-                                    <span className="text-sm text-gray-600">
-                                      Properties
-                                    </span>
-                                    <span className="text-sm text-gray-900">
+                                    <div className="flex items-center space-x-2">
+                                      {area.growth >= 0 ? (
+                                        <TrendingUp className="w-4 h-4 text-green-500" />
+                                      ) : (
+                                        <TrendingDown className="w-4 h-4 text-red-500" />
+                                      )}
+                                      <span
+                                        className={`font-bold text-base ${
+                                          area.growth >= 0
+                                            ? "text-green-600"
+                                            : "text-red-600"
+                                        }`}
+                                      >
+                                        {area.growth >= 0 ? "+" : ""}
+                                        {area.growth}%
+                                      </span>
+                                    </div>
+                                  </div>
+                                </motion.div>
+
+                                {/* Properties count */}
+                                <motion.div
+                                  className="flex items-center justify-between p-3 rounded-lg bg-gray-50/50"
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: 2.1 + index * 0.1 }}
+                                >
+                                  <span className="text-sm font-medium text-gray-600">
+                                    Available Properties
+                                  </span>
+                                  <div className="flex items-center space-x-2">
+                                    <Building className="w-4 h-4 text-gray-500" />
+                                    <span className="font-bold text-gray-900">
                                       {area.properties}
                                     </span>
-                                  </motion.div>
+                                  </div>
+                                </motion.div>
+
+                                {/* Hover indicator */}
+                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                </div>
+
+                                {/* Growth bar indicator */}
+                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-100 rounded-b-2xl overflow-hidden">
+                                  <motion.div
+                                    className={`h-full ${
+                                      area.growth >= 0
+                                        ? "bg-green-500"
+                                        : "bg-red-500"
+                                    }`}
+                                    initial={{ width: 0 }}
+                                    animate={{
+                                      width: `${Math.min(
+                                        Math.abs(area.growth) * 5,
+                                        100
+                                      )}%`,
+                                    }}
+                                    transition={{
+                                      delay: 2.2 + index * 0.1,
+                                      duration: 0.8,
+                                    }}
+                                  />
                                 </div>
                               </motion.div>
                             )
@@ -1077,35 +1145,83 @@ export default function PriceTrendsPage() {
 
                   {/* Market Insights */}
                   <MotionWrapper variant="fadeInUp" delay={2.0}>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Market Insights</CardTitle>
+                    <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50">
+                      <CardHeader className="pb-6">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
+                            <TrendingUp className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-xl font-bold text-gray-900">
+                              Market Insights
+                            </CardTitle>
+                            <p className="text-sm text-gray-500 mt-1">
+                              Key trends and analysis for {selectedCity}
+                            </p>
+                          </div>
+                        </div>
                       </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
+                      <CardContent className="pt-0">
+                        <div className="space-y-6">
                           {trendData.insights.map(
                             (insight: string, index: number) => (
                               <motion.div
                                 key={index}
-                                className="flex items-start space-x-3"
+                                className="group relative"
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 2.2 + index * 0.2 }}
                               >
-                                <motion.div
-                                  className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  transition={{
-                                    delay: 2.3 + index * 0.2,
-                                    type: "spring",
-                                    stiffness: 200,
-                                  }}
-                                />
-                                <p className="text-gray-700">{insight}</p>
+                                <div className="flex items-start space-x-4 p-4 rounded-xl bg-white/60 border border-gray-100/50 hover:bg-white/80 hover:border-blue-200/50 transition-all duration-300 hover:shadow-md">
+                                  <motion.div
+                                    className="relative flex-shrink-0 mt-0.5"
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{
+                                      delay: 2.3 + index * 0.2,
+                                      type: "spring",
+                                      stiffness: 200,
+                                    }}
+                                  >
+                                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                                      <span className="text-white font-bold text-sm">
+                                        {index + 1}
+                                      </span>
+                                    </div>
+                                    {index < trendData.insights.length - 1 && (
+                                      <div className="absolute top-8 left-1/2 transform -translate-x-1/2 w-0.5 h-6 bg-gradient-to-b from-blue-200 to-transparent"></div>
+                                    )}
+                                  </motion.div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-gray-800 leading-relaxed font-medium text-base">
+                                      {insight}
+                                    </p>
+                                    <div className="mt-2 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                      <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
+                                      <span className="text-xs text-blue-600 font-medium">
+                                        Market Analysis
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
                               </motion.div>
                             )
                           )}
+                        </div>
+
+                        {/* Bottom accent */}
+                        <div className="mt-8 pt-6 border-t border-gray-100">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                              <span className="text-sm text-gray-600 font-medium">
+                                Live Market Data
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Updated {new Date().toLocaleDateString()}
+                            </div>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
