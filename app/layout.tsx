@@ -1,22 +1,31 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter, Lato, Montserrat, Manrope } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { LayoutWrapper } from "@/components/animations/layout-wrapper";
+import {
+  WebVitals,
+  PerformanceBudget,
+} from "@/components/performance/web-vitals";
 
-const inter = Inter({ subsets: ["latin"] });
-const montserrat = Montserrat({ subsets: ["latin"] });
-
-const lato = Lato({
-  subsets: ["latin"],
-  weight: ["100", "300", "400", "700", "900"],
-});
-
-// Manrope - closest to Airbnb Cereal
+// Manrope - Primary font (closest to Airbnb Cereal)
+// Optimized with font-display: swap for better performance
 const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["200", "300", "400", "500", "600", "700", "800"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  preload: true,
+  fallback: [
+    "system-ui",
+    "-apple-system",
+    "BlinkMacSystemFont",
+    "Segoe UI",
+    "Roboto",
+    "sans-serif",
+  ],
+  adjustFontFallback: true,
+  variable: "--font-manrope",
 });
 
 export const metadata: Metadata = {
@@ -50,12 +59,38 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={manrope.className}>
+    <html lang="en" className={manrope.variable}>
+      <head>
+        {/* Preload critical font weights */}
+        <link
+          rel="preload"
+          href="/_next/static/media/manrope-400.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/_next/static/media/manrope-500.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/_next/static/media/manrope-600.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body className={`${manrope.className} font-sans`}>
         <AuthProvider>
           <LayoutWrapper>{children}</LayoutWrapper>
         </AuthProvider>
         <Toaster />
+        <WebVitals />
+        <PerformanceBudget />
       </body>
     </html>
   );

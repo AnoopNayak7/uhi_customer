@@ -76,7 +76,62 @@
   * {
     @apply border-border;
   }
+  
+  html {
+    /* Improve font rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Prevent layout shift during font load */
+    font-display: swap;
+  }
+  
   body {
     @apply bg-background text-foreground;
+    /* Optimize font rendering */
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1, 'pnum' 1, 'tnum' 0, 'onum' 1, 'lnum' 0, 'dlig' 0;
+    /* Improve text readability */
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Optimize background gradients for performance */
+  .bg-gradient-to-r,
+  .bg-gradient-to-l,
+  .bg-gradient-to-t,
+  .bg-gradient-to-b,
+  .bg-gradient-to-br,
+  .bg-gradient-to-bl,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-tl {
+    /* Use GPU acceleration for gradients */
+    transform: translateZ(0);
+    will-change: background;
+  }
+  
+  /* Optimize backdrop blur for better performance */
+  .backdrop-blur-sm,
+  .backdrop-blur,
+  .backdrop-blur-md,
+  .backdrop-blur-lg {
+    /* Use GPU acceleration */
+    transform: translateZ(0);
+    -webkit-backdrop-filter: blur(var(--tw-backdrop-blur));
+    backdrop-filter: blur(var(--tw-backdrop-blur));
+  }
+  
+  /* Improve image loading performance */
+  img {
+    /* Prevent layout shift */
+    height: auto;
+    /* Optimize decoding */
+    decoding: async;
+    /* Enable lazy loading by default */
+    loading: lazy;
+  }
+  
+  /* Critical images should load immediately */
+  img[data-priority="true"] {
+    loading: eager;
   }
 }

@@ -17,6 +17,10 @@ const config: Config = {
       '2xl': '1536px',
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-manrope)', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        manrope: ['var(--font-manrope)', 'sans-serif'],
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':

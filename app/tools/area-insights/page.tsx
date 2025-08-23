@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
 import {
   MapPin,
   TrendingUp,
@@ -385,8 +384,6 @@ export default function AreaInsightsPage() {
     }
     return `₹${price.toLocaleString()}`;
   };
-
-  const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444"];
 
   return (
     <>

@@ -4,10 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, MapPin, Bed, Bath, Square } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { CardHover } from "@/components/animations/page-transitions";
 import { motion } from "framer-motion";
+import { PropertyImage } from "@/components/ui/optimized-image";
+import { PROPERTY_IMAGES, BLUR_DATA_URLS } from "@/lib/images";
 
 // Helper function to format price
 const formatPrice = (price: number) => {
@@ -73,8 +74,7 @@ export const PropertyCard = ({
     onFavorite();
   };
 
-  const defaultImage =
-    "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop&crop=center";
+  const defaultImage = PROPERTY_IMAGES.default;
 
   return (
     <CardHover>
@@ -89,11 +89,13 @@ export const PropertyCard = ({
                 compact ? "h-[200px] sm:h-[220px]" : "h-48 sm:h-52"
               } overflow-hidden`}
             >
-              <Image
+              <PropertyImage
                 src={property.images?.[0] || defaultImage}
                 alt={property.title}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
+                blurDataURL={BLUR_DATA_URLS.property}
+                priority={false}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>

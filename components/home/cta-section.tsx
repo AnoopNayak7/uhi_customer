@@ -1,9 +1,10 @@
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Phone, Mail } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Phone, Mail } from "lucide-react";
+import Link from "next/link";
+import { HeroImage } from "@/components/ui/optimized-image";
+import { HERO_IMAGES, BLUR_DATA_URLS } from "@/lib/images";
 
 export function CTASection() {
   return (
@@ -15,18 +16,19 @@ export function CTASection() {
             <Badge className="bg-red-100 text-red-600 border-red-200 mb-4">
               Over 1 million+ homes for sale available on the website
             </Badge>
-            
+
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               Let's Find a Home
               <span className="text-red-500 block">That's Perfect</span>
               <span className="block">Place For You!</span>
             </h2>
-            
+
             <p className="text-gray-600 text-lg mb-8">
-              Find houses for sale and for rent near you. Search by price, bedrooms, 
-              bathrooms, property type, and more to find your ideal home.
+              Find houses for sale and for rent near you. Search by price,
+              bedrooms, bathrooms, property type, and more to find your ideal
+              home.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <Button size="lg" className="bg-red-500 hover:bg-red-600" asChild>
                 <Link href="/properties">
@@ -34,7 +36,7 @@ export function CTASection() {
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
-              
+
               <Button size="lg" variant="outline" asChild>
                 <Link href="/contact">
                   <Phone className="w-4 h-4 mr-2" />
@@ -42,7 +44,7 @@ export function CTASection() {
                 </Link>
               </Button>
             </div>
-            
+
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6">
               <div className="text-center">
@@ -59,24 +61,27 @@ export function CTASection() {
               </div>
             </div>
           </div>
-          
+
           {/* Right Content - Image */}
           <div className="relative">
             <Card className="overflow-hidden bg-white shadow-2xl">
               <div className="relative h-96">
-                <Image
-                  src="https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg"
+                <HeroImage
+                  src={HERO_IMAGES.cta_luxury}
                   alt="Beautiful luxury home"
                   fill
                   className="object-cover"
+                  blurDataURL={BLUR_DATA_URLS.hero}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                
+
                 {/* Floating Property Card */}
                 <div className="absolute bottom-6 left-6 right-6">
                   <Card className="bg-white/95 backdrop-blur-sm p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">Aesthetic Luxury Home</h3>
+                      <h3 className="font-semibold text-gray-900">
+                        Aesthetic Luxury Home
+                      </h3>
                       <Badge className="bg-green-100 text-green-600 border-green-200">
                         Available
                       </Badge>
