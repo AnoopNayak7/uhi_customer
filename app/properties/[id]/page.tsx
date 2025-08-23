@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
-import { apiClient } from '@/lib/api';
-import { usePropertyStore } from '@/lib/store';
+import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { apiClient } from "@/lib/api";
+import { usePropertyStore } from "@/lib/store";
 import {
   Heart,
   Share2,
@@ -42,54 +42,87 @@ import {
   TrendingUp,
   Award,
   Building2,
-  Star
-} from 'lucide-react';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import 'leaflet/dist/leaflet.css';
-import dynamic from 'next/dynamic';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
-import { PropertyHeader } from '@/components/property/PropertyHeader';
-import { PropertyAmenities } from '@/components/property/PropertyAmenities';
-import { PropertyDetails } from '@/components/property/PropertyDetails';
-import { PropertyLocation } from '@/components/property/PropertyLocation';
-import { PriceTrends } from '@/components/property/PriceTrends';
-import { FloorPlans } from '@/components/property/FloorPlans';
-import { BuilderInfo } from '@/components/property/BuilderInfo';
-import { ContactAgent } from '@/components/property/ContactAgent';
-import { SimilarProperties } from '@/components/property/SimilarProperties';
-import { PropertyInsights } from '@/components/property/PropertyInsights';
+  Star,
+} from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from "recharts";
+import "leaflet/dist/leaflet.css";
+import dynamic from "next/dynamic";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
+import { PropertyHeader } from "@/components/property/PropertyHeader";
+import { PropertyAmenities } from "@/components/property/PropertyAmenities";
+import { PropertyDetails } from "@/components/property/PropertyDetails";
+import { PropertyLocation } from "@/components/property/PropertyLocation";
+import { PriceTrends } from "@/components/property/PriceTrends";
+import { FloorPlans } from "@/components/property/FloorPlans";
+import { BuilderInfo } from "@/components/property/BuilderInfo";
+import { ContactAgent } from "@/components/property/ContactAgent";
+import { SimilarProperties } from "@/components/property/SimilarProperties";
+import { PropertyInsights } from "@/components/property/PropertyInsights";
 
 // Dynamically import the Map and NearbyPlaces components to avoid SSR issues with Leaflet
-const Map = dynamic(() => import('@/components/Map'), { ssr: false });
-const NearbyPlaces = dynamic(() => import('@/components/NearbyPlaces'), { ssr: false });
+const Map = dynamic(() => import("@/components/Map"), { ssr: false });
+const NearbyPlaces = dynamic(() => import("@/components/NearbyPlaces"), {
+  ssr: false,
+});
 
-const ImageGallery = ({ property, isFavorite, handleShare, handleFavorite }:any) => {
+const ImageGallery = ({
+  property,
+  isFavorite,
+  handleShare,
+  handleFavorite,
+}: any) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState<any>({});
 
   // Use actual property images or fallback to placeholders
-  const propertyImages = property.images && property.images.length > 0 
-    ? property.images 
-    : [
-        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-        'https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80',
-        'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2080&q=80',
-        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'
-      ];
+  const propertyImages =
+    property.images && property.images.length > 0
+      ? property.images
+      : [
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+          "https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80",
+          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+          "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2080&q=80",
+          "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+        ];
 
-  const handleImageError = (index:any) => {
+  const handleImageError = (index: any) => {
     setImageErrors((prev: any) => ({ ...prev, [index]: true }));
   };
 
-  const ImageWithFallback = ({ src, alt, index, className, fill = false, ...props }:any) => {
+  const ImageWithFallback = ({
+    src,
+    alt,
+    index,
+    className,
+    fill = false,
+    ...props
+  }: any) => {
     if (imageErrors[index]) {
       return (
-        <div className={`bg-gray-200 flex items-center justify-center ${className}`}>
+        <div
+          className={`bg-gray-200 flex items-center justify-center ${className}`}
+        >
           <div className="text-center">
             <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
             <p className="text-gray-500 text-sm">Property Image {index + 1}</p>
@@ -105,7 +138,7 @@ const ImageGallery = ({ property, isFavorite, handleShare, handleFavorite }:any)
         className={className}
         onError={() => handleImageError(index)}
         fill={fill}
-        style={{ objectFit: 'cover' }}
+        style={{ objectFit: "cover" }}
         {...props}
       />
     );
@@ -117,7 +150,10 @@ const ImageGallery = ({ property, isFavorite, handleShare, handleFavorite }:any)
         {/* Main Image Grid */}
         <div className="grid grid-cols-3 gap-2 h-[350px]">
           {/* Large Main Image */}
-          <div className="col-span-2 relative group cursor-pointer overflow-hidden rounded-l-lg" onClick={() => setCurrentImageIndex(0)}>
+          <div
+            className="col-span-2 relative group cursor-pointer overflow-hidden rounded-l-lg"
+            onClick={() => setCurrentImageIndex(0)}
+          >
             <ImageWithFallback
               src={propertyImages[0]}
               alt={`${property.title} - Main Image`}
@@ -130,7 +166,10 @@ const ImageGallery = ({ property, isFavorite, handleShare, handleFavorite }:any)
 
           {/* Right Side Images */}
           <div className="flex flex-col gap-2">
-            <div className="relative group cursor-pointer flex-1 overflow-hidden rounded-tr-lg" onClick={() => setCurrentImageIndex(1)}>
+            <div
+              className="relative group cursor-pointer flex-1 overflow-hidden rounded-tr-lg"
+              onClick={() => setCurrentImageIndex(1)}
+            >
               <ImageWithFallback
                 src={propertyImages[1] || propertyImages[0]}
                 alt={`${property.title} - Image 2`}
@@ -155,7 +194,9 @@ const ImageGallery = ({ property, isFavorite, handleShare, handleFavorite }:any)
                     <div className="text-white text-center">
                       <ImageIcon className="w-6 h-6 mx-auto mb-1" />
                       <div className="text-xs font-medium">Show all photos</div>
-                      <div className="text-xs opacity-90">{propertyImages.length} images</div>
+                      <div className="text-xs opacity-90">
+                        {propertyImages.length} images
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -164,11 +205,16 @@ const ImageGallery = ({ property, isFavorite, handleShare, handleFavorite }:any)
                 <div className="p-2">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold">{property.title}</h2>
-                    <div className="text-sm text-gray-500">{propertyImages.length} photos</div>
+                    <div className="text-sm text-gray-500">
+                      {propertyImages.length} photos
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
                     {propertyImages.map((image: any, index: any) => (
-                      <div key={index} className="relative h-48 w-full rounded-lg overflow-hidden">
+                      <div
+                        key={index}
+                        className="relative h-48 w-full rounded-lg overflow-hidden"
+                      >
                         <ImageWithFallback
                           src={image}
                           alt={`${property.title} - Image ${index + 1}`}
@@ -189,7 +235,11 @@ const ImageGallery = ({ property, isFavorite, handleShare, handleFavorite }:any)
         <div className="absolute top-3 right-3 flex space-x-2">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="secondary" size="sm" className="bg-white/90 backdrop-blur-sm text-xs h-8">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="bg-white/90 backdrop-blur-sm text-xs h-8"
+              >
                 <Maximize2 className="w-3 h-3 mr-1" />
                 Show all
               </Button>
@@ -198,8 +248,11 @@ const ImageGallery = ({ property, isFavorite, handleShare, handleFavorite }:any)
               <div className="p-1">
                 <h2 className="text-lg font-semibold mb-4">{property.title}</h2>
                 <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
-                  {propertyImages.map((image:any, index:any) => (
-                    <div key={index} className="relative h-40 w-full rounded-md overflow-hidden">
+                  {propertyImages.map((image: any, index: any) => (
+                    <div
+                      key={index}
+                      className="relative h-40 w-full rounded-md overflow-hidden"
+                    >
                       <ImageWithFallback
                         src={image}
                         alt={`${property.title} - Image ${index + 1}`}
@@ -227,16 +280,18 @@ const ImageGallery = ({ property, isFavorite, handleShare, handleFavorite }:any)
             variant="secondary"
             size="sm"
             onClick={handleFavorite}
-            className={`bg-white/90 backdrop-blur-sm h-8 w-8 p-0 ${isFavorite ? 'text-red-500' : ''}`}
+            className={`bg-white/90 backdrop-blur-sm h-8 w-8 p-0 ${
+              isFavorite ? "text-red-500" : ""
+            }`}
           >
-            <Heart className={`w-3 h-3 ${isFavorite ? 'fill-red-500' : ''}`} />
+            <Heart className={`w-3 h-3 ${isFavorite ? "fill-red-500" : ""}`} />
           </Button>
         </div>
 
         {/* Property Status Badge */}
         <div className="absolute top-3 left-3">
           <Badge className="bg-green-500 text-white border-0 px-2 py-1 text-xs">
-            For {property.propertyType === 'sell' ? 'Sale' : 'Rent'}
+            For {property.propertyType === "sell" ? "Sale" : "Rent"}
           </Badge>
         </div>
       </div>
@@ -246,25 +301,25 @@ const ImageGallery = ({ property, isFavorite, handleShare, handleFavorite }:any)
 
 // Amenity icons mapping
 const amenityIcons: { [key: string]: any } = {
-  'Parking': Car,
-  'Security': Shield,
-  'Gym': Dumbbell,
-  'Garden': Trees,
-  'Swimming Pool': Waves,
-  'Clubhouse': Users,
-  'Power Backup': Zap,
-  'Lift': Building,
-  'WiFi': Wifi,
-  'CCTV': ShieldCheck
+  Parking: Car,
+  Security: Shield,
+  Gym: Dumbbell,
+  Garden: Trees,
+  "Swimming Pool": Waves,
+  Clubhouse: Users,
+  "Power Backup": Zap,
+  Lift: Building,
+  WiFi: Wifi,
+  CCTV: ShieldCheck,
 };
 
 // Mock price history data for the graph
 const priceHistoryData = [
-  { year: '2020', price: 85, growth: 0 },
-  { year: '2021', price: 92, growth: 8.2 },
-  { year: '2022', price: 98, growth: 6.5 },
-  { year: '2023', price: 108, growth: 10.2 },
-  { year: '2024', price: 116, growth: 7.4 },
+  { year: "2020", price: 85, growth: 0 },
+  { year: "2021", price: 92, growth: 8.2 },
+  { year: "2022", price: 98, growth: 6.5 },
+  { year: "2023", price: 108, growth: 10.2 },
+  { year: "2024", price: 116, growth: 7.4 },
 ];
 
 // EMI Calculator Component
@@ -287,7 +342,8 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
       return principal / numberOfPayments;
     }
 
-    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+    const emi =
+      (principal * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
       (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
     return emi;
   };
@@ -313,14 +369,16 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
     <Card className="border border-gray-200 shadow-sm">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-gray-900">EMI Calculator</h3>
+          <h3 className="text-base font-semibold text-gray-900">
+            EMI Calculator
+          </h3>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
             className="text-xs p-1"
           >
-            {isExpanded ? 'Simple' : 'Advanced'}
+            {isExpanded ? "Simple" : "Advanced"}
           </Button>
         </div>
 
@@ -328,28 +386,38 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
           {/* Property Price Display */}
           <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="text-xs text-blue-700 mb-1">Property Price</div>
-            <div className="text-lg font-bold text-blue-800">{formatPrice(propertyPrice)}</div>
+            <div className="text-lg font-bold text-blue-800">
+              {formatPrice(propertyPrice)}
+            </div>
           </div>
 
           {/* Down Payment Slider */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-medium text-gray-700">Down Payment</span>
+              <span className="text-xs font-medium text-gray-700">
+                Down Payment
+              </span>
               <div className="text-right">
-                <div className="text-sm font-bold text-gray-900">{formatPrice(downPayment)}</div>
-                <div className="text-xs text-gray-600">({downPaymentPercentage.toFixed(0)}%)</div>
+                <div className="text-sm font-bold text-gray-900">
+                  {formatPrice(downPayment)}
+                </div>
+                <div className="text-xs text-gray-600">
+                  ({downPaymentPercentage.toFixed(0)}%)
+                </div>
               </div>
             </div>
             <input
               type="range"
               min={propertyPrice * 0.05} // Minimum 5%
-              max={propertyPrice * 0.5}  // Maximum 50%
+              max={propertyPrice * 0.5} // Maximum 50%
               step={propertyPrice * 0.01} // 1% steps
               value={downPayment}
               onChange={(e) => setDownPayment(Number(e.target.value))}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
               style={{
-                background: `linear-gradient(to right, #ef4444 0%, #ef4444 ${downPaymentPercentage * 2}%, #e5e7eb ${downPaymentPercentage * 2}%, #e5e7eb 100%)`
+                background: `linear-gradient(to right, #ef4444 0%, #ef4444 ${
+                  downPaymentPercentage * 2
+                }%, #e5e7eb ${downPaymentPercentage * 2}%, #e5e7eb 100%)`,
               }}
             />
             {isExpanded && (
@@ -359,7 +427,10 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
                   value={Math.round(downPayment)}
                   onChange={(e) => {
                     const value = Number(e.target.value);
-                    if (value >= propertyPrice * 0.05 && value <= propertyPrice * 0.5) {
+                    if (
+                      value >= propertyPrice * 0.05 &&
+                      value <= propertyPrice * 0.5
+                    ) {
                       setDownPayment(value);
                     }
                   }}
@@ -373,7 +444,9 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
           {/* Loan Amount Display */}
           <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
             <div className="text-xs text-orange-700 mb-1">Loan Amount</div>
-            <div className="text-lg font-bold text-orange-800">{formatPrice(loanAmount)}</div>
+            <div className="text-lg font-bold text-orange-800">
+              {formatPrice(loanAmount)}
+            </div>
           </div>
 
           {isExpanded && (
@@ -381,8 +454,12 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
               {/* Interest Rate */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-gray-700">Interest Rate</span>
-                  <span className="text-sm font-bold text-gray-900">{interestRate}% per annum</span>
+                  <span className="text-xs font-medium text-gray-700">
+                    Interest Rate
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">
+                    {interestRate}% per annum
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -402,8 +479,12 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
               {/* Tenure */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-gray-700">Tenure</span>
-                  <span className="text-sm font-bold text-gray-900">{tenure} years</span>
+                  <span className="text-xs font-medium text-gray-700">
+                    Tenure
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">
+                    {tenure} years
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -426,30 +507,44 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
             <div className="grid grid-cols-2 gap-2">
               <div className="text-center p-2 bg-gray-50 rounded-lg">
                 <div className="text-xs text-gray-600 mb-1">Interest Rate</div>
-                <div className="text-sm font-bold text-gray-900">{interestRate}%</div>
+                <div className="text-sm font-bold text-gray-900">
+                  {interestRate}%
+                </div>
               </div>
               <div className="text-center p-2 bg-gray-50 rounded-lg">
                 <div className="text-xs text-gray-600 mb-1">Tenure</div>
-                <div className="text-sm font-bold text-gray-900">{tenure} Years</div>
+                <div className="text-sm font-bold text-gray-900">
+                  {tenure} Years
+                </div>
               </div>
             </div>
           )}
 
           {/* EMI Result */}
           <div className="p-3 bg-gradient-to-r from-red-50 to-red-100 rounded-lg border border-red-200">
-            <div className="text-xs text-red-700 mb-1 font-medium">Monthly EMI</div>
-            <div className="text-xl font-bold text-red-600">{formatEMI(monthlyEMI)}</div>
+            <div className="text-xs text-red-700 mb-1 font-medium">
+              Monthly EMI
+            </div>
+            <div className="text-xl font-bold text-red-600">
+              {formatEMI(monthlyEMI)}
+            </div>
           </div>
 
           {isExpanded && (
             <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-600">Total Interest</span>
-                <span className="text-sm font-medium text-gray-900">{formatPrice(totalInterest)}</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {formatPrice(totalInterest)}
+                </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-600">Total Amount Payable</span>
-                <span className="text-sm font-bold text-gray-900">{formatPrice(totalAmount)}</span>
+                <span className="text-xs text-gray-600">
+                  Total Amount Payable
+                </span>
+                <span className="text-sm font-bold text-gray-900">
+                  {formatPrice(totalAmount)}
+                </span>
               </div>
             </div>
           )}
@@ -474,7 +569,7 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
             background: #ef4444;
             cursor: pointer;
             border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
           }
           .slider::-moz-range-thumb {
             height: 16px;
@@ -483,7 +578,7 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
             background: #ef4444;
             cursor: pointer;
             border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
           }
         `}</style>
       </CardContent>
@@ -494,11 +589,12 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
 export default function PropertyDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { addToFavourites, removeFromFavourites, favourites, addToViewed } = usePropertyStore();
+  const { addToFavourites, removeFromFavourites, favourites, addToViewed } =
+    usePropertyStore();
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [showReraDialog, setShowReraDialog] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -521,7 +617,7 @@ export default function PropertyDetailPage() {
         addToViewed(mockPropertyWithId);
       }
     } catch (error) {
-      console.error('Error fetching property:', error);
+      console.error("Error fetching property:", error);
       const mockPropertyWithId = { ...mockProperty, id };
       setProperty(mockPropertyWithId);
       addToViewed(mockPropertyWithId);
@@ -530,12 +626,10 @@ export default function PropertyDetailPage() {
     }
   };
 
-
-
   const handleFavorite = () => {
     if (!property) return;
 
-    const isFavorite = favourites.some(p => p.id === property.id);
+    const isFavorite = favourites.some((p) => p.id === property.id);
     if (isFavorite) {
       removeFromFavourites(property.id);
     } else {
@@ -545,18 +639,20 @@ export default function PropertyDetailPage() {
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({
-        title: property.title,
-        text: `Check out this property: ${property.title}`,
-        url: window.location.href,
-      })
-        .then(() => console.log('Successful share'))
-        .catch((error) => console.log('Error sharing', error));
+      navigator
+        .share({
+          title: property.title,
+          text: `Check out this property: ${property.title}`,
+          url: window.location.href,
+        })
+        .then(() => console.log("Successful share"))
+        .catch((error) => console.log("Error sharing", error));
     } else {
       // Fallback for browsers that don't support the Web Share API
-      navigator.clipboard.writeText(window.location.href)
-        .then(() => alert('Link copied to clipboard!'))
-        .catch((error) => console.error('Could not copy text: ', error));
+      navigator.clipboard
+        .writeText(window.location.href)
+        .then(() => alert("Link copied to clipboard!"))
+        .catch((error) => console.error("Could not copy text: ", error));
     }
   };
 
@@ -565,22 +661,30 @@ export default function PropertyDetailPage() {
     const section = document.getElementById(sectionId);
     if (section) {
       const yOffset = -100; // Adjust this value based on your header height
-      const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      const y =
+        section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: "smooth" });
     }
   };
 
   // Handle scroll to update active tab
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['overview', 'amenities', 'details', 'location', 'price-trends'];
+      const sections = [
+        "overview",
+        "amenities",
+        "details",
+        "location",
+        "price-trends",
+      ];
       let currentSection = sections[0];
 
       for (const section of sections) {
         const element = document.getElementById(section);
         if (element) {
           const rect = element.getBoundingClientRect();
-          if (rect.top <= 150) { // Adjust this value based on your header height
+          if (rect.top <= 150) {
+            // Adjust this value based on your header height
             currentSection = section;
           }
         }
@@ -589,8 +693,8 @@ export default function PropertyDetailPage() {
       setActiveTab(currentSection);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const formatPrice = (price: number) => {
@@ -599,7 +703,7 @@ export default function PropertyDetailPage() {
     } else if (price >= 100000) {
       return `₹${(price / 100000).toFixed(1)} L`;
     }
-    return `₹${price.toLocaleString()}`;
+    return `₹${price?.toLocaleString() || ""}`;
   };
 
   if (loading) {
@@ -633,8 +737,10 @@ export default function PropertyDetailPage() {
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-xl font-bold text-gray-900 mb-3">Property Not Found</h1>
-            <Button onClick={() => router.push('/properties')}>
+            <h1 className="text-xl font-bold text-gray-900 mb-3">
+              Property Not Found
+            </h1>
+            <Button onClick={() => router.push("/properties")}>
               Back to Properties
             </Button>
           </div>
@@ -644,13 +750,13 @@ export default function PropertyDetailPage() {
     );
   }
 
-  const isFavorite = favourites.some(p => p.id === property.id);
+  const isFavorite = favourites.some((p) => p.id === property.id);
   const Propertyimages = property.images || [
-    '/api/placeholder/800/600',
-    '/api/placeholder/800/600',
-    '/api/placeholder/800/600',
-    '/api/placeholder/800/600',
-    '/api/placeholder/800/600'
+    "/api/placeholder/800/600",
+    "/api/placeholder/800/600",
+    "/api/placeholder/800/600",
+    "/api/placeholder/800/600",
+    "/api/placeholder/800/600",
   ];
 
   return (
@@ -668,44 +774,67 @@ export default function PropertyDetailPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-5">
-              <PropertyHeader 
-                property={property} 
-                formatPrice={formatPrice} 
-              />
+              <PropertyHeader property={property} formatPrice={formatPrice} />
 
               <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Shield className="w-5 h-5 text-green-600 mr-3" />
                     <div>
-                      <span className="font-medium text-gray-900 text-sm">RERA Registered</span>
-                      <p className="text-xs text-gray-600">Government approved project</p>
+                      <span className="font-medium text-gray-900 text-sm">
+                        RERA Registered
+                      </span>
+                      <p className="text-xs text-gray-600">
+                        Government approved project
+                      </p>
                     </div>
                   </div>
-                  <Dialog open={showReraDialog} onOpenChange={setShowReraDialog}>
+                  <Dialog
+                    open={showReraDialog}
+                    onOpenChange={setShowReraDialog}
+                  >
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-xs h-8">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-8"
+                      >
                         View Details
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <div className="p-1">
-                        <h3 className="text-base font-semibold mb-3">RERA Details</h3>
+                        <h3 className="text-base font-semibold mb-3">
+                          RERA Details
+                        </h3>
                         <div className="space-y-3">
                           <div className="grid grid-cols-2 gap-2">
-                            <div className="text-xs text-gray-600">RERA Number:</div>
-                            <div className="text-[10px] font-medium">{property.rera.registrationNumber || 'RERA Not received or not applied'}</div>
+                            <div className="text-xs text-gray-600">
+                              RERA Number:
+                            </div>
+                            <div className="text-[10px] font-medium">
+                              {property.rera?.registrationNumber ||
+                                "RERA Not received or not applied"}
+                            </div>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             <div className="text-xs text-gray-600">Status:</div>
-                            <div className="text-xs font-medium text-green-600">{property.reraStatus || 'Approved'}</div>
+                            <div className="text-xs font-medium text-green-600">
+                              {property.reraStatus || "Approved"}
+                            </div>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
-                            <div className="text-xs text-gray-600">Validity:</div>
-                            <div className="text-xs font-medium">31 Dec, 2025</div>
+                            <div className="text-xs text-gray-600">
+                              Validity:
+                            </div>
+                            <div className="text-xs font-medium">
+                              31 Dec, 2025
+                            </div>
                           </div>
                           <div className="mt-3 text-xs text-gray-500">
-                            RERA registration ensures that this property complies with all regulatory requirements and provides buyer protection.
+                            RERA registration ensures that this property
+                            complies with all regulatory requirements and
+                            provides buyer protection.
                           </div>
                         </div>
                       </div>
@@ -721,19 +850,20 @@ export default function PropertyDetailPage() {
                 <div className="px-5 py-3">
                   <div className="flex space-x-6">
                     {[
-                      { id: 'overview', label: 'Overview' },
-                      { id: 'amenities', label: 'Amenities' },
-                      { id: 'details', label: 'Details' },
-                      { id: 'location', label: 'Location' },
-                      { id: 'price-trends', label: 'Price Trends' },
+                      { id: "overview", label: "Overview" },
+                      { id: "amenities", label: "Amenities" },
+                      { id: "details", label: "Details" },
+                      { id: "location", label: "Location" },
+                      { id: "price-trends", label: "Price Trends" },
                     ].map((tab) => (
                       <button
                         key={tab.id}
                         onClick={() => scrollToSection(tab.id)}
-                        className={`pb-2 px-1 text-xs font-medium border-b-2 transition-colors ${activeTab === tab.id
-                          ? 'border-red-500 text-red-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                          }`}
+                        className={`pb-2 px-1 text-xs font-medium border-b-2 transition-colors ${
+                          activeTab === tab.id
+                            ? "border-red-500 text-red-600"
+                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        }`}
                       >
                         {tab.label}
                       </button>
@@ -745,16 +875,19 @@ export default function PropertyDetailPage() {
               {/* Content Sections */}
               <div className="space-y-6">
                 {/* Overview Section */}
-                <section id="overview" className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                  <h2 className="text-base font-semibold mb-3 text-gray-900">Overview</h2>
+                <section
+                  id="overview"
+                  className="bg-white rounded-xl p-5 shadow-sm border border-gray-100"
+                >
+                  <h2 className="text-base font-semibold mb-3 text-gray-900">
+                    Overview
+                  </h2>
                   <p className="text-sm text-gray-700 leading-relaxed">
                     {property.description}
                   </p>
                 </section>
 
-                <PropertyAmenities 
-                  amenities={property.amenities} 
-                />
+                <PropertyAmenities amenities={property.amenities} />
 
                 <FloorPlans floorPlans={property.floorPlans} />
 
@@ -762,12 +895,10 @@ export default function PropertyDetailPage() {
 
                 <PropertyLocation property={property} />
 
-                <PriceTrends 
-                  priceHistoryData={priceHistoryData} 
-                  formatPrice={formatPrice} 
+                <PriceTrends
+                  priceHistoryData={priceHistoryData}
+                  formatPrice={formatPrice}
                 />
-
-                
               </div>
             </div>
 
@@ -786,29 +917,41 @@ export default function PropertyDetailPage() {
   );
 }
 const mockProperty = {
-  id: '1',
-  title: 'Luxury 3BHK Apartment in Whitefield',
-  description: 'This stunning 3BHK apartment in Whitefield offers modern living with premium amenities. Located in a prime area with excellent connectivity to IT hubs and shopping centers. The property features spacious rooms, modern fittings, and access to world-class amenities including swimming pool, gym, and landscaped gardens. Perfect for families looking for a comfortable and luxurious lifestyle in one of Bangalore\'s most sought-after locations.',
+  id: "1",
+  title: "Luxury 3BHK Apartment in Whitefield",
+  description:
+    "This stunning 3BHK apartment in Whitefield offers modern living with premium amenities. Located in a prime area with excellent connectivity to IT hubs and shopping centers. The property features spacious rooms, modern fittings, and access to world-class amenities including swimming pool, gym, and landscaped gardens. Perfect for families looking for a comfortable and luxurious lifestyle in one of Bangalore's most sought-after locations.",
   price: 11600000,
-  address: 'Electronic City Phase II',
-  city: 'Bangalore',
-  state: 'Karnataka',
+  address: "Electronic City Phase II",
+  city: "Bangalore",
+  state: "Karnataka",
   bedrooms: 3,
   bathrooms: 2,
   area: 1067,
-  areaUnit: 'sqft',
-  category: 'Apartment',
-  propertyType: 'sell',
-  constructionStatus: 'Ready to Move',
-  furnishingStatus: 'Semi Furnished',
-  possessionDate: 'Immediate',
-  features: ['Parking', 'Security', 'Gym', 'Garden', 'Swimming Pool', 'Clubhouse', 'Power Backup', 'Lift', 'WiFi', 'CCTV'],
+  areaUnit: "sqft",
+  category: "Apartment",
+  propertyType: "sell",
+  constructionStatus: "Ready to Move",
+  furnishingStatus: "Semi Furnished",
+  possessionDate: "Immediate",
+  features: [
+    "Parking",
+    "Security",
+    "Gym",
+    "Garden",
+    "Swimming Pool",
+    "Clubhouse",
+    "Power Backup",
+    "Lift",
+    "WiFi",
+    "CCTV",
+  ],
   location: [12.9716, 77.5946],
   images: [
-    '/api/placeholder/800/600',
-    '/api/placeholder/800/600',
-    '/api/placeholder/800/600',
-    '/api/placeholder/800/600',
-    '/api/placeholder/800/600'
-  ]
+    "/api/placeholder/800/600",
+    "/api/placeholder/800/600",
+    "/api/placeholder/800/600",
+    "/api/placeholder/800/600",
+    "/api/placeholder/800/600",
+  ],
 };
