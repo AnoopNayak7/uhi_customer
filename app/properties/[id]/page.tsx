@@ -708,20 +708,202 @@ export default function PropertyDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
-        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="space-y-6">
-            <Skeleton className="h-[350px] w-full rounded-xl" />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-5">
-                <Skeleton className="h-40 w-full rounded-xl" />
-                <Skeleton className="h-20 w-full rounded-xl" />
-                <Skeleton className="h-60 w-full rounded-xl" />
+        <main className="flex-1">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            {/* Image Gallery Skeleton */}
+            <div className="mb-6 bg-white rounded-xl overflow-hidden shadow-sm">
+              <div className="grid grid-cols-3 gap-2 h-[350px]">
+                <div className="col-span-2 relative">
+                  <Skeleton className="h-full w-full rounded-l-lg" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="flex-1 rounded-tr-lg" />
+                  <Skeleton className="flex-1 rounded-br-lg" />
+                </div>
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left Column */}
+              <div className="lg:col-span-2 space-y-5">
+                {/* Property Header Skeleton */}
+                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                  <div className="animate-pulse">
+                    <Skeleton className="h-8 w-3/4 mb-3" />
+                    <Skeleton className="h-4 w-1/2 mb-4" />
+                    <div className="flex items-center gap-4 mb-4">
+                      <Skeleton className="h-6 w-16" />
+                      <Skeleton className="h-6 w-16" />
+                      <Skeleton className="h-6 w-20" />
+                      <Skeleton className="h-6 w-16" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-10 w-32" />
+                      <div className="flex gap-2">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RERA Card Skeleton */}
+                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                  <div className="animate-pulse flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Skeleton className="h-5 w-5 rounded mr-3" />
+                      <div>
+                        <Skeleton className="h-4 w-32 mb-1" />
+                        <Skeleton className="h-3 w-40" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-8 w-20" />
+                  </div>
+                </div>
+
+                {/* Navigation Tabs Skeleton */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+                  <div className="px-5 py-3">
+                    <div className="animate-pulse flex space-x-6">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Skeleton key={i} className="h-4 w-16" />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content Sections Skeleton */}
+                <div className="space-y-6">
+                  {/* Overview Section */}
+                  <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div className="animate-pulse">
+                      <Skeleton className="h-5 w-24 mb-3" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Amenities Section */}
+                  <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div className="animate-pulse">
+                      <Skeleton className="h-5 w-24 mb-4" />
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {Array.from({ length: 9 }).map((_, i) => (
+                          <div key={i} className="flex items-center">
+                            <Skeleton className="h-4 w-4 rounded mr-2" />
+                            <Skeleton className="h-4 w-20" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Details Section */}
+                  <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div className="animate-pulse">
+                      <Skeleton className="h-5 w-24 mb-4" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                          <div key={i} className="flex justify-between">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-4 w-20" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Location Section */}
+                  <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div className="animate-pulse">
+                      <Skeleton className="h-5 w-24 mb-4" />
+                      <Skeleton className="h-48 w-full rounded-lg" />
+                    </div>
+                  </div>
+
+                  {/* Price Trends Section */}
+                  <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                    <div className="animate-pulse">
+                      <Skeleton className="h-5 w-32 mb-4" />
+                      <Skeleton className="h-64 w-full rounded-lg" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column */}
               <div className="space-y-5">
-                <Skeleton className="h-80 w-full rounded-xl" />
-                <Skeleton className="h-40 w-full rounded-xl" />
+                {/* Contact Agent Skeleton */}
+                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                  <div className="animate-pulse">
+                    <Skeleton className="h-5 w-32 mb-4" />
+                    <div className="flex items-center mb-4">
+                      <Skeleton className="h-12 w-12 rounded-full mr-3" />
+                      <div>
+                        <Skeleton className="h-4 w-24 mb-1" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* EMI Calculator Skeleton */}
+                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                  <div className="animate-pulse">
+                    <div className="flex items-center justify-between mb-4">
+                      <Skeleton className="h-5 w-32" />
+                      <Skeleton className="h-6 w-16" />
+                    </div>
+                    <div className="space-y-4">
+                      <Skeleton className="h-16 w-full rounded-lg" />
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-16 w-full rounded-lg" />
+                      <Skeleton className="h-16 w-full rounded-lg" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Builder Info Skeleton */}
+                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                  <div className="animate-pulse">
+                    <Skeleton className="h-5 w-24 mb-4" />
+                    <div className="flex items-center mb-3">
+                      <Skeleton className="h-10 w-10 rounded mr-3" />
+                      <div>
+                        <Skeleton className="h-4 w-24 mb-1" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-3 w-full" />
+                      <Skeleton className="h-3 w-3/4" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Property Insights Skeleton */}
+                <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                  <div className="animate-pulse">
+                    <Skeleton className="h-5 w-32 mb-4" />
+                    <div className="space-y-3">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="flex items-center">
+                          <Skeleton className="h-4 w-4 rounded mr-2" />
+                          <Skeleton className="h-4 w-full" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

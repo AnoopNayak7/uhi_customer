@@ -58,11 +58,13 @@ export const AnimatedPropertyGrid = ({
   loading = false,
   className,
 }: AnimatedPropertyListProps) => {
+  // Use the provided className or fallback to default grid layout
+  const gridClassName =
+    className || "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+
   if (loading) {
     return (
-      <div
-        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}
-      >
+      <div className={`grid ${gridClassName} gap-6`}>
         {Array.from({ length: 9 }).map((_, index) => (
           <motion.div
             key={`skeleton-${index}`}
@@ -102,7 +104,7 @@ export const AnimatedPropertyGrid = ({
             },
           },
         }}
-        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}
+        className={`grid ${gridClassName} gap-6`}
       >
         {children.map((child, index) => (
           <motion.div
