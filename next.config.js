@@ -13,6 +13,7 @@ const nextConfig = {
       'images.pexels.com',
       'via.placeholder.com',
       'www.jllhomes.co.in',
+      'urbanhousein-images-dev.s3.us-east-1.amazonaws.com',
     ],
     // Image optimization settings
     formats: ['image/webp', 'image/avif'],

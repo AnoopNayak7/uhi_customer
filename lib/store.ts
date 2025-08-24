@@ -16,21 +16,21 @@ interface User {
 interface Property {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   price: number;
-  propertyType: string;
+  propertyType?: string;
   address: string;
   city: string;
-  state: string;
+  state?: string;
   bedrooms: number;
   bathrooms: number;
   area: number;
   areaUnit: string;
   images?: string[];
-  features: string[];
-  category: string;
-  constructionStatus: string;
-  furnishingStatus: string;
+  features?: string[];
+  category?: string;
+  constructionStatus?: string;
+  furnishingStatus?: string;
   latitude?: number;
   longitude?: number;
   isFeatured?: boolean;
@@ -132,32 +132,44 @@ export const useAuthStore = create<AuthState>()(
 export const usePropertyStore = create<PropertyState>()(
   persist(
     (set, get) => ({
-  compareList: [],
-  favourites: [],
-  viewedProperties: [],
-  addToCompare: (property) => set((state) => {
-    if (state.compareList.length >= 3) return state;
-    if (state.compareList.find(p => p.id === property.id)) return state;
-    return { compareList: [...state.compareList, property] };
-  }),
-  removeFromCompare: (propertyId) => set((state) => ({
-    compareList: state.compareList.filter(p => p.id !== propertyId)
-  })),
-  clearCompare: () => set({ compareList: [] }),
-  addToFavourites: (property) => set((state) => {
-    if (state.favourites.find(p => p.id === property.id)) return state;
-    return { favourites: [...state.favourites, property] };
-  }),
-  removeFromFavourites: (propertyId) => set((state) => ({
-    favourites: state.favourites.filter(p => p.id !== propertyId)
-  })),
-  addToViewed: (property) => set((state) => {
-    const filtered = state.viewedProperties.filter(p => p.id !== property.id);
-    return { viewedProperties: [property, ...filtered].slice(0, 20) };
-  })
-}),
+      compareList: [],
+      favourites: [],
+      viewedProperties: [],
+      addToCompare: (property) => set((state) => {
+        if (state.compareList.length >= 3) return state;
+        if (state.compareList.find(p => p.id === property.id)) return state;
+        return { compareList: [...state.compareList, property] };
+      }),
+      removeFromCompare: (propertyId) => set((state) => ({
+        compareList: state.compareList.filter(p => p.id !== propertyId)
+      })),
+      clearCompare: () => set({ compareList: [] }),
+      addToFavourites: (property) => set((state) => {
+        if (state.favourites.find(p => p.id === property.id)) return state;
+        return { favourites: [...state.favourites, property] };
+      }),
+      removeFromFavourites: (propertyId) => set((state) => ({
+        favourites: state.favourites.filter(p => p.id !== propertyId)
+      })),
+      addToViewed: (property) => set((state) => {
+        const filtered = state.viewedProperties.filter(p => p.id !== property.id);
+        return { viewedProperties: [property, ...filtered].slice(0, 20) };
+      })
+    }),
     {
       name: 'urbanhousein-properties',
+      storage: typeof window !== 'undefined' ? {
+        getItem: (name) => {
+          const value = localStorage.getItem(name);
+          return value ? JSON.parse(value) : null;
+        },
+        setItem: (name, value) => {
+          localStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          localStorage.removeItem(name);
+        },
+      } : undefined,
     }
   )
 );

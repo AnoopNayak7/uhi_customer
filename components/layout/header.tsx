@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
-import { useAuthStore } from "@/lib/store";
+import { useAuthStore, usePropertyStore } from "@/lib/store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,12 +23,14 @@ import {
   BarChart3,
   Menu,
   X,
+  GitCompare,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TouchButton } from "@/components/animations/mobile-animations";
 
 export function Header() {
   const { user, isAuthenticated, logout } = useAuthStore();
+  const { compareList } = usePropertyStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigationItems = [
@@ -93,6 +95,19 @@ export function Header() {
 
           {/* Desktop Auth & Actions */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Compare Button */}
+            <Button variant="outline" size="sm" asChild className="relative">
+              <Link href="/tools/property-comparison">
+                <GitCompare className="w-4 h-4 mr-2" />
+                Compare
+                {compareList.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {compareList.length}
+                  </span>
+                )}
+              </Link>
+            </Button>
+
             {isAuthenticated && user ? (
               <>
                 {user.role === "builder" && (
@@ -222,6 +237,28 @@ export function Header() {
                     </Link>
                   </motion.div>
                 ))}
+
+                {/* Mobile Compare Button */}
+                <motion.div variants={menuItemVariants}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start relative"
+                    asChild
+                  >
+                    <Link
+                      href="/tools/property-comparison"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <GitCompare className="mr-2 h-4 w-4" />
+                      Compare Properties
+                      {compareList.length > 0 && (
+                        <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                          {compareList.length}
+                        </span>
+                      )}
+                    </Link>
+                  </Button>
+                </motion.div>
 
                 {!isAuthenticated ? (
                   <motion.div

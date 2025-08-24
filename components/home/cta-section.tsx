@@ -18,8 +18,8 @@ export function CTASection() {
             </Badge>
 
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Let's Find a Home
-              <span className="text-red-500 block">That's Perfect</span>
+              Let&apos;s Find a Home
+              <span className="text-red-500 block">That&apos;s Perfect</span>
               <span className="block">Place For You!</span>
             </h2>
 

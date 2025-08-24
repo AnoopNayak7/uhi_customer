@@ -3,12 +3,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart, MapPin, Bed, Bath, Square } from "lucide-react";
+import { Heart, MapPin, Bed, Bath, Square, BarChart3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CardHover } from "@/components/animations/page-transitions";
 import { motion } from "framer-motion";
 import { PropertyImage } from "@/components/ui/optimized-image";
 import { PROPERTY_IMAGES, BLUR_DATA_URLS } from "@/lib/images";
+import { usePropertyStore } from "@/lib/store";
+import { toast } from "sonner";
 
 // Helper function to format price
 const formatPrice = (price: number) => {
@@ -64,6 +66,7 @@ export const PropertyCard = ({
   compact?: boolean;
 }) => {
   const router = useRouter();
+  const { addToCompare, removeFromCompare, compareList } = usePropertyStore();
 
   const handleCardClick = () => {
     router.push(`/properties/${property.id}`);
@@ -72,6 +75,23 @@ export const PropertyCard = ({
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onFavorite();
+  };
+
+  const handleCompareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const isInCompare = compareList.some((p) => p.id === property.id);
+
+    if (isInCompare) {
+      removeFromCompare(property.id);
+      toast.success("Property removed from comparison");
+    } else {
+      if (compareList.length >= 3) {
+        toast.error("You can compare maximum 3 properties");
+        return;
+      }
+      addToCompare(property);
+      toast.success("Property added to comparison");
+    }
   };
 
   const defaultImage = PROPERTY_IMAGES.default;
@@ -106,26 +126,46 @@ export const PropertyCard = ({
             </Badge>
           </div> */}
 
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="absolute top-3 right-3"
-            >
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-10 w-10 sm:h-8 sm:w-8 p-0 rounded-full backdrop-blur-sm bg-white/20 hover:bg-white/30 ${
-                  isFavorite ? "text-red-500" : "text-white hover:text-red-500"
-                }`}
-                onClick={handleFavoriteClick}
-              >
-                <Heart
-                  className={`w-5 h-5 sm:w-4 sm:h-4 ${
-                    isFavorite ? "fill-current" : ""
+            <div className="absolute top-3 right-3 flex gap-2">
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-10 w-10 sm:h-8 sm:w-8 p-0 rounded-full backdrop-blur-sm bg-white/20 hover:bg-white/30 ${
+                    compareList.some((p) => p.id === property.id)
+                      ? "text-blue-500"
+                      : "text-white hover:text-blue-500"
                   }`}
-                />
-              </Button>
-            </motion.div>
+                  onClick={handleCompareClick}
+                >
+                  <BarChart3
+                    className={`w-5 h-5 sm:w-4 sm:h-4 ${
+                      compareList.some((p) => p.id === property.id)
+                        ? "fill-current"
+                        : ""
+                    }`}
+                  />
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-10 w-10 sm:h-8 sm:w-8 p-0 rounded-full backdrop-blur-sm bg-white/20 hover:bg-white/30 ${
+                    isFavorite
+                      ? "text-red-500"
+                      : "text-white hover:text-red-500"
+                  }`}
+                  onClick={handleFavoriteClick}
+                >
+                  <Heart
+                    className={`w-5 h-5 sm:w-4 sm:h-4 ${
+                      isFavorite ? "fill-current" : ""
+                    }`}
+                  />
+                </Button>
+              </motion.div>
+            </div>
           </div>
 
           <CardContent className="p-4 sm:p-5">
