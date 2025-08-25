@@ -77,6 +77,23 @@ interface SearchState {
   clearFilters: () => void;
 }
 
+interface TravelDestination {
+  id: string;
+  name: string;
+  address: string;
+  position: [number, number];
+  travelTime?: string;
+  distance?: number;
+  lastCalculated?: number;
+}
+
+interface TravelPreferencesState {
+  preferredDestinations: TravelDestination[];
+  addDestination: (destination: TravelDestination) => void;
+  removeDestination: (id: string) => void;
+  clearDestinations: () => void;
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -199,3 +216,35 @@ export const useSearchStore = create<SearchState>((set) => ({
     }
   })
 }));
+
+export const useTravelPreferencesStore = create<TravelPreferencesState>()(
+  persist(
+    (set, get) => ({
+      preferredDestinations: [],
+      addDestination: (destination) => set((state) => {
+        if (state.preferredDestinations.length >= 3) return state;
+        if (state.preferredDestinations.find(d => d.id === destination.id)) return state;
+        return { preferredDestinations: [...state.preferredDestinations, destination] };
+      }),
+      removeDestination: (id) => set((state) => ({
+        preferredDestinations: state.preferredDestinations.filter(d => d.id !== id)
+      })),
+      clearDestinations: () => set({ preferredDestinations: [] })
+    }),
+    {
+      name: 'urbanhousein-travel-preferences',
+      storage: typeof window !== 'undefined' ? {
+        getItem: (name) => {
+          const value = localStorage.getItem(name);
+          return value ? JSON.parse(value) : null;
+        },
+        setItem: (name, value) => {
+          localStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          localStorage.removeItem(name);
+        },
+      } : undefined,
+    }
+  )
+);

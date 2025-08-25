@@ -863,7 +863,7 @@ export default function PropertyDetailPage() {
     setActiveTab(sectionId);
     const section = document.getElementById(sectionId);
     if (section) {
-      const yOffset = -100; // Adjust this value based on your header height
+      const yOffset = -140; // Account for header (80px) + sticky tabs (60px)
       const y =
         section.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: "smooth" });
@@ -886,8 +886,8 @@ export default function PropertyDetailPage() {
         const element = document.getElementById(section);
         if (element) {
           const rect = element.getBoundingClientRect();
-          if (rect.top <= 150) {
-            // Adjust this value based on your header height
+          if (rect.top <= 180) {
+            // Account for header + sticky tabs + some padding
             currentSection = section;
           }
         }
@@ -1274,18 +1274,26 @@ export default function PropertyDetailPage() {
                   </p>
                 </section>
 
-                <PropertyAmenities amenities={property.amenities} />
+                <div id="amenities">
+                  <PropertyAmenities amenities={property.amenities} />
+                </div>
 
                 <FloorPlans floorPlans={property.floorPlans} />
 
-                <PropertyDetails property={property} />
+                <div id="details">
+                  <PropertyDetails property={property} />
+                </div>
 
-                <PropertyLocation property={property} />
+                <div id="location">
+                  <PropertyLocation property={property} />
+                </div>
 
-                <PriceTrends
-                  priceHistoryData={priceHistoryData}
-                  formatPrice={formatPrice}
-                />
+                <div id="price-trends">
+                  <PriceTrends
+                    priceHistoryData={priceHistoryData}
+                    formatPrice={formatPrice}
+                  />
+                </div>
               </div>
             </div>
 

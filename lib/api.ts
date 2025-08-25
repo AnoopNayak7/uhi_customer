@@ -7,7 +7,8 @@ const BYPASS_AUTH_ENDPOINTS = [
   '/auth/send-otp',
   '/auth/verify-otp',
   '/properties',
-  '/properties/'
+  '/properties/',
+  '/area-insights'
 ];
 
 class ApiClient {
@@ -40,6 +41,11 @@ class ApiClient {
     }
     
     if (method === 'GET' && endpoint.startsWith('/properties?')) {
+      return true;
+    }
+    
+    // Check for area insights endpoints
+    if (method === 'GET' && endpoint.startsWith('/area-insights/')) {
       return true;
     }
     
@@ -203,6 +209,34 @@ class ApiClient {
   async getMyLeads(params: any = {}) {
     const searchParams = new URLSearchParams(params);
     return this.request(`/leads/my?${searchParams}`);
+  }
+
+  // Area Insights methods
+  async getSupportedCities() {
+    return this.request('/area-insights/cities');
+  }
+
+  async getCityLocations(cityName: string) {
+    return this.request(`/area-insights/cities/${encodeURIComponent(cityName)}/locations`);
+  }
+
+  async getLocationDetails(cityName: string, locationName: string) {
+    return this.request(`/area-insights/cities/${encodeURIComponent(cityName)}/locations/${encodeURIComponent(locationName)}`);
+  }
+
+  async getPriceTrends(cityName: string, locationName: string, params: {
+    propertyType?: 'all' | 'apartments' | 'villas' | 'independent_houses';
+    timeRange?: '1y' | '3y' | '5y' | '10y';
+  } = {}) {
+    const searchParams = new URLSearchParams(params as any);
+    return this.request(`/area-insights/cities/${encodeURIComponent(cityName)}/locations/${encodeURIComponent(locationName)}/price-trends?${searchParams}`);
+  }
+
+  async getLocationComparison(cityName: string, locations: string[]) {
+    return this.request(`/area-insights/cities/${encodeURIComponent(cityName)}/compare`, {
+      method: 'POST',
+      body: JSON.stringify({ locations }),
+    });
   }
 
 }
