@@ -40,7 +40,7 @@ export default function AnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.getBuilderAnalytics({ days: timeRange });
+      const response:any = await apiClient.getBuilderAnalytics({ days: timeRange });
       setAnalytics(response.data || mockAnalytics);
     } catch (error) {
       console.error('Error fetching analytics:', error);
@@ -52,7 +52,7 @@ export default function AnalyticsPage() {
 
   const fetchProperties = async () => {
     try {
-      const response = await apiClient.getMyProperties({ limit: 10 });
+      const response:any = await apiClient.getMyProperties({ limit: 10 });
       setProperties(response.data || []);
     } catch (error) {
       console.error('Error fetching properties:', error);

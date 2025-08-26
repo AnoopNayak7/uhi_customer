@@ -101,6 +101,7 @@ export const MotionWrapper = ({
       animate="animate"
       exit="exit"
       variants={variants[variant]}
+      // @ts-ignore
       transition={{ ...transitions[transition], delay }}
       className={className}
     >

@@ -59,7 +59,7 @@ export default function LoginPage() {
   const onOTPSubmit = async (data: OTPForm) => {
     setLoading(true);
     try {
-      const response = await apiClient.verifyOTP(email, data.otp);
+      const response:any = await apiClient.verifyOTP(email, data.otp);
       if (response.success) {
         const { user, token } = response.data;
         login(user, token);

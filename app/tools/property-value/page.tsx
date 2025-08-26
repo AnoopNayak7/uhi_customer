@@ -570,7 +570,7 @@ export default function PropertyValuePage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Desktop: Input Form Sidebar */}
                 <MotionWrapper
-                  variant="slideInLeft"
+                  variant="fadeInLeft"
                   className="hidden lg:block lg:col-span-1"
                 >
                   <Card className="sticky top-8">
@@ -598,7 +598,7 @@ export default function PropertyValuePage() {
                         transition={{ duration: 0.5 }}
                       >
                         {/* Valuation Summary */}
-                        <MotionWrapper variant="slideInRight" delay={0.1}>
+                        <MotionWrapper variant="fadeInRight" delay={0.1}>
                           <Card>
                             <CardHeader>
                               <CardTitle className="flex items-center justify-between">

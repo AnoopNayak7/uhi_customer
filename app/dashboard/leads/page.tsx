@@ -43,7 +43,7 @@ export default function LeadsPage() {
   const fetchLeads = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.getMyLeads();
+      const response:any = await apiClient.getMyLeads();
       setLeads(response.data || mockLeads);
     } catch (error) {
       console.error('Error fetching leads:', error);

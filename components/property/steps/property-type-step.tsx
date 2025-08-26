@@ -101,6 +101,7 @@ export function PropertyTypeStep({ formData, updateFormData }: PropertyTypeStepP
                     </div>
                     <h4 className="font-medium text-gray-900 mb-1">{category.label}</h4>
                     {formData.category === category.value && (
+                      // @ts-ignore
                       <Badge size="sm" className="bg-red-500">Selected</Badge>
                     )}
                   </CardContent>

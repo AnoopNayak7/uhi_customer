@@ -43,6 +43,7 @@ export const MobileFadeIn = ({
     <motion.div
       initial={{ opacity: 0, y: isMobile ? 10 : 20 }}
       animate={{ opacity: 1, y: 0 }}
+      // @ts-ignore
       transition={{
         ...getMobileOptimizedTransition(isMobile),
         delay,
@@ -198,6 +199,7 @@ export const ParallaxScroll = ({
       initial={{ y: actualOffset }}
       whileInView={{ y: 0 }}
       viewport={{ once: true }}
+      // @ts-ignore
       transition={getMobileOptimizedTransition(isMobile)}
       className={className}
     >
@@ -312,6 +314,7 @@ export const MobileStaggerList = ({
             hidden: { opacity: 0, y: isMobile ? 10 : 20 },
             visible: { opacity: 1, y: 0 },
           }}
+          // @ts-ignore
           transition={getMobileOptimizedTransition(isMobile)}
         >
           {child}

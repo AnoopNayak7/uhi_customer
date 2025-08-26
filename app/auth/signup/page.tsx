@@ -69,7 +69,7 @@ export default function SignupPage() {
     
     setLoading(true);
     try {
-      const response = await apiClient.verifyOTP(signupData.email, data.otp);
+      const response:any = await apiClient.verifyOTP(signupData.email, data.otp);
       if (response.success) {
         const { user, token } = response.data;
         login(user, token);

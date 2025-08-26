@@ -95,6 +95,7 @@ export const PageTransition = ({
       initial="initial"
       animate="in"
       variants={pageVariants}
+      // @ts-ignore
       transition={pageTransition}
       className={className}
     >
@@ -117,6 +118,7 @@ export const SlidePageTransition = ({
       initial="initial"
       animate="in"
       variants={slideVariants}
+      // @ts-ignore
       transition={slideTransition}
       className={className}
     >

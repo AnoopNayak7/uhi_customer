@@ -439,6 +439,43 @@ function UserDashboard({ properties, loading }: any) {
         ))}
       </div>
 
+      <Card className="border border-gray-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <Button variant="outline" className="justify-start h-12" asChild>
+              <Link href="/properties">
+                <Building className="w-4 h-4 mr-3" />
+                Browse Properties
+              </Link>
+            </Button>
+
+            <Button variant="outline" className="justify-start h-12" asChild>
+              <Link href="/favourites">
+                <Heart className="w-4 h-4 mr-3" />
+                My Favourites
+              </Link>
+            </Button>
+
+            <Button variant="outline" className="justify-start h-12" asChild>
+              <Link href="/tools/mortgage-calculator">
+                <Calculator className="w-4 h-4 mr-3" />
+                EMI Calculator
+              </Link>
+            </Button>
+
+            <Button variant="outline" className="justify-start h-12" asChild>
+              <Link href="/tools/property-comparison">
+                <Target className="w-4 h-4 mr-3" />
+                Compare Properties
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Recently Viewed Properties */}
       <Card className="border border-gray-200">
         <CardHeader className="pb-3">
@@ -604,42 +641,7 @@ function UserDashboard({ properties, loading }: any) {
       </div>
 
       {/* Quick Actions */}
-      <Card className="border border-gray-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Button variant="outline" className="justify-start h-12" asChild>
-              <Link href="/properties">
-                <Building className="w-4 h-4 mr-3" />
-                Browse Properties
-              </Link>
-            </Button>
-
-            <Button variant="outline" className="justify-start h-12" asChild>
-              <Link href="/favourites">
-                <Heart className="w-4 h-4 mr-3" />
-                My Favourites
-              </Link>
-            </Button>
-
-            <Button variant="outline" className="justify-start h-12" asChild>
-              <Link href="/tools/mortgage-calculator">
-                <Calculator className="w-4 h-4 mr-3" />
-                EMI Calculator
-              </Link>
-            </Button>
-
-            <Button variant="outline" className="justify-start h-12" asChild>
-              <Link href="/tools/property-comparison">
-                <Target className="w-4 h-4 mr-3" />
-                Compare Properties
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      
 
       {/* Personalized Recommendations */}
       <Card className="border border-gray-200">

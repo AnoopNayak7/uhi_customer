@@ -106,7 +106,7 @@ export const PropertyCard = ({
           <div className="relative">
             <div
               className={`relative ${
-                compact ? "h-[200px] sm:h-[220px]" : "h-48 sm:h-52"
+                compact ? "h-[200px] sm:h-[160px]" : "h-48 sm:h-52"
               } overflow-hidden`}
             >
               <PropertyImage
@@ -168,7 +168,7 @@ export const PropertyCard = ({
             </div>
           </div>
 
-          <CardContent className="p-4 sm:p-5">
+          <CardContent className="p-4 sm:p-3">
             <div className="mb-4 sm:mb-5">
               <h3
                 className={`font-semibold text-gray-900 line-clamp-2 mb-1 ${
