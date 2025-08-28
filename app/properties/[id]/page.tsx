@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiClient } from "@/lib/api";
-import { usePropertyStore } from "@/lib/store";
+import { usePropertyStore, useAuthStore } from "@/lib/store";
 import {
   Heart,
   Share2,
@@ -55,6 +55,7 @@ import { FloorPlans } from "@/components/property/FloorPlans";
 import { BuilderInfo } from "@/components/property/BuilderInfo";
 import { ContactAgent } from "@/components/property/ContactAgent";
 import { PropertyInsights } from "@/components/property/PropertyInsights";
+import { toast } from "sonner";
 
 // Dynamically import the Map and NearbyPlaces components to avoid SSR issues with Leaflet
 const Map = dynamic(() => import("@/components/Map"), { ssr: false });
@@ -751,6 +752,7 @@ export default function PropertyDetailPage() {
   const router = useRouter();
   const { addToFavourites, removeFromFavourites, favourites, addToViewed } =
     usePropertyStore();
+  const { user, addToRecentlyViewed } = useAuthStore();
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -776,22 +778,38 @@ export default function PropertyDetailPage() {
         const response: any = await apiClient.getProperty(id);
         if (response.success && response.data) {
           setProperty(response.data);
-          addToViewed(response.data);
+          // Only add to viewed if user is logged in
+          if (user) {
+            addToViewed(response.data);
+            addToRecentlyViewed(response.data);
+            // Also add to the new viewed properties API
+            try {
+              await apiClient.addViewedProperty(user.id, id);
+            } catch (error) {
+              console.error('Error adding to viewed properties:', error);
+            }
+          }
         } else {
           const mockPropertyWithId = { ...mockProperty, id };
           setProperty(mockPropertyWithId);
-          addToViewed(mockPropertyWithId);
+          if (user) {
+            addToViewed(mockPropertyWithId);
+            addToRecentlyViewed(mockPropertyWithId);
+          }
         }
       } catch (error) {
         console.error("Error fetching property:", error);
         const mockPropertyWithId = { ...mockProperty, id };
         setProperty(mockPropertyWithId);
-        addToViewed(mockPropertyWithId);
+        if (user) {
+          addToViewed(mockPropertyWithId);
+          addToRecentlyViewed(mockPropertyWithId);
+        }
       } finally {
         setLoading(false);
       }
     },
-    [addToViewed]
+    [addToViewed, addToRecentlyViewed, user]
   );
 
   useEffect(() => {
@@ -800,14 +818,28 @@ export default function PropertyDetailPage() {
     }
   }, [params.id, fetchProperty]);
 
-  const handleFavorite = () => {
+  const handleFavorite = async () => {
     if (!property) return;
 
-    const isFavorite = favourites.some((p) => p.id === property.id);
-    if (isFavorite) {
-      removeFromFavourites(property.id);
-    } else {
-      addToFavourites(property);
+    if (!user) {
+      toast.error('Please login to add favourites');
+      return;
+    }
+
+    try {
+      const isFavorite = favourites.some((p) => p.id === property.id);
+      if (isFavorite) {
+        await apiClient.removeFromFavourites(property.id);
+        removeFromFavourites(property.id);
+        toast.success('Property removed from favourites');
+      } else {
+        await apiClient.addToFavourites(property.id);
+        addToFavourites(property);
+        toast.success('Property added to favourites');
+      }
+    } catch (error) {
+      console.error('Error updating favourite:', error);
+      toast.error('Failed to update favourite');
     }
   };
 
@@ -834,29 +866,62 @@ export default function PropertyDetailPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      if (!user) {
+        toast.error('Please login to book a visit');
+        setIsSubmitting(false);
+        return;
+      }
 
-    setIsSubmitting(false);
-    setBookingSuccess(true);
-
-    // Reset form after success
-    setTimeout(() => {
-      setBookingSuccess(false);
-      setShowBookingModal(false);
-      setBookingForm({
-        name: "",
-        email: "",
-        phone: "",
-        date: "",
-        time: "",
-        message: "",
+      const response: any = await apiClient.bookPropertyVisit({
+        propertyId: params.id as string,
+        name: bookingForm.name,
+        email: bookingForm.email,
+        phone: bookingForm.phone,
+        date: bookingForm.date,
+        time: bookingForm.time,
+        message: bookingForm.message
       });
-    }, 2000);
+
+      if (response.success) {
+        setIsSubmitting(false);
+        setBookingSuccess(true);
+
+        // Reset form after success
+        setTimeout(() => {
+          setBookingSuccess(false);
+          setShowBookingModal(false);
+          setBookingForm({
+            name: "",
+            email: "",
+            phone: "",
+            date: "",
+            time: "",
+            message: "",
+          });
+        }, 3000);
+      } else {
+        throw new Error(response.message || 'Failed to book visit');
+      }
+    } catch (error) {
+      console.error('Error booking visit:', error);
+      toast.error('Failed to book visit. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
     setBookingForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, nextField?: string) => {
+    if (e.key === 'Enter' && nextField) {
+      e.preventDefault();
+      const nextElement = document.getElementById(nextField);
+      if (nextElement) {
+        nextElement.focus();
+      }
+    }
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -1379,6 +1444,7 @@ export default function PropertyDetailPage() {
                           onChange={(e) =>
                             handleInputChange("name", e.target.value)
                           }
+                          onKeyDown={(e) => handleKeyDown(e, "email")}
                           className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
                           required
                         />
@@ -1400,6 +1466,7 @@ export default function PropertyDetailPage() {
                             onChange={(e) =>
                               handleInputChange("email", e.target.value)
                             }
+                            onKeyDown={(e) => handleKeyDown(e, "phone")}
                             className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
                             required
                           />
@@ -1420,6 +1487,7 @@ export default function PropertyDetailPage() {
                             onChange={(e) =>
                               handleInputChange("phone", e.target.value)
                             }
+                            onKeyDown={(e) => handleKeyDown(e, "date")}
                             className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
                             required
                           />
@@ -1452,6 +1520,7 @@ export default function PropertyDetailPage() {
                           onChange={(e) =>
                             handleInputChange("date", e.target.value)
                           }
+                          onKeyDown={(e) => handleKeyDown(e, "time")}
                           min={new Date().toISOString().split("T")[0]}
                           className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
                           required
@@ -1471,6 +1540,7 @@ export default function PropertyDetailPage() {
                           onChange={(e) =>
                             handleInputChange("time", e.target.value)
                           }
+                          onKeyDown={(e) => handleKeyDown(e, "message")}
                           className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-red-500 focus:ring-red-500 transition-colors bg-white"
                           required
                         >
@@ -1504,6 +1574,7 @@ export default function PropertyDetailPage() {
                       onChange={(e) =>
                         handleInputChange("message", e.target.value)
                       }
+                      onKeyDown={(e) => handleKeyDown(e)}
                       className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors resize-none"
                       rows={3}
                     />

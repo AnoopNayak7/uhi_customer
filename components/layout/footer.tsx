@@ -20,7 +20,7 @@ export function Footer() {
   ];
 
   const propertyTypes = [
-    { label: 'Apartments for Sale', href: '/properties?type=sell&category=flat' },
+    { label: 'Apartments for Sale', href: '/properties?type=sell&category=apartment' },
     { label: 'Houses for Sale', href: '/properties?type=sell&category=house' },
     { label: 'Villas for Sale', href: '/properties?type=sell&category=villa' },
     { label: 'Apartments for Rent', href: '/properties?type=rent&category=flat' },
@@ -35,10 +35,7 @@ export function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">U</span>
-              </div>
-              <span className="text-xl font-bold text-white">{APP_CONFIG.name}</span>
+              <Logo className="w-32 h-32" footer={true} />
             </div>
             <p className="text-gray-300 text-sm">
               India's most trusted real estate platform. Find your perfect home with our 

@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export function PropertyListings() {
   const cities = [
-    { name: 'Bangalore', properties: 1234, href: '/properties?city=Bangalore' },
+    { name: 'Bengaluru', properties: 1234, href: '/properties?city=Bengaluru' },
     { name: 'Mumbai', properties: 2567, href: '/properties?city=Mumbai' },
     { name: 'Delhi', properties: 1890, href: '/properties?city=Delhi' },
     { name: 'Chennai', properties: 987, href: '/properties?city=Chennai' },
@@ -16,41 +16,41 @@ export function PropertyListings() {
   const propertyTypes = [
     {
       icon: Building,
-      title: 'Properties in Bangalore',
-      subtitle: 'Property for Sale in Bangalore',
+      title: 'Properties in Bengaluru',
+      subtitle: 'Property for Sale in Bengaluru',
       count: '15,000+ Properties',
       description: 'Properties in Mysore Road',
-      link: '/properties?city=Bangalore',
+      link: '/properties?city=Bengaluru',
       bgColor: 'bg-blue-50',
       iconColor: 'text-blue-500'
     },
     {
       icon: Home,
-      title: 'Projects in Bangalore',
-      subtitle: 'Flats in Bangalore',
+      title: 'Projects in Bengaluru',
+      subtitle: 'Flats in Bengaluru',
       count: '800+ Projects',
       description: 'Flats in Sarjapur Road',
-      link: '/properties?city=Bangalore&category=flat',
+      link: '/properties?city=Bengaluru&category=flat',
       bgColor: 'bg-green-50',
       iconColor: 'text-green-500'
     },
     {
       icon: TreePine,
-      title: 'Plots in Bangalore',
-      subtitle: 'Plots for Sale in Bangalore',
+      title: 'Plots in Bengaluru',
+      subtitle: 'Plots for Sale in Bengaluru',
       count: '2,500+ Plots',
       description: 'Plots in Electronic City',
-      link: '/properties?city=Bangalore&category=plot',
+      link: '/properties?city=Bengaluru&category=plot',
       bgColor: 'bg-orange-50',
       iconColor: 'text-orange-500'
     },
     {
       icon: Briefcase,
-      title: 'Commercial in Bangalore',
+      title: 'Commercial in Bengaluru',
       subtitle: 'Commercial Properties',
       count: '500+ Properties',
       description: 'Office Space in Whitefield',
-      link: '/properties?city=Bangalore&type=commercial',
+      link: '/properties?city=Bengaluru&type=commercial',
       bgColor: 'bg-purple-50',
       iconColor: 'text-purple-500'
     },
@@ -66,11 +66,11 @@ export function PropertyListings() {
     // },
     {
       icon: Building,
-      title: 'Builder Floors in Bangalore',
+      title: 'Builder Floors in Bengaluru',
       subtitle: 'Builder Floor for Sale',
       count: '800+ Properties',
       description: 'Builder Floors in Indiranagar',
-      link: '/properties?city=Bangalore&category=house',
+      link: '/properties?city=Bengaluru&category=house',
       bgColor: 'bg-indigo-50',
       iconColor: 'text-indigo-500'
     }

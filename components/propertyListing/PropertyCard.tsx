@@ -9,8 +9,16 @@ import { CardHover } from "@/components/animations/page-transitions";
 import { motion } from "framer-motion";
 import { PropertyImage } from "@/components/ui/optimized-image";
 import { PROPERTY_IMAGES, BLUR_DATA_URLS } from "@/lib/images";
-import { usePropertyStore } from "@/lib/store";
+import { usePropertyStore, useAuthStore } from "@/lib/store";
+import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Helper function to format price
 const formatPrice = (price: number) => {
@@ -67,14 +75,33 @@ export const PropertyCard = ({
 }) => {
   const router = useRouter();
   const { addToCompare, removeFromCompare, compareList } = usePropertyStore();
+  const { user } = useAuthStore();
 
   const handleCardClick = () => {
     router.push(`/properties/${property.id}`);
   };
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    onFavorite();
+    
+    if (!user) {
+      toast.error('Please login to add favourites');
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        await apiClient.removeFromFavourites(property.id);
+        toast.success('Property removed from favourites');
+      } else {
+        await apiClient.addToFavourites(property.id);
+        toast.success('Property added to favourites');
+      }
+      onFavorite();
+    } catch (error) {
+      console.error('Error updating favourite:', error);
+      toast.error('Failed to update favourite');
+    }
   };
 
   const handleCompareClick = (e: React.MouseEvent) => {
@@ -119,12 +146,6 @@ export const PropertyCard = ({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
-
-            {/* <div className="absolute top-3 left-3">
-            <Badge className="bg-green-500 text-white border-0 text-xs font-normal">
-              Available
-            </Badge>
-          </div> */}
 
             <div className="absolute top-3 right-3 flex gap-2">
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>

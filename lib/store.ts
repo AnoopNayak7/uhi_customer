@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { apiClient } from './api';
 
 interface User {
   id: string;
@@ -49,6 +50,7 @@ interface AuthState {
   updateUser: (user: Partial<User>) => void;
   initialize: () => void;
   checkTokenExpiry: () => boolean;
+  addToRecentlyViewed: (property: Property) => void;
 }
 
 interface PropertyState {
@@ -72,6 +74,8 @@ interface SearchState {
     maxPrice: number;
     bedrooms: string;
     propertyCategory: string;
+    furnishingStatus: string;
+    possessionStatus: string;
   };
   updateSearchFilters: (filters: Partial<SearchState['searchFilters']>) => void;
   clearFilters: () => void;
@@ -132,6 +136,16 @@ export const useAuthStore = create<AuthState>()(
       // Invalid token, logout user
       get().logout();
       return false;
+    }
+  },
+  addToRecentlyViewed: async (property) => {
+    const { user } = get();
+    if (user && property) {
+      try {
+        await apiClient.addRecentlyViewedProperty(user.id, property.id);
+      } catch (error) {
+        console.error('Error adding to recently viewed:', error);
+      }
     }
   }
 }),
@@ -199,7 +213,9 @@ export const useSearchStore = create<SearchState>((set) => ({
     minPrice: 0,
     maxPrice: 100000000,
     bedrooms: '',
-    propertyCategory: ''
+    propertyCategory: '',
+    furnishingStatus: '',
+    possessionStatus: ''
   },
   updateSearchFilters: (filters) => set((state) => ({
     searchFilters: { ...state.searchFilters, ...filters }
@@ -212,7 +228,9 @@ export const useSearchStore = create<SearchState>((set) => ({
       minPrice: 0,
       maxPrice: 100000000,
       bedrooms: '',
-      propertyCategory: ''
+      propertyCategory: '',
+      furnishingStatus: '',
+      possessionStatus: ''
     }
   })
 }));

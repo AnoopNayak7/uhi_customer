@@ -30,7 +30,7 @@ export const PROPERTY_CATEGORIES = [
 ];
 
 export const CITIES = [
-  'Bangalore',
+  'Bengaluru',
   'Mumbai',
   'Delhi',
   'Chennai',

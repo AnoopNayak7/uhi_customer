@@ -13,6 +13,7 @@ interface PropertyListProps {
   loading: boolean;
   viewMode: "grid" | "map";
   setViewMode: (mode: "grid" | "map") => void;
+  onFavorite?: (property: any) => void;
 }
 
 export function PropertyList({
@@ -20,16 +21,22 @@ export function PropertyList({
   loading,
   viewMode,
   setViewMode,
+  onFavorite,
 }: PropertyListProps) {
   const { favourites } = usePropertyStore();
-  const { addToFavourites, removeFromFavourites } = usePropertyStore();
 
   const handleFavorite = (property: any) => {
-    const isFavorite = favourites.some((p) => p.id === property.id);
-    if (isFavorite) {
-      removeFromFavourites(property.id);
+    if (onFavorite) {
+      onFavorite(property);
     } else {
-      addToFavourites(property);
+      // Fallback to local store if no onFavorite prop provided
+      const { addToFavourites, removeFromFavourites } = usePropertyStore.getState();
+      const isFavorite = favourites.some((p) => p.id === property.id);
+      if (isFavorite) {
+        removeFromFavourites(property.id);
+      } else {
+        addToFavourites(property);
+      }
     }
   };
 

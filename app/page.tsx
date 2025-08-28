@@ -3,6 +3,7 @@
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { HeroSection } from "@/components/home/hero-section";
+import { MobileSearchTrigger } from "@/components/home/mobile-search-trigger";
 import { FeaturedProperties } from "@/components/home/featured-properties";
 import { RealEstateTools } from "@/components/home/real-estate-tools";
 import { TrendingProperties } from "@/components/home/trending-properties";
@@ -17,8 +18,15 @@ export default function HomePage() {
       <Header />
 
       <main className="flex-1">
+        {/* Mobile Search Interface */}
+        <MobileSearchTrigger />
+        
         <PageContent>
-          <HeroSection />
+          {/* Desktop Hero Section - Hidden on mobile */}
+          <div className="hidden sm:block">
+            <HeroSection />
+          </div>
+          
           <SectionReveal>
             <FeaturedProperties />
           </SectionReveal>

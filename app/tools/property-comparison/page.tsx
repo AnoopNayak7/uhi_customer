@@ -204,9 +204,9 @@ export default function PropertyComparisonPage() {
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
@@ -216,9 +216,9 @@ export default function PropertyComparisonPage() {
       return {
         center: userLocation
           ? ([userLocation.latitude, userLocation.longitude] as [
-              number,
-              number
-            ])
+            number,
+            number
+          ])
           : ([12.9716, 77.5946] as [number, number]), // Bangalore default
         markers: [],
       };
@@ -242,19 +242,18 @@ export default function PropertyComparisonPage() {
       .map((property) => {
         const distance = userLocation
           ? calculateDistance(
-              userLocation.latitude,
-              userLocation.longitude,
-              property.latitude!,
-              property.longitude!
-            )
+            userLocation.latitude,
+            userLocation.longitude,
+            property.latitude!,
+            property.longitude!
+          )
           : null;
 
         return {
           id: property.id,
           position: [property.latitude, property.longitude] as [number, number],
-          popupText: `${property.title} - ${formatPrice(property.price)}${
-            distance ? ` (${distance.toFixed(1)} km away)` : ""
-          }`,
+          popupText: `${property.title} - ${formatPrice(property.price)}${distance ? ` (${distance.toFixed(1)} km away)` : ""
+            }`,
         };
       });
 
@@ -307,7 +306,7 @@ export default function PropertyComparisonPage() {
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Hero Section */}
-          <motion.div
+          {/* <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -325,7 +324,7 @@ export default function PropertyComparisonPage() {
               Compare properties side by side to make informed decisions. Add up
               to 3 properties to get started.
             </p>
-          </motion.div>
+          </motion.div> */}
 
           {/* Search Section */}
           <motion.div
@@ -663,14 +662,14 @@ export default function PropertyComparisonPage() {
                             userLocation={userLocation}
                             distance={
                               userLocation &&
-                              property.latitude &&
-                              property.longitude
+                                property.latitude &&
+                                property.longitude
                                 ? calculateDistance(
-                                    userLocation.latitude,
-                                    userLocation.longitude,
-                                    property.latitude,
-                                    property.longitude
-                                  )
+                                  userLocation.latitude,
+                                  userLocation.longitude,
+                                  property.latitude,
+                                  property.longitude
+                                )
                                 : null
                             }
                           />
@@ -736,11 +735,10 @@ export default function PropertyComparisonPage() {
                                     <button
                                       key={index}
                                       onClick={() => setCurrentSlide(index)}
-                                      className={`w-2 h-2 rounded-full transition-colors ${
-                                        currentSlide === index
+                                      className={`w-2 h-2 rounded-full transition-colors ${currentSlide === index
                                           ? "bg-blue-600"
                                           : "bg-gray-300"
-                                      }`}
+                                        }`}
                                     />
                                   )
                                 )}
@@ -850,9 +848,8 @@ function PropertyComparisonCard({
 
   return (
     <Card
-      className={`relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${
-        isHovered ? "ring-2 ring-blue-500 ring-opacity-50 shadow-2xl" : ""
-      }`}
+      className={`relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${isHovered ? "ring-2 ring-blue-500 ring-opacity-50 shadow-2xl" : ""
+        }`}
     >
       <Button
         variant="ghost"
@@ -1164,7 +1161,7 @@ function LocationInsights({
   const averageDistance =
     propertiesWithDistance.length > 0
       ? propertiesWithDistance.reduce((sum, p) => sum + p.distance, 0) /
-        propertiesWithDistance.length
+      propertiesWithDistance.length
       : 0;
 
   const closestProperty = propertiesWithDistance[0];
@@ -1233,13 +1230,12 @@ function LocationInsights({
                 >
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`w-2 h-2 rounded-full ${
-                        index === 0
+                      className={`w-2 h-2 rounded-full ${index === 0
                           ? "bg-green-500"
                           : index === propertiesWithDistance.length - 1
-                          ? "bg-orange-500"
-                          : "bg-blue-500"
-                      }`}
+                            ? "bg-orange-500"
+                            : "bg-blue-500"
+                        }`}
                     ></div>
                     <span className="font-medium text-gray-900 truncate">
                       {property.title}

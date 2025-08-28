@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
-import { useSearchStore } from "@/lib/store";
+import { useAuthStore, useSearchStore } from "@/lib/store";
 import { Search, Navigation, Loader2, Grid3X3, MapIcon } from "lucide-react";
 import { toast } from "sonner";
 import { FilterSection } from "@/components/propertyListing/FilterSection";
@@ -28,6 +28,7 @@ export default function PropertiesPage() {
   const searchParams: any = useSearchParams();
   const router = useRouter();
   const { searchFilters, updateSearchFilters } = useSearchStore();
+  const { user } = useAuthStore();
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<any>("grid");
@@ -213,6 +214,33 @@ export default function PropertiesPage() {
     );
   };
 
+  const handleFavorite = async (property: any) => {
+    if (!user) {
+      toast.error('Please login to add favourites');
+      return;
+    }
+
+    try {
+      const isFavorite = property.isFavourite;
+      if (isFavorite) {
+        await apiClient.removeFromFavourites(property.id);
+        toast.success('Property removed from favourites');
+      } else {
+        await apiClient.addToFavourites(property.id);
+        toast.success('Property added to favourites');
+      }
+      // Update the property's favourite status
+      setProperties(prev => prev.map(p => 
+        p.id === property.id 
+          ? { ...p, isFavourite: !isFavorite }
+          : p
+      ));
+    } catch (error) {
+      console.error('Error updating favourite:', error);
+      toast.error('Failed to update favourite');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -302,6 +330,7 @@ export default function PropertiesPage() {
                   loading={loading}
                   viewMode={viewMode}
                   setViewMode={setViewMode}
+                  onFavorite={handleFavorite}
                 />
               ) : (
                 <div className="flex-1">

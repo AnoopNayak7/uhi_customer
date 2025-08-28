@@ -239,6 +239,97 @@ class ApiClient {
     });
   }
 
+  // User search preferences methods
+  async saveUserSearchPreferences(data: {
+    userId: string;
+    searchPreferences: any;
+    lastSearchedAt: string;
+  }) {
+    return this.request('/auth/user-search-preferences', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getUserSearchPreferences(userId: string) {
+    return this.request(`/auth/user-search-preferences/${userId}`);
+  }
+
+  async updateUserSearchPreferences(userId: string, searchPreferences: any) {
+    return this.request(`/auth/user-search-preferences/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ searchPreferences }),
+    });
+  }
+
+  // Recently viewed properties methods
+  async addRecentlyViewedProperty(userId: string, propertyId: string) {
+    return this.request('/auth/recently-viewed-properties', {
+      method: 'POST',
+      body: JSON.stringify({ userId, propertyId }),
+    });
+  }
+
+  async getRecentlyViewedProperties(userId: string, limit: number = 10) {
+    return this.request(`/auth/recently-viewed-properties/${userId}?limit=${limit}`);
+  }
+
+  // Book visit methods
+  async bookPropertyVisit(data: {
+    propertyId: string;
+    name: string;
+    email: string;
+    phone: string;
+    date: string;
+    time: string;
+    message?: string;
+  }) {
+    return this.request(`/properties/${data.propertyId}/book-visit`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getUserBookVisits(limit: number = 20) {
+    return this.request(`/auth/book-visits?limit=${limit}`);
+  }
+
+  async updateBookVisitStatus(id: string, status: string) {
+    return this.request(`/auth/book-visits/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  // Favourite methods
+  async addToFavourites(propertyId: string) {
+    return this.request(`/properties/${propertyId}/favourite`, {
+      method: 'POST',
+    });
+  }
+
+  async removeFromFavourites(propertyId: string) {
+    return this.request(`/properties/${propertyId}/favourite`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getFavourites() {
+    return this.request('/auth/favourites');
+  }
+
+  // Viewed properties methods (updated to use array approach)
+  async addViewedProperty(userId: string, propertyId: string) {
+    return this.request('/auth/viewed-properties', {
+      method: 'POST',
+      body: JSON.stringify({ userId, propertyId }),
+    });
+  }
+
+  async getViewedProperties(userId: string, limit: number = 20) {
+    return this.request(`/auth/viewed-properties/${userId}?limit=${limit}`);
+  }
+
 }
 
 export const apiClient = new ApiClient();

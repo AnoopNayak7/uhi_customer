@@ -6,7 +6,7 @@ import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAuthStore } from "@/lib/store";
+import { useAuthStore, usePropertyStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import {
   BarChart3,
@@ -18,6 +18,7 @@ import {
   Calculator,
   Target,
   Bookmark,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -36,12 +37,17 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import Image from "next/image";
+
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
+  const { favourites, viewedProperties } = usePropertyStore();
   const [analytics, setAnalytics] = useState<any>(null);
   const [properties, setProperties] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
+  const [recentlyViewedProperties, setRecentlyViewedProperties] = useState<any[]>([]);
+  const [bookVisits, setBookVisits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchDashboardData = useCallback(async () => {
@@ -59,8 +65,21 @@ export default function DashboardPage() {
         setProperties(propertiesRes.data || []);
         setLeads(leadsRes.data || []);
       } else {
-        const propertiesRes: any = await apiClient.getProperties({ limit: 5 });
+        const [propertiesRes, recentlyViewedRes, bookVisitsRes]: any = await Promise.all([
+          apiClient.getProperties({ limit: 5 }),
+          user ? apiClient.getRecentlyViewedProperties(user.id, 5) : Promise.resolve({ data: [] }),
+          user ? apiClient.getUserBookVisits(5) : Promise.resolve({ data: [] }),
+        ]);
+        
+        console.log('Dashboard API responses:', {
+          properties: propertiesRes,
+          recentlyViewed: recentlyViewedRes,
+          bookVisits: bookVisitsRes
+        });
+        
         setProperties(propertiesRes.data || []);
+        setRecentlyViewedProperties(recentlyViewedRes.data || []);
+        setBookVisits(bookVisitsRes.data || []);
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -135,7 +154,14 @@ export default function DashboardPage() {
               loading={loading}
             />
           ) : (
-            <UserDashboard properties={properties} loading={loading} />
+            <UserDashboard
+              properties={properties}
+              loading={loading}
+              recentlyViewedProperties={recentlyViewedProperties}
+              favourites={favourites}
+              viewedProperties={viewedProperties}
+              bookVisits={bookVisits}
+            />
           )}
         </div>
       </main>
@@ -320,7 +346,7 @@ function BuilderDashboard({ analytics, properties, leads, loading }: any) {
   );
 }
 
-function UserDashboard({ properties, loading }: any) {
+function UserDashboard({ properties, loading, recentlyViewedProperties, favourites, viewedProperties, bookVisits }: any) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -334,83 +360,11 @@ function UserDashboard({ properties, loading }: any) {
     );
   }
 
-  // Mock user activity data - in real app, this would come from API
+  // User activity data
   const userStats = [
-    { title: "Favourites", value: 12, icon: Heart, color: "text-red-600" },
-    { title: "Recently Viewed", value: 28, icon: Eye, color: "text-blue-600" },
-    {
-      title: "Saved Searches",
-      value: 5,
-      icon: Bookmark,
-      color: "text-green-600",
-    },
-  ];
-
-  // Mock recently viewed properties
-  const recentlyViewed = [
-    {
-      id: 1,
-      title: "Modern 3BHK Apartment",
-      location: "Whitefield, Bangalore",
-      price: 8500000,
-      image: "/api/placeholder/300/200",
-      type: "Apartment",
-      bedrooms: 3,
-      area: "1450 sq ft",
-    },
-    {
-      id: 2,
-      title: "Luxury Villa with Garden",
-      location: "Koramangala, Bangalore",
-      price: 15000000,
-      image: "/api/placeholder/300/200",
-      type: "Villa",
-      bedrooms: 4,
-      area: "2800 sq ft",
-    },
-    {
-      id: 3,
-      title: "Cozy 2BHK Near Metro",
-      location: "Indiranagar, Bangalore",
-      price: 6200000,
-      image: "/api/placeholder/300/200",
-      type: "Apartment",
-      bedrooms: 2,
-      area: "1100 sq ft",
-    },
-  ];
-
-  // User preference insights
-  const budgetPreferences = [
-    { range: "30L-50L", count: 15, percentage: 35 },
-    { range: "50L-80L", count: 18, percentage: 42 },
-    { range: "80L-1Cr", count: 8, percentage: 19 },
-    { range: "1Cr+", count: 2, percentage: 4 },
-  ];
-
-  const propertyTypePreferences = [
-    { type: "Apartment", count: 25, color: "#3b82f6" },
-    { type: "Villa", count: 12, color: "#10b981" },
-    { type: "Plot", count: 6, color: "#f59e0b" },
-    { type: "Commercial", count: 2, color: "#ef4444" },
-  ];
-
-  const searchActivityTrend = [
-    { day: "Mon", searches: 8 },
-    { day: "Tue", searches: 12 },
-    { day: "Wed", searches: 6 },
-    { day: "Thu", searches: 15 },
-    { day: "Fri", searches: 10 },
-    { day: "Sat", searches: 20 },
-    { day: "Sun", searches: 14 },
-  ];
-
-  const locationPreferences = [
-    { location: "Whitefield", interest: 85 },
-    { location: "Koramangala", interest: 72 },
-    { location: "Indiranagar", interest: 68 },
-    { location: "HSR Layout", interest: 55 },
-    { location: "Electronic City", interest: 45 },
+    { title: "Favourites", value: favourites?.length || 0, icon: Heart, color: "text-red-600" },
+    { title: "Recently Viewed", value: recentlyViewedProperties?.length || 0, icon: Clock, color: "text-blue-600" },
+    { title: "Booked Visits", value: bookVisits?.length || 0, icon: Eye, color: "text-green-600" },
   ];
 
   return (
@@ -490,158 +444,55 @@ function UserDashboard({ properties, loading }: any) {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {recentlyViewed.map((property) => (
-              <div
-                key={property.id}
-                className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-              >
-                <div className="h-32 bg-gray-200 relative">
-                  <div className="absolute top-2 left-2 bg-white px-2 py-1 rounded text-xs font-medium">
-                    {property.type}
+            {recentlyViewedProperties && recentlyViewedProperties.length > 0 ? (
+              recentlyViewedProperties.map((property: any) => (
+                <div
+                  key={property.id}
+                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <div className="h-32 bg-gray-200 relative">
+                    {property.images && property.images[0] ? (
+                      <Image
+                        src={property.images[0]}
+                        alt={property.title}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                        <Building className="w-8 h-8 text-gray-400" />
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2 bg-white px-2 py-1 rounded text-xs font-medium">
+                      {property.propertyType || 'Property'}
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-medium text-gray-900 text-sm mb-1 line-clamp-1">
+                      {property.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {property.city}, {property.state}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-blue-600 text-sm">
+                        ₹{(property.price / 100000).toFixed(1)}L
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {property.bedrooms}BHK • {property.area} sq ft
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="p-3">
-                  <h3 className="font-medium text-gray-900 text-sm mb-1 line-clamp-1">
-                    {property.title}
-                  </h3>
-                  <p className="text-xs text-gray-500 mb-2">
-                    {property.location}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-blue-600 text-sm">
-                      ₹{(property.price / 100000).toFixed(1)}L
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {property.bedrooms}BHK • {property.area}
-                    </span>
-                  </div>
-                </div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-8 text-gray-500">
+                No recently viewed properties
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
-
-      {/* User Insights Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Search Activity Trend */}
-        <Card className="border border-gray-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-medium">
-              Search Activity This Week
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={searchActivityTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="searches"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Property Type Preferences */}
-        <Card className="border border-gray-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-medium">
-              Property Type Preferences
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-64 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={propertyTypePreferences}
-                  dataKey="count"
-                  nameKey="type"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  label={({ type, count }) => `${type}: ${count}`}
-                >
-                  {propertyTypePreferences.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Budget & Location Preferences */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Budget Range Analysis */}
-        <Card className="border border-gray-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-medium">
-              Budget Range Analysis
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={budgetPreferences}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="range" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value, name) => [`${value} properties`, "Viewed"]}
-                />
-                <Bar dataKey="count" fill="#8b5cf6" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Location Interest Heatmap */}
-        <Card className="border border-gray-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-medium">
-              Location Interest Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-3">
-              {locationPreferences.map((location) => (
-                <div
-                  key={location.location}
-                  className="flex items-center justify-between"
-                >
-                  <span className="text-sm font-medium text-gray-700">
-                    {location.location}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300"
-                        style={{ width: `${location.interest}%` }}
-                      />
-                    </div>
-                    <span className="text-sm text-gray-500 w-8">
-                      {location.interest}%
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      
 
       {/* Personalized Recommendations */}
       <Card className="border border-gray-200">

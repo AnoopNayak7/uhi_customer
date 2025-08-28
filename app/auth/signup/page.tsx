@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 
 const signupSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  lastName: z.string().min(1, 'Last name must be at least 1 character').or(z.literal('')),
   email: z.string().email('Please enter a valid email address'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   role: z.enum(['user', 'builder'], {
@@ -53,7 +53,7 @@ export default function SignupPage() {
     setLoading(true);
     try {
       await apiClient.signup(data);
-      await apiClient.sendOTP(data.email);
+      // await apiClient.sendOTP(data.email);
       setSignupData(data);
       setStep('otp');
       toast.success('Account created! OTP sent to your email');

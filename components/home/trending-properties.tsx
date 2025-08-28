@@ -71,7 +71,7 @@ export function TrendingProperties() {
       const response: any = await apiClient.getProperties({
         isFeatured: true,
         limit: 8,
-        city: "Bangalore",
+        city: "Bengaluru",
       });
 
       if (response.success && response.data) {
@@ -221,7 +221,7 @@ export function TrendingProperties() {
   }
 
   return (
-    <section className="py-12 px-[8%] bg-gray-50">
+    <section className="py-12 sm:px-[8%] bg-gray-50">
       <div className=" mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <div>
