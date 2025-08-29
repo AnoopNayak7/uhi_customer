@@ -8,7 +8,8 @@ const BYPASS_AUTH_ENDPOINTS = [
   '/auth/verify-otp',
   '/properties',
   '/properties/',
-  '/area-insights'
+  '/area-insights',
+  '/tools'
 ];
 
 class ApiClient {
@@ -46,6 +47,11 @@ class ApiClient {
     
     // Check for area insights endpoints
     if (method === 'GET' && endpoint.startsWith('/area-insights/')) {
+      return true;
+    }
+    
+    // Check for tools endpoints
+    if (method === 'GET' && endpoint.startsWith('/tools/')) {
       return true;
     }
     
@@ -138,8 +144,48 @@ class ApiClient {
 
   // Property methods
   async getProperties(params: any = {}) {
+    // Map property types for better compatibility
+    if (params.propertyCategory) {
+      // Map flat to apartment for consistency
+      if (params.propertyCategory === 'flat') {
+        params.propertyCategory = 'apartment';
+      }
+      // Also support the category parameter
+      params.category = params.propertyCategory;
+    }
+    
     const searchParams = new URLSearchParams(params);
     return this.request(`/properties?${searchParams}`);
+  }
+
+  async getLocationBasedProperties(location: { city: string; area?: string }, params: any = {}) {
+    const searchParams = new URLSearchParams({
+      city: location.city,
+      ...(location.area && { area: location.area }),
+      ...params
+    });
+    return this.request(`/properties?${searchParams}`);
+  }
+
+  async getFeaturedPropertiesByLocation(location: { city: string; area?: string }, limit: number = 8) {
+    return this.getLocationBasedProperties(location, {
+      isFeatured: true,
+      limit: limit.toString()
+    });
+  }
+
+  async getTrendingPropertiesByLocation(location: { city: string; area?: string }, limit: number = 8) {
+    return this.getLocationBasedProperties(location, {
+      isHotSelling: true,
+      limit: limit.toString()
+    });
+  }
+
+  async getTopPropertiesByLocation(location: { city: string; area?: string }, limit: number = 8) {
+    return this.getLocationBasedProperties(location, {
+      isFastSelling: true,
+      limit: limit.toString()
+    });
   }
 
   async getProperty(id: string) {
@@ -232,6 +278,10 @@ class ApiClient {
     return this.request(`/area-insights/cities/${encodeURIComponent(cityName)}/locations/${encodeURIComponent(locationName)}/price-trends?${searchParams}`);
   }
 
+  async getToolsPriceTrends(cityName: string, propertyType: string, timeRange: string) {
+    return this.request(`/tools/price-trends/${encodeURIComponent(cityName.toLowerCase())}?propertyType=${propertyType}&timeRange=${timeRange}`);
+  }
+
   async getLocationComparison(cityName: string, locations: string[]) {
     return this.request(`/area-insights/cities/${encodeURIComponent(cityName)}/compare`, {
       method: 'POST',
@@ -303,13 +353,14 @@ class ApiClient {
 
   // Favourite methods
   async addToFavourites(propertyId: string) {
-    return this.request(`/properties/${propertyId}/favourite`, {
+    return this.request('/auth/favourites', {
       method: 'POST',
+      body: JSON.stringify({ propertyId }),
     });
   }
 
   async removeFromFavourites(propertyId: string) {
-    return this.request(`/properties/${propertyId}/favourite`, {
+    return this.request(`/auth/favourites/${propertyId}`, {
       method: 'DELETE',
     });
   }

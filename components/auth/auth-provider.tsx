@@ -1,37 +1,38 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useAuthStore } from '@/lib/store';
-import { apiClient } from '@/lib/api';
+import { createContext, useContext, useEffect, useState } from "react";
+import { useAuthStore } from "@/lib/store";
+
+interface AuthContextType {
+  isInitialized: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { initialize, isInitialized, token, checkTokenExpiry, logout } = useAuthStore();
+  const { isInitialized, initialize } = useAuthStore();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // Initialize auth state on app load
-    if (!isInitialized) {
-      initialize();
-      
-      // Check if token exists and is valid
-      if (token) {
-        const isValid = checkTokenExpiry();
-        if (!isValid) {
-          logout();
-        }
-      }
-    }
-  }, [initialize, isInitialized, token, checkTokenExpiry, logout]);
+    setIsClient(true);
+    initialize();
+  }, [initialize]);
 
-  // Set up token expiry check interval
-  useEffect(() => {
-    if (!token) return;
+  if (!isClient) {
+    return null;
+  }
 
-    const interval = setInterval(() => {
-      checkTokenExpiry();
-    }, 60000); // Check every minute
+  return (
+    <AuthContext.Provider value={{ isInitialized }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
-    return () => clearInterval(interval);
-  }, [token, checkTokenExpiry]);
-
-  return <>{children}</>;
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 }

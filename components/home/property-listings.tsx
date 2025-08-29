@@ -1,9 +1,14 @@
+"use client";
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building, Home, TreePine, Briefcase, Users, MapPin } from 'lucide-react';
 import Link from 'next/link';
+import { useLocationData } from '@/hooks/use-location-data';
 
 export function PropertyListings() {
+  const { getDefaultCity, getDefaultArea } = useLocationData();
+  
   const cities = [
     { name: 'Bengaluru', properties: 1234, href: '/properties?city=Bengaluru' },
     { name: 'Mumbai', properties: 2567, href: '/properties?city=Mumbai' },
@@ -16,61 +21,51 @@ export function PropertyListings() {
   const propertyTypes = [
     {
       icon: Building,
-      title: 'Properties in Bengaluru',
-      subtitle: 'Property for Sale in Bengaluru',
+      title: `Properties in ${getDefaultCity()}`,
+      subtitle: `Property for Sale in ${getDefaultCity()}`,
       count: '15,000+ Properties',
-      description: 'Properties in Mysore Road',
-      link: '/properties?city=Bengaluru',
+      description: getDefaultArea() ? `Properties in ${getDefaultArea()}` : `Properties in ${getDefaultCity()}`,
+      link: `/properties?city=${getDefaultCity()}${getDefaultArea() ? `&area=${getDefaultArea()}` : ''}`,
       bgColor: 'bg-blue-50',
       iconColor: 'text-blue-500'
     },
     {
       icon: Home,
-      title: 'Projects in Bengaluru',
-      subtitle: 'Flats in Bengaluru',
+      title: `Projects in ${getDefaultCity()}`,
+      subtitle: `Flats in ${getDefaultCity()}`,
       count: '800+ Projects',
-      description: 'Flats in Sarjapur Road',
-      link: '/properties?city=Bengaluru&category=flat',
+      description: getDefaultArea() ? `Flats in ${getDefaultArea()}` : `Flats in ${getDefaultCity()}`,
+      link: `/properties?city=${getDefaultCity()}&category=apartment${getDefaultArea() ? `&area=${getDefaultArea()}` : ''}`,
       bgColor: 'bg-green-50',
       iconColor: 'text-green-500'
     },
     {
       icon: TreePine,
-      title: 'Plots in Bengaluru',
-      subtitle: 'Plots for Sale in Bengaluru',
+      title: `Plots in ${getDefaultCity()}`,
+      subtitle: `Plots for Sale in ${getDefaultCity()}`,
       count: '2,500+ Plots',
-      description: 'Plots in Electronic City',
-      link: '/properties?city=Bengaluru&category=plot',
+      description: getDefaultArea() ? `Plots in ${getDefaultArea()}` : `Plots in ${getDefaultCity()}`,
+      link: `/properties?city=${getDefaultCity()}&category=plot${getDefaultArea() ? `&area=${getDefaultArea()}` : ''}`,
       bgColor: 'bg-orange-50',
       iconColor: 'text-orange-500'
     },
     {
       icon: Briefcase,
-      title: 'Commercial in Bengaluru',
+      title: `Commercial in ${getDefaultCity()}`,
       subtitle: 'Commercial Properties',
       count: '500+ Properties',
-      description: 'Office Space in Whitefield',
-      link: '/properties?city=Bengaluru&type=commercial',
+      description: getDefaultArea() ? `Office Space in ${getDefaultArea()}` : `Office Space in ${getDefaultCity()}`,
+      link: `/properties?city=${getDefaultCity()}&type=commercial${getDefaultArea() ? `&area=${getDefaultArea()}` : ''}`,
       bgColor: 'bg-purple-50',
       iconColor: 'text-purple-500'
     },
-    // {
-    //   icon: Users,
-    //   title: 'Co-living in Bangalore',
-    //   subtitle: 'PG & Co-living Spaces',
-    //   count: '1,200+ Spaces',
-    //   description: 'PG in Koramangala',
-    //   link: '/properties?city=Bangalore&type=pg_co_living',
-    //   bgColor: 'bg-pink-50',
-    //   iconColor: 'text-pink-500'
-    // },
     {
       icon: Building,
-      title: 'Builder Floors in Bengaluru',
+      title: `Builder Floors in ${getDefaultCity()}`,
       subtitle: 'Builder Floor for Sale',
       count: '800+ Properties',
-      description: 'Builder Floors in Indiranagar',
-      link: '/properties?city=Bengaluru&category=house',
+      description: getDefaultArea() ? `Builder Floors in ${getDefaultArea()}` : `Builder Floors in ${getDefaultCity()}`,
+      link: `/properties?city=${getDefaultCity()}&category=house${getDefaultArea() ? `&area=${getDefaultArea()}` : ''}`,
       bgColor: 'bg-indigo-50',
       iconColor: 'text-indigo-500'
     }
@@ -81,15 +76,21 @@ export function PropertyListings() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Property listings across India
+            {getDefaultCity() === 'Bengaluru' 
+              ? 'Property listings in Bengaluru' 
+              : `Property listings in ${getDefaultCity()}`
+            }
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Discover properties in top cities across India with comprehensive listings
+            {getDefaultCity() === 'Bengaluru' 
+              ? 'Currently launching in Bengaluru with comprehensive property listings. More cities coming soon!'
+              : `Discover properties in ${getDefaultCity()} with our comprehensive listings`
+            }
           </p>
         </div>
 
         {/* Featured Cities */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-16">
+        {/* <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-16">
           {cities.map((city) => (
             <Link key={city.name} href={city.href}>
               <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer h-full">
@@ -101,7 +102,7 @@ export function PropertyListings() {
               </Card>
             </Link>
           ))}
-        </div>
+        </div> */}
 
         {/* Property Types Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

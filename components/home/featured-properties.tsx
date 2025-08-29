@@ -18,7 +18,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
-import { usePropertyStore } from "@/lib/store";
+import { usePropertyStore, useAuthStore } from "@/lib/store";
+import { useLocationData } from "@/hooks/use-location-data";
+import { LoginModal } from "@/components/ui/login-modal";
 import { toast } from "sonner";
 
 interface Property {
@@ -48,10 +50,14 @@ interface Property {
 }
 
 export function FeaturedProperties() {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { 
+    featuredProperties: properties, 
+    loading, 
+    error, 
+    getLocationDisplay,
+    refreshData 
+  } = useLocationData();
   const {
     addToFavourites,
     favourites,
@@ -62,30 +68,11 @@ export function FeaturedProperties() {
 
   useEffect(() => {
     fetchFeaturedProperties();
-  }, []);
+  }, [properties.length]); // Changed dependency to properties.length
 
   const fetchFeaturedProperties = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response: any = await apiClient.getProperties({
-        isFeatured: true,
-        limit: 8,
-        city: "Bengaluru",
-      });
-
-      if (response.success && response.data) {
-        setProperties(response.data);
-      } else {
-        throw new Error("Failed to fetch featured properties");
-      }
-    } catch (error) {
-      console.error("Error fetching featured properties:", error);
-      setError("Failed to load featured properties");
-      setProperties([]);
-      toast.error("Failed to load featured properties");
-    } finally {
-      setLoading(false);
+    if (!properties.length) {
+      await refreshData();
     }
   };
 
@@ -115,42 +102,44 @@ export function FeaturedProperties() {
     (currentSlide + 1) * 4
   );
 
-  if (error) {
-    if (loading) {
-      return (
-        <section className="py-12 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-medium text-gray-900 mb-3">
-                Featured Properties in Bangalore
-              </h2>
-              <p className="text-gray-500 text-sm">
-                Loading featured properties...
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <div className="h-48 bg-gray-200 rounded-t-lg" />
-                  <CardContent className="p-4">
-                    <div className="h-4 bg-gray-200 rounded mb-2" />
-                    <div className="h-3 bg-gray-200 rounded mb-4" />
-                    <div className="h-6 bg-gray-200 rounded" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+  // Show loading skeleton
+  if (loading) {
+    return (
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-medium text-gray-900 mb-3">
+              Featured Properties in {getLocationDisplay()}
+            </h2>
+            <p className="text-gray-500 text-sm">
+              Loading featured properties...
+            </p>
           </div>
-        </section>
-      );
-    }
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <div className="h-48 bg-gray-200 rounded-t-lg" />
+                <CardContent className="p-4">
+                  <div className="h-4 bg-gray-200 rounded mb-2" />
+                  <div className="h-3 bg-gray-200 rounded mb-4" />
+                  <div className="h-6 bg-gray-200 rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
+  // Show error state
+  if (error) {
     return (
       <section className="py-12 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center">
             <h2 className="text-2xl font-medium text-gray-900 mb-3">
-              Featured Properties in Bangalore
+              Featured Properties in {getLocationDisplay()}
             </h2>
             <p className="text-gray-500 text-sm mb-6">{error}</p>
             <Button onClick={fetchFeaturedProperties} variant="outline">
@@ -162,13 +151,14 @@ export function FeaturedProperties() {
     );
   }
 
+  // Show empty state
   if (properties.length === 0) {
     return (
       <section className="py-12 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center">
             <h2 className="text-2xl font-medium text-gray-900 mb-3">
-              Featured Properties in Bangalore
+              Featured Properties in {getLocationDisplay()}
             </h2>
             <p className="text-gray-500 text-sm mb-6">
               No featured properties available at the moment.
@@ -182,51 +172,14 @@ export function FeaturedProperties() {
     );
   }
 
-  if (error) {
-    return (
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center">
-            <h2 className="text-2xl font-medium text-gray-900 mb-3">
-              Featured Properties in Bangalore
-            </h2>
-            <p className="text-gray-500 text-sm mb-6">{error}</p>
-            <Button onClick={fetchFeaturedProperties} variant="outline">
-              Try Again
-            </Button>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (properties.length === 0) {
-    return (
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center">
-            <h2 className="text-2xl font-medium text-gray-900 mb-3">
-              Featured Properties in Bangalore
-            </h2>
-            <p className="text-gray-500 text-sm mb-6">
-              No featured properties available at the moment.
-            </p>
-            <Button asChild>
-              <Link href="/properties">Browse All Properties</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
+  // Show properties
   return (
     <section className="py-12 sm:px-[8%] bg-gray-50">
       <div className=" mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">
-              Featured Properties in Bangalore
+              Featured Properties in {getLocationDisplay()}
             </h2>
             <p className="text-gray-500 text-sm">
               Handpicked premium properties for discerning buyers
@@ -257,7 +210,7 @@ export function FeaturedProperties() {
 
         {visibleProperties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {visibleProperties.map((property) => (
+            {visibleProperties.map((property:any) => (
               <PropertyCard
                 key={property.id}
                 property={property}
@@ -313,6 +266,8 @@ function PropertyCard({
   isInCompare: boolean;
 }) {
   const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const defaultImage = `https://www.jllhomes.co.in/_next/image?url=https%3A%2F%2Fjll-global-gdim-res.cloudinary.com%2Fimage%2Fupload%2Fv1706009716%2FIN%2FHorizon%2FResi%2FPROD%2FJLL_Bengaluru_Concorde%2520Antares_9706_EXT_1.jpg&w=3840&q=75`;
 
   const formatPrice = (price: number) => {
@@ -328,9 +283,19 @@ function PropertyCard({
     router.push(`/properties/${property.id}`);
   };
 
-  const handleFavouriteClick = (e: React.MouseEvent) => {
+  const handleFavouriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    onFavourite();
+    
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    
+    try {
+      await onFavourite();
+    } catch (error) {
+      toast.error("Failed to update favourites. Please try again.");
+    }
   };
 
   const handleCompareClick = (e: React.MouseEvent) => {
@@ -339,101 +304,114 @@ function PropertyCard({
   };
 
   return (
-    <Card
-      className="cursor-pointer bg-white border border-gray-200 hover:shadow-md transition-shadow duration-200 overflow-hidden rounded-lg"
-      onClick={handleCardClick}
-    >
-      <div className="relative">
-        <div className="relative h-[160px] overflow-hidden m-[4px] rounded-t-md">
-          <Image
-            src={property.images?.[0] || defaultImage}
-            alt={property.title}
-            fill
-            className="object-cover"
-          />
-        </div>
-
-        <div className="absolute top-3 left-3">
-          <Badge className="bg-white/90 text-gray-700 border-0 text-[10px] font-normal px-2 py-1 rounded shadow-sm">
-            APARTMENTS
-          </Badge>
-        </div>
-
-        <div className="absolute top-3 right-3 flex gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`h-8 w-8 p-0 rounded-full bg-white/90 hover:bg-white transition-colors ${
-              isInCompare
-                ? "text-blue-500"
-                : "text-gray-600 hover:text-blue-500"
-            }`}
-            onClick={handleCompareClick}
-          >
-            <BarChart3
-              className={`w-4 h-4 ${isInCompare ? "fill-current" : ""}`}
+    <>
+      <Card
+        className="cursor-pointer bg-white border border-gray-200 hover:shadow-md transition-shadow duration-200 overflow-hidden rounded-lg"
+        onClick={handleCardClick}
+      >
+        <div className="relative">
+          <div className="relative h-[160px] overflow-hidden m-[4px] rounded-t-md">
+            <Image
+              src={property.images?.[0] || defaultImage}
+              alt={property.title}
+              fill
+              className="object-cover"
             />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`h-8 w-8 p-0 rounded-full bg-white/90 hover:bg-white transition-colors ${
-              isFavourite ? "text-red-500" : "text-gray-600 hover:text-red-500"
-            }`}
-            onClick={handleFavouriteClick}
-          >
-            <Heart className={`w-4 h-4 ${isFavourite ? "fill-current" : ""}`} />
-          </Button>
-        </div>
-      </div>
+          </div>
 
-      <CardContent className="p-4">
-        <div className="mb-3">
-          <h3 className="text-base font-semibold text-gray-900 mb-2 truncate">
-            {property.title}
-          </h3>
+          <div className="absolute top-3 left-3">
+            <Badge className="bg-white/90 text-gray-700 border-0 text-[10px] font-normal px-2 py-1 rounded shadow-sm">
+              {property.category?.toUpperCase() || 'APARTMENTS'}
+            </Badge>
+          </div>
 
-          <div className="flex items-center text-gray-500 text-xs mb-4">
-            <MapPin className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
-            <span className="truncate">
-              {property.address}, {property.city}
-            </span>
+          <div className="absolute top-3 right-3 flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-8 w-8 p-0 rounded-full bg-white/90 hover:bg-white transition-colors ${
+                isInCompare
+                  ? "text-blue-500"
+                  : "text-gray-600 hover:text-blue-500"
+              }`}
+              onClick={handleCompareClick}
+            >
+              <BarChart3
+                className={`w-4 h-4 ${isInCompare ? "fill-current" : ""}`}
+              />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-8 w-8 p-0 rounded-full bg-white/90 hover:bg-white transition-colors ${
+                isFavourite ? "text-red-500" : "text-gray-600 hover:text-red-500"
+              }`}
+              onClick={handleFavouriteClick}
+            >
+              <Heart className={`w-4 h-4 ${isFavourite ? "fill-current" : ""}`} />
+            </Button>
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-          <div className="flex items-center">
-            <Bed className="w-4 h-4 mr-1" />
-            <span>
-              {property.bedrooms},{property.bathrooms}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <Square className="w-3 h-3 mr-1" />
-            <span className="text-[13px]">
-              {property.area} {property.areaUnit} - 1037 {property.areaUnit}
-            </span>
-          </div>
-        </div>
+        <CardContent className="p-4">
+          <div className="mb-3">
+            <h3 className="text-base font-semibold text-gray-900 mb-2 truncate">
+              {property.title}
+            </h3>
 
-        <hr />
-        <div className="flex items-end justify-between pt-2">
-          <div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-              STARTING PRICE
-            </div>
-            <div className="text-lg font-medium text-gray-900">
-              {formatPrice(property.price)}
+            <div className="flex items-center text-gray-500 text-xs mb-4">
+              <MapPin className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
+              <span className="truncate">
+                {property.address}, {property.city}
+              </span>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-              POSSESSION
+
+          <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+            <div className="flex items-center">
+              <Bed className="w-4 h-4 mr-1" />
+              <span>
+                {property.bedrooms},{property.bathrooms}
+              </span>
             </div>
-            <div className="text-sm font-normal text-gray-900">Feb 2021</div>
+            <div className="flex items-center">
+              <Square className="w-3 h-3 mr-1" />
+              <span className="text-[13px]">
+                {property.area} {property.areaUnit}
+              </span>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          <hr />
+          <div className="flex items-end justify-between pt-2">
+            <div>
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                STARTING PRICE
+              </div>
+              <div className="text-lg font-medium text-gray-900">
+                {formatPrice(property.price)}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                POSSESSION
+              </div>
+              <div className="text-sm font-normal text-gray-900">
+                {property.constructionStatus === 'ready_to_move' ? 'Ready to Move' : 'Under Construction'}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSuccess={() => {
+          // Refresh the page or redirect to login
+          router.push('/auth/login');
+        }}
+      />
+    </>
   );
 }

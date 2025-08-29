@@ -15,14 +15,14 @@ import { Badge } from "@/components/ui/badge";
 import {
   Search,
   MapPin,
-  Filter,
   Star,
-  IndianRupee,
-  ChevronDown,
+  Home,
+  Building2,
+  Store,
 } from "lucide-react";
-import { PROPERTY_TYPES, CITIES, BHK_OPTIONS } from "@/lib/config";
+import { PROPERTY_TYPES, CITIES, BHK_OPTIONS, PROPERTY_CATEGORIES } from "@/lib/config";
 import { useRouter } from "next/navigation";
-import { useSearchStore } from "@/lib/store";
+import { useSearchStore, useLocationStore } from "@/lib/store";
 import {
   MotionWrapper,
   StaggerContainer,
@@ -33,112 +33,107 @@ import { ButtonAnimation } from "@/components/animations/page-transitions";
 export function HeroSection() {
   const router = useRouter();
   const { updateSearchFilters } = useSearchStore();
+  const { setSelectedLocation } = useLocationStore();
   const [searchForm, setSearchForm] = useState({
     type: "sell",
-    city: "",
-    location: "",
+    city: "Bengaluru", // Set Bengaluru as default
+    area: "",
     bhk: "",
-    priceRange: "",
-    minPrice: "",
-    maxPrice: "",
-    customPrice: false,
+    propertyCategory: "",
   });
 
-  // Price ranges based on property type
-  const getPriceRanges = () => {
-    if (searchForm.type === "rent") {
-      return [
-        { label: "₹5K - ₹15K", value: "5000-15000" },
-        { label: "₹15K - ₹25K", value: "15000-25000" },
-        { label: "₹25K - ₹50K", value: "25000-50000" },
-        { label: "₹50K - ₹75K", value: "50000-75000" },
-        { label: "₹75K - ₹1L", value: "75000-100000" },
-        { label: "₹1L - ₹2L", value: "100000-200000" },
-        { label: "₹2L+", value: "200000-10000000" },
-        { label: "Custom Range", value: "custom" },
-      ];
-    } else {
-      return [
-        { label: "₹10L - ₹25L", value: "1000000-2500000" },
-        { label: "₹25L - ₹50L", value: "2500000-5000000" },
-        { label: "₹50L - ₹75L", value: "5000000-7500000" },
-        { label: "₹75L - ₹1Cr", value: "7500000-10000000" },
-        { label: "₹1Cr - ₹2Cr", value: "10000000-20000000" },
-        { label: "₹2Cr - ₹5Cr", value: "20000000-50000000" },
-        { label: "₹5Cr+", value: "50000000-1000000000" },
-        { label: "Custom Range", value: "custom" },
-      ];
-    }
-  };
-
-  const handlePriceRangeChange = (value: any) => {
-    setSearchForm((prev) => ({
-      ...prev,
-      priceRange: value,
-      customPrice: value === "custom",
-      minPrice: value === "custom" ? prev.minPrice : "",
-      maxPrice: value === "custom" ? prev.maxPrice : "",
-    }));
-  };
-
-  const formatPriceLabel = () => {
-    if (searchForm.customPrice) {
-      return "Custom Range";
-    }
-    if (searchForm.priceRange) {
-      const range = getPriceRanges().find(
-        (r) => r.value === searchForm.priceRange
-      );
-      return range ? range.label : "Price Range";
-    }
-    return "Price Range";
-  };
-
   const handleSearch = () => {
-    const params: any = new URLSearchParams();
-    Object.entries(searchForm).forEach(([key, value]) => {
-      if (value && key !== "customPrice") params.append(key, value);
-    });
+    try {
+      console.log('Search form data:', searchForm); // Debug log
+      
+      const params: any = new URLSearchParams();
+      Object.entries(searchForm).forEach(([key, value]) => {
+        if (value) {
+          params.append(key, value);
+          console.log(`Adding param: ${key} = ${value}`); // Debug log
+        }
+      });
 
-    let minPrice = 0;
-    let maxPrice = 100000000;
+      // Update search filters
+      updateSearchFilters({
+        type: searchForm.type,
+        city: searchForm.city,
+        area: searchForm.area, // This will be used for location filtering
+        bedrooms: searchForm.bhk,
+        propertyCategory: searchForm.propertyCategory,
+      });
 
-    if (searchForm.customPrice) {
-      minPrice = searchForm.minPrice ? parseInt(searchForm.minPrice) : 0;
-      maxPrice = searchForm.maxPrice
-        ? parseInt(searchForm.maxPrice)
-        : 100000000;
-    } else if (searchForm.priceRange) {
-      const [min, max] = searchForm.priceRange
-        .split("-")
-        .map((p) => parseInt(p));
-      minPrice = min;
-      maxPrice = max;
+      // Update selected location for location-based filtering
+      if (searchForm.city) {
+        setSelectedLocation({
+          city: searchForm.city,
+          area: searchForm.area || undefined
+        });
+      }
+
+      const searchUrl = `/properties?${params.toString()}`;
+      console.log('Navigating to:', searchUrl); // Debug log
+      
+      // Navigate to properties page
+      router.push(searchUrl);
+    } catch (error) {
+      console.error('Search error:', error);
+      // Fallback navigation
+      const searchUrl = `/properties?type=${searchForm.type}&city=${searchForm.city}`;
+      window.location.href = searchUrl;
     }
+  };
 
-    updateSearchFilters({
-      type: searchForm.type,
-      city: searchForm.city,
-      area: searchForm.location,
-      bedrooms: searchForm.bhk,
-      minPrice,
-      maxPrice,
-    });
+  // Handle city selection change
+  const handleCityChange = (city: string) => {
+    setSearchForm((prev) => ({ ...prev, city }));
+    
+    // Immediately update location when city changes
+    if (city) {
+      setSelectedLocation({
+        city,
+        area: searchForm.area || undefined
+      });
+    }
+  };
 
-    router.push(`/properties?${params.toString()}`);
+  // Handle location input change
+  const handleLocationChange = (area: string) => {
+    setSearchForm((prev) => ({ ...prev, area }));
+    
+    // Update location if city is already selected
+    if (searchForm.city) {
+      setSelectedLocation({
+        city: searchForm.city,
+        area: area || undefined
+      });
+    }
+  };
+
+  const getPropertyTypeIcon = (type: string) => {
+    switch (type) {
+      case 'sell':
+        return <Home className="w-4 h-4" />;
+      case 'rent':
+        return <Building2 className="w-4 h-4" />;
+      case 'commercial':
+        return <Store className="w-4 h-4" />;
+      default:
+        return <Home className="w-4 h-4" />;
+    }
   };
 
   return (
-    <section className="relative bg-gradient-to-r from-gray-50 to-white py-16 md:py-24">
+    <section className="relative bg-gradient-to-br from-gray-50 via-white to-gray-50 py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <StaggerContainer className="text-center mb-12">
           <StaggerItem>
             <div className="flex items-center justify-center mb-4">
               <Badge
                 variant="outline"
-                className="text-red-500 border-red-200 bg-red-50"
+                className="text-red-500 border-red-200 bg-red-50 px-4 py-2"
               >
-                <Star className="w-3 h-3 mr-1 fill-current" />
+                <Star className="w-3 h-3 mr-2 fill-current" />
                 Trusted by 1000+ customers
               </Badge>
             </div>
@@ -159,203 +154,135 @@ export function HeroSection() {
           </StaggerItem>
         </StaggerContainer>
 
-        {/* Advanced Search Card */}
+        {/* Modern Search Bar */}
         <MotionWrapper variant="slideInUp" delay={0.4}>
-          <Card className="max-w-6xl mx-auto p-6 shadow-xl border-0 bg-white/90 backdrop-blur-sm">
-            {/* Property Type Tabs */}
-            <div className="flex flex-wrap gap-2 mb-6 p-1 bg-gray-100 rounded-lg">
-              {PROPERTY_TYPES.map((type) => (
-                <button
-                  key={type.value}
-                  onClick={() =>
-                    setSearchForm((prev) => ({
-                      ...prev,
-                      type: type.value,
-                      priceRange: "",
-                      customPrice: false,
-                      minPrice: "",
-                      maxPrice: "",
-                    }))
-                  }
-                  className={`px-4 py-2 rounded-md font-medium transition-all duration-200 ${
-                    searchForm.type === type.value
-                      ? "bg-red-500 text-white shadow-md"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-white"
-                  }`}
-                >
-                  {type.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Search Form */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-              {/* City Selection */}
-              <div className="md:col-span-3">
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
-                  <Select
-                    value={searchForm.city}
-                    onValueChange={(value) =>
-                      setSearchForm((prev) => ({ ...prev, city: value }))
-                    }
-                  >
-                    <SelectTrigger className="pl-10 h-12 bg-white border-gray-200 hover:border-gray-300 focus:border-red-500 focus:ring-red-500/20">
-                      <SelectValue placeholder="Select City" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CITIES.map((city) => (
-                        <SelectItem key={city} value={city}>
-                          {city}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Location Search */}
-              <div className="md:col-span-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
-                  <Input
-                    placeholder="Locality, landmark, project..."
-                    value={searchForm.location}
-                    onChange={(e) =>
-                      setSearchForm((prev) => ({
-                        ...prev,
-                        location: e.target.value,
-                      }))
-                    }
-                    className="pl-10 h-12 bg-white border-gray-200 hover:border-gray-300 focus:border-red-500 focus:ring-red-500/20"
-                  />
-                </div>
-              </div>
-
-              {/* BHK Selection */}
-              <div className="md:col-span-2">
-                <Select
-                  value={searchForm.bhk}
-                  onValueChange={(value) =>
-                    setSearchForm((prev) => ({ ...prev, bhk: value }))
-                  }
-                >
-                  <SelectTrigger className="h-12 bg-white border-gray-200 hover:border-gray-300 focus:border-red-500 focus:ring-red-500/20">
-                    <SelectValue placeholder="BHK" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BHK_OPTIONS.map((bhk) => (
-                      <SelectItem key={bhk.value} value={bhk.value}>
-                        {bhk.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Price Range */}
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
-                  <Select
-                    value={searchForm.priceRange}
-                    onValueChange={handlePriceRangeChange}
-                  >
-                    <SelectTrigger className="pl-10 h-12 bg-white border-gray-200 hover:border-gray-300 focus:border-red-500 focus:ring-red-500/20">
-                      <SelectValue placeholder="Price Range">
-                        {formatPriceLabel()}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getPriceRanges().map((range) => (
-                        <SelectItem key={range.value} value={range.value}>
-                          {range.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Search Button */}
-              <div className="md:col-span-2">
-                <ButtonAnimation>
-                  <Button
-                    onClick={handleSearch}
-                    className="w-full h-12 bg-red-500 hover:bg-red-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                  >
-                    <Search className="w-4 h-4 mr-2" />
-                    Search
-                  </Button>
-                </ButtonAnimation>
-              </div>
-            </div>
-
-            {/* Custom Price Range Inputs */}
-            {searchForm.customPrice && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Min Price ({searchForm.type === "rent" ? "₹/month" : "₹"})
-                  </label>
-                  <Input
-                    placeholder={
-                      searchForm.type === "rent"
-                        ? "e.g., 5000"
-                        : "e.g., 1000000"
-                    }
-                    value={searchForm.minPrice}
-                    onChange={(e) =>
-                      setSearchForm((prev) => ({
-                        ...prev,
-                        minPrice: e.target.value,
-                      }))
-                    }
-                    className="h-10 bg-white border-gray-200 focus:border-red-500 focus:ring-red-500/20"
-                    type="number"
-                  />
-                </div>
-                <div className="md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Max Price ({searchForm.type === "rent" ? "₹/month" : "₹"})
-                  </label>
-                  <Input
-                    placeholder={
-                      searchForm.type === "rent"
-                        ? "e.g., 50000"
-                        : "e.g., 5000000"
-                    }
-                    value={searchForm.maxPrice}
-                    onChange={(e) =>
-                      setSearchForm((prev) => ({
-                        ...prev,
-                        maxPrice: e.target.value,
-                      }))
-                    }
-                    className="h-10 bg-white border-gray-200 focus:border-red-500 focus:ring-red-500/20"
-                    type="number"
-                  />
-                </div>
-                <div className="md:col-span-1 flex items-end">
-                  <Button
-                    variant="outline"
+          <div className="max-w-4xl mx-auto">
+            {/* Property Type Tabs - Horizontal Design */}
+            <div className="flex justify-center mb-6">
+              <div className="bg-white rounded-2xl p-1 shadow-lg border border-gray-100 flex">
+                {PROPERTY_TYPES.map((type) => (
+                  <button
+                    key={type.value}
                     onClick={() =>
                       setSearchForm((prev) => ({
                         ...prev,
-                        customPrice: false,
-                        priceRange: "",
-                        minPrice: "",
-                        maxPrice: "",
+                        type: type.value,
                       }))
                     }
-                    className="w-full h-10 border-gray-200 hover:border-gray-300 text-gray-600 hover:text-gray-900"
+                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                      searchForm.type === type.value
+                        ? "bg-red-500 text-white shadow-md"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
                   >
-                    Clear Custom
-                  </Button>
-                </div>
+                    {getPropertyTypeIcon(type.value)}
+                    {type.label}
+                  </button>
+                ))}
               </div>
-            )}
-          </Card>
+            </div>
+
+            {/* Airbnb-style Search Bar */}
+            <Card className="p-2 shadow-2xl border-0 bg-white/95 backdrop-blur-sm rounded-2xl hero-search">
+              <div className="flex items-center gap-1 p-1">
+                {/* City Selection */}
+                <div className="flex-1 min-w-0">
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Select
+                      value={searchForm.city}
+                      onValueChange={handleCityChange}
+                    >
+                      <SelectTrigger className="h-14 pl-12 pr-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl text-left focus:ring-0 focus:border focus:border-gray-300 search-trigger">
+                        <SelectValue placeholder="Select City" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CITIES.map((city) => (
+                          <SelectItem key={city} value={city}>
+                            {city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="w-px h-8 bg-gray-200 mx-2" />
+
+                {/* Location Search */}
+                <div className="flex-1 min-w-0">
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Input
+                      placeholder="Location, landmark, project..."
+                      value={searchForm.area}
+                      onChange={(e) => handleLocationChange(e.target.value)}
+                      className="h-14 pl-12 pr-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl placeholder:text-gray-500 focus:ring-0 focus:border focus:border-gray-300 search-input"
+                    />
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="w-px h-8 bg-gray-200 mx-2" />
+
+                {/* BHK Selection */}
+                <div className="flex-1 min-w-0">
+                  <Select
+                    value={searchForm.bhk}
+                    onValueChange={(value) =>
+                      setSearchForm((prev) => ({ ...prev, bhk: value }))
+                    }
+                  >
+                    <SelectTrigger className="h-14 px-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl text-left focus:ring-0 focus:border focus:border-gray-300 search-trigger">
+                      <SelectValue placeholder="BHK" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BHK_OPTIONS.map((bhk) => (
+                        <SelectItem key={bhk.value} value={bhk.value}>
+                          {bhk.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Divider */}
+                <div className="w-px h-8 bg-gray-200 mx-2" />
+
+                {/* Property Type */}
+                <div className="flex-1 min-w-0">
+                  <Select
+                    value={searchForm.propertyCategory}
+                    onValueChange={(value) =>
+                      setSearchForm((prev) => ({ ...prev, propertyCategory: value }))
+                    }
+                  >
+                    <SelectTrigger className="h-14 px-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl text-left focus:ring-0 focus:border focus:border-gray-300 search-trigger">
+                      <SelectValue placeholder="Property Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROPERTY_CATEGORIES.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Search Button */}
+                <ButtonAnimation>
+                  <Button
+                    onClick={handleSearch}
+                    className="h-14 w-14 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-shrink-0 focus:ring-0"
+                  >
+                    <Search className="w-5 h-5" />
+                  </Button>
+                </ButtonAnimation>
+              </div>
+            </Card>
+          </div>
         </MotionWrapper>
       </div>
     </section>

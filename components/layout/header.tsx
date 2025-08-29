@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { useAuthStore, usePropertyStore } from "@/lib/store";
+import { LocationSelector } from "./location-selector";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -95,6 +96,9 @@ export function Header() {
 
           {/* Desktop Auth & Actions */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Location Selector */}
+            <LocationSelector />
+            
             {/* Compare Button */}
             <Button variant="outline" size="sm" asChild className="relative">
               <Link href="/tools/property-comparison">
@@ -237,6 +241,12 @@ export function Header() {
                     </Link>
                   </motion.div>
                 ))}
+
+                {/* Mobile Location Selector */}
+                <motion.div variants={menuItemVariants} className="px-3 py-2">
+                  <div className="text-sm font-medium text-gray-700 mb-2">Location</div>
+                  <LocationSelector />
+                </motion.div>
 
                 {/* Mobile Compare Button */}
                 <motion.div variants={menuItemVariants}>

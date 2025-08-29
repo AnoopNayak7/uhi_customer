@@ -21,13 +21,28 @@ export const PROPERTY_TYPES = [
 ];
 
 export const PROPERTY_CATEGORIES = [
-  { value: 'flat', label: 'Apartment' },
+  { value: 'apartment', label: 'Apartment/Flat' },
+  // { value: 'apartment', label: 'Flat' },
   { value: 'house', label: 'House' },
   { value: 'villa', label: 'Villa' },
   { value: 'plot', label: 'Plot' },
   { value: 'office', label: 'Office' },
   { value: 'shop', label: 'Shop' }
 ];
+
+// Helper function to normalize property categories
+export const normalizePropertyCategory = (category: string): string => {
+  const categoryMap: { [key: string]: string } = {
+    'flat': 'apartment',
+    'apartment': 'apartment',
+    'house': 'house',
+    'villa': 'villa',
+    'plot': 'plot',
+    'office': 'office',
+    'shop': 'shop'
+  };
+  return categoryMap[category.toLowerCase()] || category;
+};
 
 export const CITIES = [
   'Bengaluru',

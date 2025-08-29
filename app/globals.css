@@ -95,6 +95,32 @@
     -webkit-text-size-adjust: 100%;
   }
   
+  /* Custom focus styles for search components */
+  .search-input:focus,
+  .search-select:focus,
+  .search-trigger:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: 1px solid #d1d5db !important; /* slim grey border */
+  }
+  
+  /* Remove default focus ring from all form elements */
+  input:focus,
+  select:focus,
+  button:focus,
+  textarea:focus {
+    outline: none !important;
+  }
+  
+  /* Custom focus styles for our search bar */
+  .hero-search input:focus,
+  .hero-search select:focus,
+  .hero-search button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: 1px solid #d1d5db !important;
+  }
+  
   /* Optimize background gradients for performance */
   .bg-gradient-to-r,
   .bg-gradient-to-l,

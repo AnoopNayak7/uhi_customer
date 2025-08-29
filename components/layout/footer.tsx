@@ -1,10 +1,14 @@
+"use client";
+
 import Link from 'next/link';
 import { Logo } from '@/components/ui/logo';
 import { APP_CONFIG } from '@/lib/config';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
+import { useLocationData } from '@/hooks/use-location-data';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const { getDefaultCity, getDefaultArea } = useLocationData();
 
   const popularCities = [
     'Bangalore', 'Mumbai', 'Delhi', 'Chennai', 'Hyderabad', 'Pune'
@@ -20,12 +24,12 @@ export function Footer() {
   ];
 
   const propertyTypes = [
-    { label: 'Apartments for Sale', href: '/properties?type=sell&category=apartment' },
-    { label: 'Houses for Sale', href: '/properties?type=sell&category=house' },
-    { label: 'Villas for Sale', href: '/properties?type=sell&category=villa' },
-    { label: 'Apartments for Rent', href: '/properties?type=rent&category=flat' },
-    { label: 'Commercial Properties', href: '/properties?type=commercial' },
-    { label: 'Plots for Sale', href: '/properties?type=sell&category=plot' }
+    { label: `Apartments for Sale in ${getDefaultCity()}`, href: `/properties?type=sell&category=apartment&city=${getDefaultCity()}${getDefaultArea() ? `&area=${getDefaultArea()}` : ''}` },
+    { label: `Houses for Sale in ${getDefaultCity()}`, href: `/properties?type=sell&category=house&city=${getDefaultCity()}${getDefaultArea() ? `&area=${getDefaultArea()}` : ''}` },
+    { label: `Villas for Sale in ${getDefaultCity()}`, href: `/properties?type=sell&category=villa&city=${getDefaultCity()}${getDefaultArea() ? `&area=${getDefaultArea()}` : ''}` },
+    { label: `Apartments for Rent in ${getDefaultCity()}`, href: `/properties?type=rent&category=apartment&city=${getDefaultCity()}${getDefaultArea() ? `&area=${getDefaultArea()}` : ''}` },
+    { label: `Commercial Properties in ${getDefaultCity()}`, href: `/properties?type=commercial&city=${getDefaultCity()}${getDefaultArea() ? `&area=${getDefaultArea()}` : ''}` },
+    { label: `Plots for Sale in ${getDefaultCity()}`, href: `/properties?type=sell&category=plot&city=${getDefaultCity()}${getDefaultArea() ? `&area=${getDefaultArea()}` : ''}` }
   ];
 
   return (
@@ -110,7 +114,7 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-300">
                 <MapPin className="w-4 h-4" />
-                <span>Bangalore, India</span>
+                <span>{getDefaultArea() ? `${getDefaultArea()}, ` : ''}{getDefaultCity()}, India</span>
               </div>
             </div>
           </div>

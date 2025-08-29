@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { LocationProvider } from "@/components/layout/location-provider";
 import { LayoutWrapper } from "@/components/animations/layout-wrapper";
+import { FavouritesSync } from "@/components/layout/favourites-sync";
 import {
   WebVitals,
   PerformanceBudget,
@@ -86,7 +88,10 @@ export default function RootLayout({
       </head>
       <body className={`${manrope.className} font-sans`}>
         <AuthProvider>
-          <LayoutWrapper>{children}</LayoutWrapper>
+          <LocationProvider>
+            <FavouritesSync />
+            <LayoutWrapper>{children}</LayoutWrapper>
+          </LocationProvider>
         </AuthProvider>
         <Toaster />
         <WebVitals />

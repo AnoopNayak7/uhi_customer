@@ -60,9 +60,11 @@ interface PropertyState {
   addToCompare: (property: Property) => void;
   removeFromCompare: (propertyId: string) => void;
   clearCompare: () => void;
-  addToFavourites: (property: any) => void;
-  removeFromFavourites: (propertyId: string) => void;
+  addToFavourites: (property: any) => Promise<void>;
+  removeFromFavourites: (propertyId: string) => Promise<void>;
   addToViewed: (property: Property) => void;
+  setFavourites: (properties: Property[]) => void;
+  clearFavourites: () => void;
 }
 
 interface SearchState {
@@ -79,6 +81,15 @@ interface SearchState {
   };
   updateSearchFilters: (filters: Partial<SearchState['searchFilters']>) => void;
   clearFilters: () => void;
+}
+
+interface LocationState {
+  selectedLocation: {
+    city: string;
+    area?: string;
+  } | null;
+  setSelectedLocation: (location: { city: string; area?: string } | null) => void;
+  clearLocation: () => void;
 }
 
 interface TravelDestination {
@@ -175,17 +186,36 @@ export const usePropertyStore = create<PropertyState>()(
         compareList: state.compareList.filter(p => p.id !== propertyId)
       })),
       clearCompare: () => set({ compareList: [] }),
-      addToFavourites: (property) => set((state) => {
-        if (state.favourites.find(p => p.id === property.id)) return state;
-        return { favourites: [...state.favourites, property] };
-      }),
-      removeFromFavourites: (propertyId) => set((state) => ({
-        favourites: state.favourites.filter(p => p.id !== propertyId)
-      })),
+      addToFavourites: async (property) => {
+        if (property) {
+          try {
+            await apiClient.addToFavourites(property.id);
+            set((state) => ({
+              favourites: [...state.favourites, property]
+            }));
+          } catch (error) {
+            console.error('Error adding to favourites:', error);
+            throw error;
+          }
+        }
+      },
+      removeFromFavourites: async (propertyId) => {
+        try {
+          await apiClient.removeFromFavourites(propertyId);
+          set((state) => ({
+            favourites: state.favourites.filter(p => p.id !== propertyId)
+          }));
+        } catch (error) {
+          console.error('Error removing from favourites:', error);
+          throw error;
+        }
+      },
       addToViewed: (property) => set((state) => {
         const filtered = state.viewedProperties.filter(p => p.id !== property.id);
         return { viewedProperties: [property, ...filtered].slice(0, 20) };
-      })
+      }),
+      setFavourites: (properties) => set({ favourites: properties }),
+      clearFavourites: () => set({ favourites: [] })
     }),
     {
       name: 'urbanhousein-properties',
@@ -208,7 +238,7 @@ export const usePropertyStore = create<PropertyState>()(
 export const useSearchStore = create<SearchState>((set) => ({
   searchFilters: {
     type: 'sell',
-    city: '',
+    city: 'Bengaluru', // Set Bengaluru as default
     area: '',
     minPrice: 0,
     maxPrice: 100000000,
@@ -223,7 +253,7 @@ export const useSearchStore = create<SearchState>((set) => ({
   clearFilters: () => set({
     searchFilters: {
       type: 'sell',
-      city: '',
+      city: 'Bengaluru', // Keep Bengaluru as default even when clearing
       area: '',
       minPrice: 0,
       maxPrice: 100000000,
@@ -233,6 +263,12 @@ export const useSearchStore = create<SearchState>((set) => ({
       possessionStatus: ''
     }
   })
+}));
+
+export const useLocationStore = create<LocationState>((set) => ({
+  selectedLocation: { city: 'Bengaluru', area: undefined }, // Initialize with Bengaluru
+  setSelectedLocation: (location) => set({ selectedLocation: location }),
+  clearLocation: () => set({ selectedLocation: { city: 'Bengaluru', area: undefined } })
 }));
 
 export const useTravelPreferencesStore = create<TravelPreferencesState>()(
