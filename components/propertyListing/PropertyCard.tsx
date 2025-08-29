@@ -7,11 +7,12 @@ import { Heart, MapPin, Bed, Bath, Square, BarChart3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CardHover } from "@/components/animations/page-transitions";
 import { motion } from "framer-motion";
-import { PropertyImage } from "@/components/ui/optimized-image";
+import { PropertyListImage } from "@/components/ui/optimized-image";
 import { PROPERTY_IMAGES, BLUR_DATA_URLS } from "@/lib/images";
 import { usePropertyStore, useAuthStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
+import { useHoverPreloader } from "@/hooks/use-image-preloader";
 import {
   Dialog,
   DialogContent,
@@ -76,6 +77,7 @@ export const PropertyCard = ({
   const router = useRouter();
   const { addToCompare, removeFromCompare, compareList } = usePropertyStore();
   const { user } = useAuthStore();
+  const { preloadOnHover } = useHoverPreloader();
 
   const handleCardClick = () => {
     router.push(`/properties/${property.id}`);
@@ -83,24 +85,24 @@ export const PropertyCard = ({
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (!user) {
-      toast.error('Please login to add favourites');
+      toast.error("Please login to add favourites");
       return;
     }
 
     try {
       if (isFavorite) {
         await apiClient.removeFromFavourites(property.id);
-        toast.success('Property removed from favourites');
+        toast.success("Property removed from favourites");
       } else {
         await apiClient.addToFavourites(property.id);
-        toast.success('Property added to favourites');
+        toast.success("Property added to favourites");
       }
       onFavorite();
     } catch (error) {
-      console.error('Error updating favourite:', error);
-      toast.error('Failed to update favourite');
+      console.error("Error updating favourite:", error);
+      toast.error("Failed to update favourite");
     }
   };
 
@@ -123,11 +125,21 @@ export const PropertyCard = ({
 
   const defaultImage = PROPERTY_IMAGES.default;
 
+  const handleMouseEnter = () => {
+    // Preload additional property images on hover
+    if (property.images && property.images.length > 1) {
+      property.images.slice(1, 3).forEach((img: string) => {
+        preloadOnHover(img);
+      });
+    }
+  };
+
   return (
     <CardHover>
       <Card
         className="group overflow-hidden cursor-pointer bg-white touch-manipulation"
         onClick={handleCardClick}
+        onMouseEnter={handleMouseEnter}
       >
         <div className="flex flex-col">
           <div className="relative">
@@ -136,13 +148,14 @@ export const PropertyCard = ({
                 compact ? "h-[200px] sm:h-[160px]" : "h-48 sm:h-52"
               } overflow-hidden`}
             >
-              <PropertyImage
+              <PropertyListImage
                 src={property.images?.[0] || defaultImage}
                 alt={property.title}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                 blurDataURL={BLUR_DATA_URLS.property}
-                priority={false}
+                fallbackSrc={defaultImage}
+                index={0}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>

@@ -14,7 +14,8 @@ import {
   ChevronRight,
   BarChart3,
 } from "lucide-react";
-import Image from "next/image";
+import { PropertyListImage } from "@/components/ui/optimized-image";
+import { BLUR_DATA_URLS } from "@/lib/images";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
@@ -51,12 +52,12 @@ interface Property {
 
 export function FeaturedProperties() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { 
-    featuredProperties: properties, 
-    loading, 
-    error, 
+  const {
+    featuredProperties: properties,
+    loading,
+    error,
     getLocationDisplay,
-    refreshData 
+    refreshData,
   } = useLocationData();
   const {
     addToFavourites,
@@ -210,7 +211,7 @@ export function FeaturedProperties() {
 
         {visibleProperties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {visibleProperties.map((property:any) => (
+            {visibleProperties.map((property: any) => (
               <PropertyCard
                 key={property.id}
                 property={property}
@@ -285,12 +286,12 @@ function PropertyCard({
 
   const handleFavouriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (!isAuthenticated) {
       setShowLoginModal(true);
       return;
     }
-    
+
     try {
       await onFavourite();
     } catch (error) {
@@ -311,17 +312,20 @@ function PropertyCard({
       >
         <div className="relative">
           <div className="relative h-[160px] overflow-hidden m-[4px] rounded-t-md">
-            <Image
+            <PropertyListImage
               src={property.images?.[0] || defaultImage}
               alt={property.title}
               fill
-              className="object-cover"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              blurDataURL={BLUR_DATA_URLS.property}
+              fallbackSrc={defaultImage}
+              index={0}
             />
           </div>
 
           <div className="absolute top-3 left-3">
             <Badge className="bg-white/90 text-gray-700 border-0 text-[10px] font-normal px-2 py-1 rounded shadow-sm">
-              {property.category?.toUpperCase() || 'APARTMENTS'}
+              {property.category?.toUpperCase() || "APARTMENTS"}
             </Badge>
           </div>
 
@@ -344,11 +348,15 @@ function PropertyCard({
               variant="ghost"
               size="sm"
               className={`h-8 w-8 p-0 rounded-full bg-white/90 hover:bg-white transition-colors ${
-                isFavourite ? "text-red-500" : "text-gray-600 hover:text-red-500"
+                isFavourite
+                  ? "text-red-500"
+                  : "text-gray-600 hover:text-red-500"
               }`}
               onClick={handleFavouriteClick}
             >
-              <Heart className={`w-4 h-4 ${isFavourite ? "fill-current" : ""}`} />
+              <Heart
+                className={`w-4 h-4 ${isFavourite ? "fill-current" : ""}`}
+              />
             </Button>
           </div>
         </div>
@@ -397,7 +405,9 @@ function PropertyCard({
                 POSSESSION
               </div>
               <div className="text-sm font-normal text-gray-900">
-                {property.constructionStatus === 'ready_to_move' ? 'Ready to Move' : 'Under Construction'}
+                {property.constructionStatus === "ready_to_move"
+                  ? "Ready to Move"
+                  : "Under Construction"}
               </div>
             </div>
           </div>
@@ -409,7 +419,7 @@ function PropertyCard({
         onClose={() => setShowLoginModal(false)}
         onSuccess={() => {
           // Refresh the page or redirect to login
-          router.push('/auth/login');
+          router.push("/auth/login");
         }}
       />
     </>

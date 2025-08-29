@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiClient } from "@/lib/api";
 import { usePropertyStore, useAuthStore } from "@/lib/store";
+import { usePropertyImagePreloader } from "@/hooks/use-image-preloader";
 import {
   Heart,
   Share2,
@@ -78,12 +79,15 @@ const ImageGallery = ({
     property.images && property.images.length > 0
       ? property.images
       : [
-          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-          "https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80",
-          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-          "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2080&q=80",
-          "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+          "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+          "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+          "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
         ];
+
+  // Preload property images for better performance
+  usePropertyImagePreloader(propertyImages);
 
   const handleImageError = (index: any) => {
     setImageErrors((prev: any) => ({ ...prev, [index]: true }));
@@ -786,7 +790,7 @@ export default function PropertyDetailPage() {
             try {
               await apiClient.addViewedProperty(user.id, id);
             } catch (error) {
-              console.error('Error adding to viewed properties:', error);
+              console.error("Error adding to viewed properties:", error);
             }
           }
         } else {
@@ -822,7 +826,7 @@ export default function PropertyDetailPage() {
     if (!property) return;
 
     if (!user) {
-      toast.error('Please login to add favourites');
+      toast.error("Please login to add favourites");
       return;
     }
 
@@ -831,15 +835,15 @@ export default function PropertyDetailPage() {
       if (isFavorite) {
         await apiClient.removeFromFavourites(property.id);
         removeFromFavourites(property.id);
-        toast.success('Property removed from favourites');
+        toast.success("Property removed from favourites");
       } else {
         await apiClient.addToFavourites(property.id);
         addToFavourites(property);
-        toast.success('Property added to favourites');
+        toast.success("Property added to favourites");
       }
     } catch (error) {
-      console.error('Error updating favourite:', error);
-      toast.error('Failed to update favourite');
+      console.error("Error updating favourite:", error);
+      toast.error("Failed to update favourite");
     }
   };
 
@@ -868,7 +872,7 @@ export default function PropertyDetailPage() {
 
     try {
       if (!user) {
-        toast.error('Please login to book a visit');
+        toast.error("Please login to book a visit");
         setIsSubmitting(false);
         return;
       }
@@ -880,7 +884,7 @@ export default function PropertyDetailPage() {
         phone: bookingForm.phone,
         date: bookingForm.date,
         time: bookingForm.time,
-        message: bookingForm.message
+        message: bookingForm.message,
       });
 
       if (response.success) {
@@ -901,11 +905,11 @@ export default function PropertyDetailPage() {
           });
         }, 3000);
       } else {
-        throw new Error(response.message || 'Failed to book visit');
+        throw new Error(response.message || "Failed to book visit");
       }
     } catch (error) {
-      console.error('Error booking visit:', error);
-      toast.error('Failed to book visit. Please try again.');
+      console.error("Error booking visit:", error);
+      toast.error("Failed to book visit. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -915,7 +919,7 @@ export default function PropertyDetailPage() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, nextField?: string) => {
-    if (e.key === 'Enter' && nextField) {
+    if (e.key === "Enter" && nextField) {
       e.preventDefault();
       const nextElement = document.getElementById(nextField);
       if (nextElement) {

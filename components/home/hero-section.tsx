@@ -12,15 +12,13 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Search, MapPin, Star, Home, Building2, Store } from "lucide-react";
 import {
-  Search,
-  MapPin,
-  Star,
-  Home,
-  Building2,
-  Store,
-} from "lucide-react";
-import { PROPERTY_TYPES, CITIES, BHK_OPTIONS, PROPERTY_CATEGORIES } from "@/lib/config";
+  PROPERTY_TYPES,
+  CITIES,
+  BHK_OPTIONS,
+  PROPERTY_CATEGORIES,
+} from "@/lib/config";
 import { useRouter } from "next/navigation";
 import { useSearchStore, useLocationStore } from "@/lib/store";
 import {
@@ -44,8 +42,8 @@ export function HeroSection() {
 
   const handleSearch = () => {
     try {
-      console.log('Search form data:', searchForm); // Debug log
-      
+      console.log("Search form data:", searchForm); // Debug log
+
       const params: any = new URLSearchParams();
       Object.entries(searchForm).forEach(([key, value]) => {
         if (value) {
@@ -67,17 +65,17 @@ export function HeroSection() {
       if (searchForm.city) {
         setSelectedLocation({
           city: searchForm.city,
-          area: searchForm.area || undefined
+          area: searchForm.area || undefined,
         });
       }
 
       const searchUrl = `/properties?${params.toString()}`;
-      console.log('Navigating to:', searchUrl); // Debug log
-      
+      console.log("Navigating to:", searchUrl); // Debug log
+
       // Navigate to properties page
       router.push(searchUrl);
     } catch (error) {
-      console.error('Search error:', error);
+      console.error("Search error:", error);
       // Fallback navigation
       const searchUrl = `/properties?type=${searchForm.type}&city=${searchForm.city}`;
       window.location.href = searchUrl;
@@ -87,12 +85,12 @@ export function HeroSection() {
   // Handle city selection change
   const handleCityChange = (city: string) => {
     setSearchForm((prev) => ({ ...prev, city }));
-    
+
     // Immediately update location when city changes
     if (city) {
       setSelectedLocation({
         city,
-        area: searchForm.area || undefined
+        area: searchForm.area || undefined,
       });
     }
   };
@@ -100,23 +98,23 @@ export function HeroSection() {
   // Handle location input change
   const handleLocationChange = (area: string) => {
     setSearchForm((prev) => ({ ...prev, area }));
-    
+
     // Update location if city is already selected
     if (searchForm.city) {
       setSelectedLocation({
         city: searchForm.city,
-        area: area || undefined
+        area: area || undefined,
       });
     }
   };
 
   const getPropertyTypeIcon = (type: string) => {
     switch (type) {
-      case 'sell':
+      case "sell":
         return <Home className="w-4 h-4" />;
-      case 'rent':
+      case "rent":
         return <Building2 className="w-4 h-4" />;
-      case 'commercial':
+      case "commercial":
         return <Store className="w-4 h-4" />;
       default:
         return <Home className="w-4 h-4" />;
@@ -255,7 +253,10 @@ export function HeroSection() {
                   <Select
                     value={searchForm.propertyCategory}
                     onValueChange={(value) =>
-                      setSearchForm((prev) => ({ ...prev, propertyCategory: value }))
+                      setSearchForm((prev) => ({
+                        ...prev,
+                        propertyCategory: value,
+                      }))
                     }
                   >
                     <SelectTrigger className="h-14 px-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl text-left focus:ring-0 focus:border focus:border-gray-300 search-trigger">

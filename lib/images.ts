@@ -4,18 +4,18 @@
 // Optimized Unsplash URLs with proper parameters for production
 export const PROPERTY_IMAGES = {
   // High-quality property images with optimized parameters
-  luxury_home_1: "https://images.unsplash.com/photo-1613977257592-4871e5fcd7c4?w=1200&h=800&fit=crop&crop=center&auto=format&q=80",
-  luxury_home_2: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&h=800&fit=crop&crop=center&auto=format&q=80",
-  modern_apartment_1: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&fit=crop&crop=center&auto=format&q=80",
-  modern_apartment_2: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&h=800&fit=crop&crop=center&auto=format&q=80",
-  villa_1: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&fit=crop&crop=center&auto=format&q=80",
-  villa_2: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&h=800&fit=crop&crop=center&auto=format&q=80",
-  penthouse_1: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&h=800&fit=crop&crop=center&auto=format&q=80",
-  penthouse_2: "https://images.unsplash.com/photo-1616137148922-d8e78b6bb4c0?w=1200&h=800&fit=crop&crop=center&auto=format&q=80",
-  commercial_1: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&h=800&fit=crop&crop=center&auto=format&q=80",
+  luxury_home_1: "https://images.unsplash.com/photo-1613977257592-4871e5fcd7c4?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+  luxury_home_2: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+  modern_apartment_1: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+  modern_apartment_2: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+  villa_1: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+  villa_2: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+  penthouse_1: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+  penthouse_2: "https://images.unsplash.com/photo-1616137148922-d8e78b6bb4c0?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
+  commercial_1: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
   
   // Default fallback image
-  default: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop&crop=center&auto=format&q=80",
+  default: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
 };
 
 // Thumbnail versions for better performance
@@ -77,6 +77,7 @@ export const getOptimizedImageUrl = (
     format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
     fit?: 'crop' | 'fill' | 'scale';
     crop?: 'center' | 'top' | 'bottom' | 'left' | 'right';
+    dpr?: number;
   } = {}
 ) => {
   const {
@@ -85,18 +86,46 @@ export const getOptimizedImageUrl = (
     quality = 80,
     format = 'auto',
     fit = 'crop',
-    crop = 'center'
+    crop = 'center',
+    dpr = 1
   } = options;
 
   const url = new URL(baseUrl);
-  url.searchParams.set('w', width.toString());
-  url.searchParams.set('h', height.toString());
+  url.searchParams.set('w', (width * dpr).toString());
+  url.searchParams.set('h', (height * dpr).toString());
   url.searchParams.set('q', quality.toString());
   url.searchParams.set('auto', format);
   url.searchParams.set('fit', fit);
   url.searchParams.set('crop', crop);
+  url.searchParams.set('dpr', dpr.toString());
 
   return url.toString();
+};
+
+// Helper function to get device pixel ratio aware image URLs
+export const getResponsiveImageUrl = (baseUrl: string, width: number, height: number) => {
+  const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+  
+  return getOptimizedImageUrl(baseUrl, {
+    width,
+    height,
+    quality: dpr > 1 ? 85 : 80, // Higher quality for retina displays
+    dpr
+  });
+};
+
+// Helper function to generate srcSet for responsive images
+export const generateSrcSet = (baseUrl: string, sizes: number[]) => {
+  return sizes
+    .map(size => {
+      const url = getOptimizedImageUrl(baseUrl, {
+        width: size,
+        height: Math.round(size * 0.75), // 4:3 aspect ratio
+        quality: size > 800 ? 85 : 80
+      });
+      return `${url} ${size}w`;
+    })
+    .join(', ');
 };
 
 // Blur data URLs for better loading experience

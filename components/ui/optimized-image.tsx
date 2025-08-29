@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ImageIcon } from "lucide-react";
 
 interface OptimizedImageProps {
@@ -19,6 +19,9 @@ interface OptimizedImageProps {
   onError?: () => void;
   fallbackSrc?: string;
   index?: number;
+  lazy?: boolean;
+  rootMargin?: string;
+  threshold?: number;
 }
 
 export const OptimizedImage = ({
@@ -36,10 +39,40 @@ export const OptimizedImage = ({
   onError,
   fallbackSrc,
   index,
+  lazy = true,
+  rootMargin = "50px",
+  threshold = 0.1,
   ...props
 }: OptimizedImageProps) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [shouldLoad, setShouldLoad] = useState(priority || !lazy);
+  const imgRef = useRef<HTMLDivElement>(null);
+
+  // Intersection Observer for lazy loading
+  useEffect(() => {
+    if (!lazy || priority || shouldLoad) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      {
+        rootMargin,
+        threshold,
+      }
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [lazy, priority, shouldLoad, rootMargin, threshold]);
 
   const handleError = () => {
     setHasError(true);
@@ -67,9 +100,26 @@ export const OptimizedImage = ({
     )}`;
   };
 
+  // Show placeholder while waiting to load
+  if (!shouldLoad) {
+    return (
+      <div
+        ref={imgRef}
+        className={`bg-gray-100 flex items-center justify-center ${className}`}
+        style={{
+          aspectRatio: width && height ? `${width}/${height}` : undefined,
+        }}
+      >
+        <div className="animate-pulse bg-gray-200 w-full h-full flex items-center justify-center">
+          <ImageIcon className="w-8 h-8 text-gray-300" />
+        </div>
+      </div>
+    );
+  }
+
   // Fallback component for failed images
   if (hasError) {
-    if (fallbackSrc) {
+    if (fallbackSrc && fallbackSrc !== src) {
       return (
         <OptimizedImage
           src={fallbackSrc}
@@ -81,6 +131,7 @@ export const OptimizedImage = ({
           priority={priority}
           quality={quality}
           placeholder={placeholder}
+          lazy={lazy}
           onError={() => setHasError(true)}
         />
       );
@@ -88,6 +139,7 @@ export const OptimizedImage = ({
 
     return (
       <div
+        ref={imgRef}
         className={`bg-gray-100 flex items-center justify-center ${className}`}
       >
         <div className="text-center p-4">
@@ -123,17 +175,19 @@ export const OptimizedImage = ({
     ...props,
   };
 
-  if (fill) {
-    return <Image {...imageProps} fill alt={alt || ""} />;
-  }
-
   return (
-    <Image
-      {...imageProps}
-      width={width || 400}
-      height={height || 300}
-      alt={alt || ""}
-    />
+    <div ref={imgRef} className="relative">
+      {fill ? (
+        <Image {...imageProps} fill alt={alt || ""} />
+      ) : (
+        <Image
+          {...imageProps}
+          width={width || 400}
+          height={height || 300}
+          alt={alt || ""}
+        />
+      )}
+    </div>
   );
 };
 
@@ -146,17 +200,19 @@ export const PropertyImage = (
     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
     quality={85}
     placeholder="blur"
+    lazy={true}
   />
 );
 
 export const HeroImage = (
-  props: Omit<OptimizedImageProps, "sizes" | "quality" | "priority">
+  props: Omit<OptimizedImageProps, "sizes" | "quality" | "priority" | "lazy">
 ) => (
   <OptimizedImage
     {...props}
     sizes="100vw"
     quality={90}
     priority={true}
+    lazy={false}
     placeholder="blur"
   />
 );
@@ -169,5 +225,35 @@ export const ThumbnailImage = (
     sizes="(max-width: 768px) 25vw, 15vw"
     quality={75}
     placeholder="blur"
+    lazy={true}
+    rootMargin="100px"
+  />
+);
+
+// New component for property gallery images with optimized lazy loading
+export const PropertyGalleryImage = (
+  props: Omit<OptimizedImageProps, "sizes" | "quality" | "lazy">
+) => (
+  <OptimizedImage
+    {...props}
+    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+    quality={90}
+    placeholder="blur"
+    lazy={true}
+    rootMargin="200px"
+  />
+);
+
+// Component for property list images with aggressive lazy loading
+export const PropertyListImage = (
+  props: Omit<OptimizedImageProps, "sizes" | "quality" | "lazy">
+) => (
+  <OptimizedImage
+    {...props}
+    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+    quality={80}
+    placeholder="blur"
+    lazy={true}
+    rootMargin="50px"
   />
 );
