@@ -67,15 +67,8 @@ export function FeaturedProperties() {
     compareList,
   } = usePropertyStore();
 
-  useEffect(() => {
-    fetchFeaturedProperties();
-  }, [properties.length]); // Changed dependency to properties.length
-
-  const fetchFeaturedProperties = async () => {
-    if (!properties.length) {
-      await refreshData();
-    }
-  };
+  // Removed unnecessary useEffect and fetchFeaturedProperties function
+  // The useLocationData hook now handles all the data fetching logic
 
   const formatPrice = (price: number) => {
     if (price >= 10000000) {
@@ -143,7 +136,7 @@ export function FeaturedProperties() {
               Featured Properties in {getLocationDisplay()}
             </h2>
             <p className="text-gray-500 text-sm mb-6">{error}</p>
-            <Button onClick={fetchFeaturedProperties} variant="outline">
+            <Button onClick={refreshData} variant="outline">
               Try Again
             </Button>
           </div>

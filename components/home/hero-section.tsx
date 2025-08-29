@@ -61,7 +61,7 @@ export function HeroSection() {
         propertyCategory: searchForm.propertyCategory,
       });
 
-      // Update selected location for location-based filtering
+      // Update selected location for location-based filtering only when search is clicked
       if (searchForm.city) {
         setSelectedLocation({
           city: searchForm.city,
@@ -87,25 +87,20 @@ export function HeroSection() {
     setSearchForm((prev) => ({ ...prev, city }));
 
     // Immediately update location when city changes
+
+    // Update location when city changes (this will trigger API calls for the new city)
     if (city) {
       setSelectedLocation({
         city,
-        area: searchForm.area || undefined,
+        area: undefined, // Reset area when city changes to avoid mixed data
       });
     }
   };
 
-  // Handle location input change
+  // Handle location input change - don't update location immediately
   const handleLocationChange = (area: string) => {
     setSearchForm((prev) => ({ ...prev, area }));
-
-    // Update location if city is already selected
-    if (searchForm.city) {
-      setSelectedLocation({
-        city: searchForm.city,
-        area: area || undefined,
-      });
-    }
+    // Removed automatic location update to prevent API calls while typing
   };
 
   const getPropertyTypeIcon = (type: string) => {
