@@ -14,25 +14,31 @@ const LocationContext = createContext<LocationContextType | undefined>(undefined
 export function LocationProvider({ children }: { children: React.ReactNode }) {
   const { selectedLocation, setSelectedLocation, clearLocation }:any = useLocationStore();
   const [isClient, setIsClient] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
     
     // Try to restore location from localStorage on mount
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !isInitialized) {
       const savedLocation = localStorage.getItem('urbanhousein-selected-location');
       if (savedLocation) {
         try {
           const parsed = JSON.parse(savedLocation);
           if (parsed.city) {
-            setSelectedLocation(parsed);
+            // Only set if it's different from current location to prevent unnecessary API calls
+            if (!selectedLocation || selectedLocation.city !== parsed.city || selectedLocation.area !== parsed.area) {
+              console.log('📍 LocationProvider: Restoring location from localStorage:', parsed);
+              setSelectedLocation(parsed);
+            }
           }
         } catch (error) {
           console.error('Error parsing saved location:', error);
         }
       }
+      setIsInitialized(true);
     }
-  }, [setSelectedLocation]);
+  }, [setSelectedLocation, selectedLocation, isInitialized]);
 
   // Save location to localStorage whenever it changes
   useEffect(() => {

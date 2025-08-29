@@ -66,15 +66,8 @@ export function TrendingProperties() {
     compareList,
   } = usePropertyStore();
 
-  useEffect(() => {
-    fetchTrendingProperties();
-  }, [properties.length]); // Changed dependency to properties.length
-
-  const fetchTrendingProperties = async () => {
-    if (!properties.length) {
-      await refreshData();
-    }
-  };
+  // Removed unnecessary useEffect and fetchTrendingProperties function
+  // The useLocationData hook now handles all the data fetching logic
 
   const formatPrice = (price: number) => {
     if (price >= 10000000) {
@@ -142,7 +135,7 @@ export function TrendingProperties() {
               Trending Properties
             </h2>
             <p className="text-gray-500 text-sm mb-6">{error}</p>
-            <Button onClick={fetchTrendingProperties} variant="outline">
+            <Button onClick={refreshData} variant="outline">
               Try Again
             </Button>
           </div>
