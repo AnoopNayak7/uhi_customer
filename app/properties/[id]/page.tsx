@@ -1357,12 +1357,12 @@ export default function PropertyDetailPage() {
                   <PropertyLocation property={property} />
                 </div>
 
-                <div id="price-trends">
+                {/* <div id="price-trends">
                   <PriceTrends
                     priceHistoryData={priceHistoryData}
                     formatPrice={formatPrice}
                   />
-                </div>
+                </div> */}
               </div>
             </div>
 
