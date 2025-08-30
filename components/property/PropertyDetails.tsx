@@ -37,7 +37,9 @@ export const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             </div>
             <div>
               <h4 className="text-sm font-medium">Developer</h4>
-              <p className="text-sm text-gray-600">{property.developer || 'Urban House Infra'}</p>
+              <p className="text-sm text-gray-600">
+                {property.developer?.name || 'Urban House Infra'}
+              </p>
             </div>
           </div>
         </div>

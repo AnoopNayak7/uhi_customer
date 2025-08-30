@@ -28,7 +28,7 @@ const PropertyDetailsGrid = ({ property }: PropertyDetailsGridProps) => {
     {
       icon: Square,
       value: property.area,
-      label: "sq ft",
+      label: "built-up area",
     },
     {
       icon: Car,

@@ -23,7 +23,7 @@ import {
 import Link from "next/link";
 import { useAuthStore } from "@/lib/store";
 
-export default function PremiumToolsPage() {
+export default function RealEstateToolsPage() {
   const { user } = useAuthStore();
 
   const freeTools = [
@@ -92,7 +92,7 @@ export default function PremiumToolsPage() {
     },
   ];
 
-  const premiumTools = [
+  const loginRequiredTools = [
     {
       id: "mortgage-calculator",
       title: "Advanced Mortgage Calculator",
@@ -127,23 +127,23 @@ export default function PremiumToolsPage() {
         "Investment potential rating",
       ],
     },
-    {
-      id: "investment-calculator",
-      title: "ROI Investment Calculator",
-      description:
-        "Calculate returns, rental yields, and investment projections",
-      icon: TrendingUp,
-      href: "/tools/investment-calculator",
-      color: "text-purple-500",
-      bgColor: "bg-purple-50",
-      features: [
-        "ROI calculations",
-        "Rental yield analysis",
-        "Capital appreciation forecast",
-        "Tax implications",
-        "Investment timeline planning",
-      ],
-    },
+    // {
+    //   id: "investment-calculator",
+    //   title: "ROI Investment Calculator",
+    //   description:
+    //     "Calculate returns, rental yields, and investment projections",
+    //   icon: TrendingUp,
+    //   href: "/tools/investment-calculator",
+    //   color: "text-purple-500",
+    //   bgColor: "bg-purple-50",
+    //   features: [
+    //     "ROI calculations",
+    //     "Rental yield analysis",
+    //     "Capital appreciation forecast",
+    //     "Tax implications",
+    //     "Investment timeline planning",
+    //   ],
+    // },
     {
       id: "home-affordability",
       title: "Home Affordability Calculator",
@@ -213,11 +213,11 @@ export default function PremiumToolsPage() {
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
             <div className="text-center max-w-4xl mx-auto">
-              {/* Premium Badge */}
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 rounded-full px-4 py-2 mb-8">
-                <Crown className="w-4 h-4 text-amber-600" />
-                <span className="text-sm font-medium text-amber-800">
-                  Premium Tools
+              {/* Tools Badge */}
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50 rounded-full px-4 py-2 mb-8">
+                <BarChart3 className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">
+                  Real Estate Tools
                 </span>
               </div>
 
@@ -255,7 +255,7 @@ export default function PremiumToolsPage() {
                     className="border-2 border-gray-200 hover:border-gray-300 px-8 py-4 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200"
                     asChild
                   >
-                    <Link href="/pricing">View Pricing</Link>
+                    <Link href="/auth/signup">Create Account</Link>
                   </Button>
                 </div>
               )}
@@ -263,7 +263,7 @@ export default function PremiumToolsPage() {
               {/* Trust Indicators */}
               <div className="mt-12 pt-8 border-t border-gray-100">
                 <p className="text-sm text-gray-500 mb-4">
-                  Trusted by 10,000+ property professionals
+                  Trusted by 1000+ property professionals
                 </p>
                 <div className="flex items-center justify-center gap-8 opacity-60">
                   <div className="flex items-center gap-2">
@@ -324,34 +324,6 @@ export default function PremiumToolsPage() {
                 </div>
               ))}
             </div>
-
-            {/* Stats Row */}
-            {/* <div className="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-                  10K+
-                </div>
-                <div className="text-gray-600">Active Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-                  ₹500Cr+
-                </div>
-                <div className="text-gray-600">Properties Analyzed</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-                  99.2%
-                </div>
-                <div className="text-gray-600">Accuracy Rate</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-                  24/7
-                </div>
-                <div className="text-gray-600">Support</div>
-              </div>
-            </div> */}
           </div>
         </section>
 
@@ -432,42 +404,22 @@ export default function PremiumToolsPage() {
                 </div>
               ))}
             </div>
-
-            {/* Upgrade CTA */}
-            {/* <div className="text-center">
-              <div className="inline-flex flex-col items-center bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mb-4">
-                  <Crown className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Need more advanced features?
-                </h3>
-                <p className="text-gray-600 mb-6 max-w-md">
-                  Upgrade to premium tools for detailed analytics, AI-powered
-                  insights, and professional-grade calculations
-                </p>
-                <Button
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                  onClick={() => {
-                    document.getElementById("premium-tools")?.scrollIntoView({
-                      behavior: "smooth",
-                    });
-                  }}
-                >
-                  View Premium Tools
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </div> */}
           </div>
         </section>
 
-        {/* Premium Tools Grid */}
-        <section id="premium-tools" className="py-20 bg-white">
+        {/* Login Required Tools Grid */}
+        <section id="login-required-tools" className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 bg-blue-100 border border-blue-200/50 rounded-full px-4 py-2 mb-6">
+                <Lock className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">
+                  Login Required Tools
+                </span>
+              </div>
+
               <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                Premium Tools Collection
+                Advanced Tools Collection
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
                 Comprehensive suite of advanced tools designed for property
@@ -475,90 +427,66 @@ export default function PremiumToolsPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {premiumTools.map((tool, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {loginRequiredTools.map((tool) => (
                 <div
                   key={tool.id}
-                  className="group relative bg-white rounded-3xl border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden"
+                  className="group bg-white rounded-2xl border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
                 >
-                  {/* Background Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                  {/* Content */}
-                  <div className="relative p-8">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex items-center space-x-4">
-                        <div className="relative">
-                          <div
-                            className={`w-16 h-16 ${tool.bgColor} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm`}
-                          >
-                            <tool.icon className={`w-8 h-8 ${tool.color}`} />
-                          </div>
-                          {/* Premium Badge */}
-                          <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full p-1">
-                            <Crown className="w-3 h-3 text-white" />
-                          </div>
-                        </div>
-                        <div>
-                          <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                            {tool.title}
-                          </h3>
-                          <div className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200/50 rounded-full px-3 py-1">
-                            <span className="text-xs font-medium text-amber-800">
-                              Premium
-                            </span>
-                          </div>
-                        </div>
+                  <div className="p-6">
+                    {/* Icon */}
+                    <div className="mb-4">
+                      <div
+                        className={`w-12 h-12 ${tool.bgColor} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+                      >
+                        <tool.icon className={`w-6 h-6 ${tool.color}`} />
                       </div>
                     </div>
 
-                    {/* Description */}
-                    <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                    {/* Content */}
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                      {tool.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-4">
                       {tool.description}
                     </p>
 
                     {/* Features */}
-                    <div className="mb-8">
-                      <h4 className="font-bold text-gray-900 mb-4 text-lg">
-                        Key Features
-                      </h4>
-                      <div className="grid grid-cols-1 gap-3">
-                        {tool.features.map((feature, featureIndex) => (
-                          <div
-                            key={featureIndex}
-                            className="flex items-center gap-3 p-3 bg-gray-50/50 rounded-xl group-hover:bg-white transition-colors duration-300"
+                    <div className="mb-6">
+                      <ul className="space-y-2">
+                        {tool.features.slice(0, 3).map((feature, index) => (
+                          <li
+                            key={index}
+                            className="flex items-center gap-2 text-xs text-gray-600"
                           >
-                            <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <CheckCircle className="w-3 h-3 text-blue-600" />
                             </div>
-                            <span className="text-gray-700 font-medium">
-                              {feature}
-                            </span>
-                          </div>
+                            <span>{feature}</span>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     </div>
 
                     {/* CTA Button */}
                     {user ? (
                       <Button
-                        className="w-full bg-gray-900 hover:bg-gray-800 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                        className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium transition-all duration-200"
                         asChild
                       >
                         <Link href={tool.href}>
                           Access Tool
-                          <ArrowRight className="w-5 h-5 ml-2" />
+                          <ArrowRight className="w-4 h-4 ml-2" />
                         </Link>
                       </Button>
                     ) : (
                       <Button
                         variant="outline"
-                        className="w-full border-2 border-gray-200 hover:border-gray-300 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200"
+                        className="w-full border-2 border-gray-200 hover:border-gray-300 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200"
                         asChild
                       >
                         <Link href="/auth/login">
-                          <Lock className="w-5 h-5 mr-2" />
+                          <Lock className="w-4 h-4 mr-2" />
                           Login to Access
                         </Link>
                       </Button>
@@ -589,14 +517,14 @@ export default function PremiumToolsPage() {
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6">
                 <Star className="w-4 h-4 text-yellow-400" />
                 <span className="text-sm font-medium text-white">
-                  Trusted by 10,000+ professionals
+                  Trusted by 1000+ professionals
                 </span>
               </div>
 
               <h2 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
                 Ready to unlock
                 <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  premium insights?
+                  advanced insights?
                 </span>
               </h2>
 
@@ -628,7 +556,7 @@ export default function PremiumToolsPage() {
                     asChild
                   >
                     <Link href="/auth/signup">
-                      Start Free Trial
+                      Create Free Account
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Link>
                   </Button>
@@ -638,7 +566,7 @@ export default function PremiumToolsPage() {
                     className="border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-4 rounded-xl font-semibold transition-all duration-200"
                     asChild
                   >
-                    <Link href="/pricing">View Pricing Plans</Link>
+                    <Link href="/auth/login">Login to Existing Account</Link>
                   </Button>
                 </div>
 
@@ -650,7 +578,7 @@ export default function PremiumToolsPage() {
                   <div className="flex items-center justify-center gap-8 text-sm text-gray-400">
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-400" />
-                      <span>14-day free trial</span>
+                      <span>Free to use</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-400" />

@@ -19,15 +19,14 @@ export const useImagePreloader = (images: string[], options: PreloadImageOptions
     const preloadImages = () => {
       images.forEach((src, index) => {
         // Create a link element for each image
-        const link = document.createElement('link');
+        const link:any = document.createElement('link');
         link.rel = 'preload';
         link.as = 'image';
         link.href = src;
-        link.fetchPriority = fetchPriority;
         
         // Set priority based on index and provided priority
         if (index === 0 || priority > 0) {
-          link.fetchPriority = 'high';
+          // fetchPriority is not supported on HTMLLinkElement, removing it
         }
 
         // Add to head
@@ -63,7 +62,7 @@ export const usePropertyImagePreloader = (propertyImages: string[]) => {
       link.rel = 'preload';
       link.as = 'image';
       link.href = src;
-      link.fetchPriority = index === 0 ? 'high' : 'low';
+      // fetchPriority is not supported on HTMLLinkElement, removing it
       document.head.appendChild(link);
     });
 
@@ -96,7 +95,7 @@ export const useHoverPreloader = () => {
     link.rel = 'preload';
     link.as = 'image';
     link.href = imageSrc;
-    link.fetchPriority = 'low';
+    // fetchPriority is not supported on HTMLLinkElement, removing it
     document.head.appendChild(link);
 
     // Also start loading the image

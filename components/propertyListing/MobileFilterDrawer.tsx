@@ -91,41 +91,55 @@ export function MobileFilterDrawer({
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          className="flex items-center gap-2 h-12 px-4 text-sm font-medium w-full relative"
+          className="flex items-center gap-3 h-12 px-5 text-sm font-medium w-full relative bg-white border-gray-200 hover:border-red-300 hover:bg-red-50 rounded-xl transition-all duration-300 shadow-sm"
         >
-          <Filter className="w-4 h-4" />
-          <span>Filters</span>
+          <Filter className="w-5 h-5 text-gray-600" />
+          <span className="text-gray-700">Filters</span>
           {activeFiltersCount > 0 && (
-            <div className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+            <div className="bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold ml-auto">
               {activeFiltersCount}
             </div>
           )}
         </Button>
       </SheetTrigger>
 
-      <CustomSheetContent className="h-[90vh] p-0 bg-white">
+      <CustomSheetContent className="h-[85vh] p-0">
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
-            <button onClick={() => setIsOpen(false)} className="p-2">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <h1 className="text-lg font-semibold">Filters ({activeFiltersCount})</h1>
-            <button onClick={clearAllFilters} className="text-red-500 text-sm font-medium">
-              Reset
-            </button>
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Search Filters</h2>
+              <p className="text-sm text-gray-500 mt-1">{activeFiltersCount} filters applied</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearAllFilters}
+                className="text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition-all duration-200"
+              >
+                Clear All
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(false)}
+                className="h-10 w-10 p-0 rounded-lg hover:bg-gray-100 transition-all duration-200"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto">
-            {/* Filter Sections */}
-            <div className="px-4 space-y-6 py-4">
+          <div className="flex-1 overflow-y-auto bg-gray-50/30">
+            <div className="px-4 space-y-4 py-4">
               {/* Property Type */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Property Type</h3>
-                <div className="space-y-2">
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <h3 className="text-base font-semibold text-gray-900 mb-3">Property Type</h3>
+                <div className="space-y-3">
                   {PROPERTY_TYPES.map((type) => (
-                    <div key={type.value} className="flex items-center">
+                    <div key={type.value} className="flex items-center p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                       <Checkbox
                         id={`mobile-type-${type.value}`}
                         checked={searchFilters.type === type.value}
@@ -136,11 +150,11 @@ export function MobileFilterDrawer({
                             handleFilterChange("type", "");
                           }
                         }}
-                        className="h-4 w-4"
+                        className="data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
                       />
                       <label
                         htmlFor={`mobile-type-${type.value}`}
-                        className="ml-2 text-sm text-gray-600"
+                        className="ml-3 text-sm font-medium text-gray-700 cursor-pointer"
                       >
                         {type.label}
                       </label>
@@ -149,19 +163,17 @@ export function MobileFilterDrawer({
                 </div>
               </div>
 
-              <Separator />
-
               {/* Budget */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Budget</h3>
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <h3 className="text-base font-semibold text-gray-900 mb-3">Budget Range</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <Select
-                    value={searchFilters.minPrice?.toString() || "0"}
+                    value={searchFilters.minPrice?.toString() || ""}
                     onValueChange={(value) =>
                       updateSearchFilters({ minPrice: parseInt(value) || 0 })
                     }
                   >
-                    <SelectTrigger className="h-10">
+                    <SelectTrigger className="h-10 border-gray-200 focus:border-red-300 focus:ring-red-200 rounded-lg">
                       <SelectValue placeholder="Min" />
                     </SelectTrigger>
                     <SelectContent>
@@ -175,12 +187,12 @@ export function MobileFilterDrawer({
                     </SelectContent>
                   </Select>
                   <Select
-                    value={searchFilters.maxPrice?.toString() || "0"}
+                    value={searchFilters.maxPrice?.toString() || ""}
                     onValueChange={(value) =>
                       updateSearchFilters({ maxPrice: parseInt(value) || 0 })
                     }
                   >
-                    <SelectTrigger className="h-10">
+                    <SelectTrigger className="h-10 border-gray-200 focus:border-red-300 focus:ring-red-200 rounded-lg">
                       <SelectValue placeholder="Max" />
                     </SelectTrigger>
                     <SelectContent>
@@ -197,60 +209,52 @@ export function MobileFilterDrawer({
                 </div>
               </div>
 
-              <Separator />
-
               {/* Property Category */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Property Category</h3>
-                <div className="space-y-2">
-                  {PROPERTY_CATEGORIES.map((category) => (
-                    <div key={category.value} className="flex items-center">
-                      <Checkbox
-                        id={`mobile-category-${category.value}`}
-                        checked={searchFilters.propertyCategory === category.value}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            handleFilterChange("propertyCategory", category.value);
-                          } else {
-                            handleFilterChange("propertyCategory", "");
-                          }
-                        }}
-                        className="h-4 w-4"
-                      />
-                      <label
-                        htmlFor={`mobile-category-${category.value}`}
-                        className="ml-2 text-sm text-gray-600"
-                      >
-                        {category.label}
-                      </label>
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <h3 className="text-base font-semibold text-gray-900 mb-3">Property Category</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {PROPERTY_CATEGORIES.slice(0, 4).map((category) => (
+                    <div
+                      key={category.value}
+                      className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all duration-200 hover:scale-105 ${
+                        searchFilters.propertyCategory === category.value
+                          ? "border-red-500 bg-red-50 shadow-md"
+                          : "border-gray-200 hover:border-red-200 hover:bg-red-50/30"
+                      }`}
+                      onClick={() => handleFilterChange("propertyCategory", 
+                        searchFilters.propertyCategory === category.value ? "" : category.value
+                      )}
+                    >
+                      {searchFilters.propertyCategory === category.value && (
+                        <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+                          <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+                        </div>
+                      )}
+                      <div className="text-center">
+                        <span className="text-sm font-medium text-gray-700">{category.label}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <Separator />
-
               {/* Bedrooms */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Bedrooms</h3>
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <h3 className="text-base font-semibold text-gray-900 mb-3">Bedrooms</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {BHK_OPTIONS.slice(0, 6).map((bhk) => (
-                    <div key={bhk.value} className="flex items-center">
+                    <div key={bhk.value} className="flex items-center p-2 rounded-lg hover:bg-orange-50 transition-colors duration-200">
                       <Checkbox
                         id={`mobile-bedroom-${bhk.value}`}
                         checked={searchFilters.bedrooms === bhk.value}
                         onCheckedChange={(checked) => {
-                          if (checked) {
-                            handleFilterChange("bedrooms", bhk.value);
-                          } else {
-                            handleFilterChange("bedrooms", "");
-                          }
+                          handleFilterChange("bedrooms", checked ? bhk.value : "");
                         }}
-                        className="h-4 w-4"
+                        className="data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
                       />
                       <label
                         htmlFor={`mobile-bedroom-${bhk.value}`}
-                        className="ml-2 text-sm text-gray-600"
+                        className="ml-2 text-sm font-medium text-gray-700 cursor-pointer"
                       >
                         {bhk.label}
                       </label>
@@ -259,29 +263,23 @@ export function MobileFilterDrawer({
                 </div>
               </div>
 
-              <Separator />
-
               {/* Furnishing Status */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Furnishing Status</h3>
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <h3 className="text-base font-semibold text-gray-900 mb-3">Furnishing Status</h3>
                 <div className="space-y-2">
                   {FURNISHING_STATUS.map((status) => (
-                    <div key={status.value} className="flex items-center">
+                    <div key={status.value} className="flex items-center p-2 rounded-lg hover:bg-indigo-50 transition-colors duration-200">
                       <Checkbox
                         id={`mobile-furnishing-${status.value}`}
                         checked={searchFilters.furnishingStatus === status.value}
                         onCheckedChange={(checked) => {
-                          if (checked) {
-                            handleFilterChange("furnishingStatus", status.value);
-                          } else {
-                            handleFilterChange("furnishingStatus", "");
-                          }
+                          handleFilterChange("furnishingStatus", checked ? status.value : "");
                         }}
-                        className="h-4 w-4"
+                        className="data-[state=checked]:bg-indigo-500 data-[state=checked]:border-indigo-500"
                       />
                       <label
                         htmlFor={`mobile-furnishing-${status.value}`}
-                        className="ml-2 text-sm text-gray-600"
+                        className="ml-2 text-sm font-medium text-gray-700 cursor-pointer"
                       >
                         {status.label}
                       </label>
@@ -290,29 +288,23 @@ export function MobileFilterDrawer({
                 </div>
               </div>
 
-              <Separator />
-
               {/* Possession Status */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Possession Status</h3>
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <h3 className="text-base font-semibold text-gray-900 mb-3">Possession Status</h3>
                 <div className="space-y-2">
                   {POSSESSION_STATUS.map((status) => (
-                    <div key={status.value} className="flex items-center">
+                    <div key={status.value} className="flex items-center p-2 rounded-lg hover:bg-teal-50 transition-colors duration-200">
                       <Checkbox
                         id={`mobile-possession-${status.value}`}
                         checked={searchFilters.possessionStatus === status.value}
                         onCheckedChange={(checked) => {
-                          if (checked) {
-                            handleFilterChange("possessionStatus", status.value);
-                          } else {
-                            handleFilterChange("possessionStatus", "");
-                          }
+                          handleFilterChange("possessionStatus", checked ? status.value : "");
                         }}
-                        className="h-4 w-4"
+                        className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
                       />
                       <label
                         htmlFor={`mobile-possession-${status.value}`}
-                        className="ml-2 text-sm text-gray-600"
+                        className="ml-2 text-sm font-medium text-gray-700 cursor-pointer"
                       >
                         {status.label}
                       </label>
@@ -323,10 +315,10 @@ export function MobileFilterDrawer({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="p-4 border-t bg-white flex-shrink-0">
+          {/* Action Button */}
+          <div className="p-4 border-t border-gray-100 bg-gradient-to-r from-white to-gray-50 flex-shrink-0 shadow-lg">
             <Button
-              className="w-full h-12 bg-red-500 hover:bg-red-600 text-white font-medium"
+              className="w-full h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
               onClick={applyFilters}
             >
               Apply Filters

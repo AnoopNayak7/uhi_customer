@@ -21,7 +21,7 @@ export const PROPERTY_TYPES = [
 ];
 
 export const PROPERTY_CATEGORIES = [
-  { value: 'apartment', label: 'Apartment/Flat' },
+  { value: 'apartment', label: 'Apartment' },
   // { value: 'apartment', label: 'Flat' },
   { value: 'house', label: 'House' },
   { value: 'villa', label: 'Villa' },

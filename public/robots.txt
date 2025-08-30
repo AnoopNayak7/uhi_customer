@@ -1,0 +1,33 @@
+User-agent: *
+Allow: /
+
+# Allow all major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /private/
+
+# Allow important pages
+Allow: /properties/
+Allow: /tools/
+Allow: /area-insights/
+Allow: /contact/
+Allow: /about/
+Allow: /privacy/
+Allow: /terms/
+
+# Sitemap location
+Sitemap: https://urbanhousein.com/sitemap.xml
+
+# Crawl delay (optional - be respectful to server)
+Crawl-delay: 1

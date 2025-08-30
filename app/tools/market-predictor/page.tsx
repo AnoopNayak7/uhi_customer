@@ -22,14 +22,15 @@ import {
   AlertTriangle,
   CheckCircle,
   BarChart3,
-  Calendar
+  Calendar,
+  Loader2
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import Link from 'next/link';
+import { apiClient } from '@/lib/api';
+import { toast } from 'sonner';
 
-const cities = [
-  'Bangalore', 'Mumbai', 'Delhi', 'Chennai', 'Hyderabad', 'Pune', 'Kolkata', 'Ahmedabad'
-];
+
 
 const propertyTypes = [
   { value: 'residential', label: 'Residential', icon: Building },
@@ -45,19 +46,56 @@ export default function MarketPredictorPage() {
   const [loading, setLoading] = useState(false);
   const [predictions, setPredictions] = useState<any>(null);
   const [areas, setAreas] = useState<any[]>([]);
+  const [areasLoading, setAreasLoading] = useState(false);
+  const [cities, setCities] = useState<string[]>(['Bangalore', 'Mumbai', 'Delhi', 'Chennai', 'Hyderabad', 'Pune', 'Kolkata', 'Ahmedabad']);
 
   useEffect(() => {
-    setAreas(getAreasForCity(selectedCity));
-    setSelectedArea('');
+    fetchCities();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCity) {
+      fetchAreasForCity(selectedCity);
+      setSelectedArea('');
+    }
   }, [selectedCity]);
 
-  const getAreasForCity = (city: string) => {
-    const cityAreas = {
-      'Bangalore': ['Whitefield', 'Koramangala', 'Indiranagar', 'Electronic City', 'Sarjapur Road', 'Hebbal'],
-      'Mumbai': ['Bandra', 'Andheri', 'Powai', 'Thane', 'Navi Mumbai', 'Malad'],
-      'Delhi': ['Gurgaon', 'Noida', 'Dwarka', 'Rohini', 'Lajpat Nagar', 'Vasant Kunj']
-    };
-    return cityAreas[city as keyof typeof cityAreas] || cityAreas['Bangalore'];
+  const fetchCities = async () => {
+    try {
+      // For now, we'll use the hardcoded cities since we don't have a cities API endpoint
+      // In the future, we can create an API endpoint to get all available cities
+      setCities(['Bangalore', 'Mumbai', 'Delhi', 'Chennai', 'Hyderabad', 'Pune', 'Kolkata', 'Ahmedabad']);
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+      // Keep the default cities if API fails
+    }
+  };
+
+  const fetchAreasForCity = async (city: string) => {
+    console.log('Fetching areas for city:', city);
+    setAreasLoading(true);
+    try {
+      const response:any = await apiClient.getToolsAreasForCity(city);
+      console.log('API response for areas:', response);
+      
+      if (response && typeof response === 'object' && 'success' in response && response.success && 'data' in response && response.data) {
+        // Extract area names from the API response
+        const areaNames = response.data.areas;
+        setAreas(areaNames);
+        console.log('Areas loaded from API:', areaNames);
+        toast.success(`Loaded ${areaNames.length} areas for ${city}`);
+      } else {
+        console.error('Failed to load areas from API:', response);
+        setAreas([]);
+        toast.error('Failed to load areas. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error fetching areas:', error);
+      setAreas([]);
+      toast.error('Failed to load areas. Please try again.');
+    } finally {
+      setAreasLoading(false);
+    }
   };
 
   const generatePredictions = async () => {
@@ -65,103 +103,29 @@ export default function MarketPredictorPage() {
 
     setLoading(true);
     try {
-      // Simulate AI processing
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      const mockPredictions = generateMockPredictions();
-      setPredictions(mockPredictions);
+      const response = await apiClient.getToolsMarketPredictions({
+        cityName: selectedCity,
+        areaName: selectedArea,
+        propertyType: selectedPropertyType,
+        predictionYears: 2
+      });
+
+      if (response && typeof response === 'object' && 'success' in response && response.success && 'data' in response && response.data) {
+        setPredictions(response.data);
+        toast.success('AI predictions generated successfully!');
+      } else {
+        const errorMessage = response && typeof response === 'object' && 'message' in response ? String(response.message) : 'Failed to generate predictions';
+        toast.error(errorMessage);
+      }
     } catch (error) {
       console.error('Error generating predictions:', error);
+      toast.error('Failed to generate predictions. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const generateMockPredictions = () => {
-    const basePrice = Math.round(6000 + Math.random() * 4000); // 6K-10K per sqft
-    const currentPrice = basePrice;
-    
-    // Generate historical data (last 2 years)
-    const historicalData = [];
-    for (let i = 24; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const variation = (Math.random() - 0.5) * 0.2; // ±10% variation
-      const price = Math.round(basePrice * (1 + variation * (i / 24)));
-      historicalData.push({
-        month: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-        price: price,
-        actual: true
-      });
-    }
 
-    // Generate future predictions (next 2 years)
-    const futureData = [];
-    let lastPrice = historicalData[historicalData.length - 1].price;
-    const growthRate = 0.08 + (Math.random() - 0.5) * 0.06; // 5-11% annual growth
-    
-    for (let i = 1; i <= 24; i++) {
-      const date = new Date();
-      date.setMonth(date.getMonth() + i);
-      const monthlyGrowth = Math.pow(1 + growthRate, 1/12) - 1;
-      const variation = (Math.random() - 0.5) * 0.1; // ±5% variation
-      lastPrice = lastPrice * (1 + monthlyGrowth + variation);
-      
-      futureData.push({
-        month: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-        price: Math.round(lastPrice),
-        predicted: true
-      });
-    }
-
-    const combinedData = [...historicalData, ...futureData];
-    const futurePrice = futureData[futureData.length - 1].price;
-    const priceChange = ((futurePrice - currentPrice) / currentPrice) * 100;
-
-    // Market factors
-    const factors = [
-      { name: 'Infrastructure Development', impact: 85, positive: true },
-      { name: 'IT Sector Growth', impact: 78, positive: true },
-      { name: 'Government Policies', impact: 65, positive: true },
-      { name: 'Interest Rate Changes', impact: 45, positive: false },
-      { name: 'Supply vs Demand', impact: 72, positive: true },
-      { name: 'Economic Conditions', impact: 68, positive: true }
-    ];
-
-    // Investment recommendations
-    const recommendations = [
-      {
-        timeframe: 'Short Term (6-12 months)',
-        action: priceChange > 5 ? 'Hold' : 'Buy',
-        confidence: Math.round(70 + Math.random() * 20),
-        reason: priceChange > 5 ? 'Prices expected to stabilize' : 'Good entry point before price rise'
-      },
-      {
-        timeframe: 'Medium Term (1-3 years)',
-        action: 'Buy',
-        confidence: Math.round(75 + Math.random() * 20),
-        reason: 'Strong fundamentals support steady growth'
-      },
-      {
-        timeframe: 'Long Term (3-5 years)',
-        action: 'Strong Buy',
-        confidence: Math.round(80 + Math.random() * 15),
-        reason: 'Infrastructure development will drive significant appreciation'
-      }
-    ];
-
-    return {
-      currentPrice,
-      futurePrice: Math.round(futurePrice),
-      priceChange: priceChange.toFixed(1),
-      confidence: Math.round(75 + Math.random() * 20),
-      chartData: combinedData,
-      factors,
-      recommendations,
-      marketSentiment: priceChange > 8 ? 'Very Bullish' : priceChange > 3 ? 'Bullish' : priceChange > -3 ? 'Neutral' : 'Bearish',
-      riskLevel: Math.abs(priceChange) > 10 ? 'High' : Math.abs(priceChange) > 5 ? 'Medium' : 'Low'
-    };
-  };
 
   if (!user) {
     return (
@@ -205,6 +169,19 @@ export default function MarketPredictorPage() {
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
                 Advanced AI-powered predictions for property price movements and market trends
               </p>
+              {selectedCity && selectedArea && (
+                <div className="mt-4 flex items-center justify-center space-x-2">
+                  <Badge variant="outline" className="bg-white/80">
+                    <MapPin className="w-3 h-3 mr-1" />
+                    {selectedCity}
+                  </Badge>
+                  <span className="text-gray-400">→</span>
+                  <Badge variant="outline" className="bg-white/80">
+                    <Building className="w-3 h-3 mr-1" />
+                    {selectedArea}
+                  </Badge>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -227,7 +204,7 @@ export default function MarketPredictorPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
                       <Select value={selectedCity} onValueChange={setSelectedCity}>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select city" />
                         </SelectTrigger>
                         <SelectContent>
                           {cities.map((city) => (
@@ -264,17 +241,52 @@ export default function MarketPredictorPage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Area/Locality</label>
                       <Select value={selectedArea} onValueChange={setSelectedArea}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select area" />
+                        <SelectTrigger disabled={areasLoading}>
+                          <SelectValue placeholder={areasLoading ? "Loading areas..." : areas.length === 0 ? "No areas available" : "Select area"} />
                         </SelectTrigger>
                         <SelectContent>
-                          {areas.map((area) => (
-                            <SelectItem key={area} value={area}>
-                              {area}
-                            </SelectItem>
-                          ))}
+                          {areasLoading ? (
+                            <div className="p-2 text-center text-sm text-gray-500">
+                              <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                              Loading areas...
+                            </div>
+                          ) : areas.length === 0 ? (
+                            <div className="p-2 text-center text-sm text-gray-500">
+                              No areas available for this city
+                            </div>
+                          ) : (
+                            areas.map((area) => (
+                              <SelectItem key={area} value={area}>
+                                {area}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
+                      {areasLoading && (
+                        <p className="text-xs text-gray-500 mt-1">Loading areas from {selectedCity}...</p>
+                      )}
+                      {/* {!areasLoading && areas.length > 0 && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✓ {areas.length} areas loaded for {selectedCity}
+                        </p>
+                      )} */}
+                      {!areasLoading && areas.length === 0 && selectedCity && (
+                        <div className="mt-2">
+                          <p className="text-xs text-red-500 mb-2">
+                            No areas found for {selectedCity}. Please try selecting a different city.
+                          </p>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => fetchAreasForCity(selectedCity)}
+                            className="text-xs h-6 px-2"
+                          >
+                            <Loader2 className="w-3 h-3 mr-1" />
+                            Retry
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
                     <Button 
@@ -284,7 +296,7 @@ export default function MarketPredictorPage() {
                     >
                       {loading ? (
                         <>
-                          <Brain className="w-4 h-4 mr-2 animate-pulse" />
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           AI Analyzing...
                         </>
                       ) : (
@@ -324,7 +336,7 @@ export default function MarketPredictorPage() {
                       <Card>
                         <CardContent className="p-6 text-center">
                           <div className="text-2xl font-bold text-blue-600 mb-1">
-                            ₹{predictions.currentPrice.toLocaleString()}
+                            ₹{predictions.currentMetrics?.averagePrice?.toLocaleString() || 'N/A'}
                           </div>
                           <div className="text-sm text-gray-600">Current Price/sqft</div>
                         </CardContent>
@@ -333,7 +345,7 @@ export default function MarketPredictorPage() {
                       <Card>
                         <CardContent className="p-6 text-center">
                           <div className="text-2xl font-bold text-green-600 mb-1">
-                            ₹{predictions.futurePrice.toLocaleString()}
+                            ₹{predictions.futurePredictions?.[predictions.futurePredictions.length - 1]?.predictedPrice?.toLocaleString() || 'N/A'}
                           </div>
                           <div className="text-sm text-gray-600">Predicted (2 years)</div>
                         </CardContent>
@@ -342,9 +354,13 @@ export default function MarketPredictorPage() {
                       <Card>
                         <CardContent className="p-6 text-center">
                           <div className={`text-2xl font-bold mb-1 ${
-                            parseFloat(predictions.priceChange) >= 0 ? 'text-green-600' : 'text-red-600'
+                            predictions.futurePredictions && predictions.currentMetrics ? 
+                              ((predictions.futurePredictions[predictions.futurePredictions.length - 1]?.predictedPrice - predictions.currentMetrics.averagePrice) / predictions.currentMetrics.averagePrice * 100) >= 0 ? 'text-green-600' : 'text-red-600'
+                              : 'text-gray-600'
                           }`}>
-                            {parseFloat(predictions.priceChange) >= 0 ? '+' : ''}{predictions.priceChange}%
+                            {predictions.futurePredictions && predictions.currentMetrics ? 
+                              ((predictions.futurePredictions[predictions.futurePredictions.length - 1]?.predictedPrice - predictions.currentMetrics.averagePrice) / predictions.currentMetrics.averagePrice * 100).toFixed(1)
+                              : 'N/A'}%
                           </div>
                           <div className="text-sm text-gray-600">Expected Change</div>
                         </CardContent>
@@ -353,7 +369,7 @@ export default function MarketPredictorPage() {
                       <Card>
                         <CardContent className="p-6 text-center">
                           <div className="text-2xl font-bold text-purple-600 mb-1">
-                            {predictions.confidence}%
+                            {predictions.confidence || 'N/A'}%
                           </div>
                           <div className="text-sm text-gray-600">AI Confidence</div>
                         </CardContent>
@@ -372,25 +388,25 @@ export default function MarketPredictorPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="text-center p-4 bg-gray-50 rounded-lg">
                             <div className={`text-lg font-bold mb-1 ${
-                              predictions.marketSentiment === 'Very Bullish' || predictions.marketSentiment === 'Bullish' ? 'text-green-600' :
-                              predictions.marketSentiment === 'Neutral' ? 'text-yellow-600' : 'text-red-600'
+                              predictions.sentimentAnalysis?.sentiment === 'Very Bullish' || predictions.sentimentAnalysis?.sentiment === 'Bullish' ? 'text-green-600' :
+                              predictions.sentimentAnalysis?.sentiment === 'Neutral' ? 'text-yellow-600' : 'text-red-600'
                             }`}>
-                              {predictions.marketSentiment}
+                              {predictions.sentimentAnalysis?.sentiment || 'N/A'}
                             </div>
                             <div className="text-sm text-gray-600">Market Sentiment</div>
                           </div>
                           <div className="text-center p-4 bg-gray-50 rounded-lg">
                             <div className={`text-lg font-bold mb-1 ${
-                              predictions.riskLevel === 'Low' ? 'text-green-600' :
-                              predictions.riskLevel === 'Medium' ? 'text-yellow-600' : 'text-red-600'
+                              predictions.sentimentAnalysis?.riskLevel === 'Low' ? 'text-green-600' :
+                              predictions.sentimentAnalysis?.riskLevel === 'Medium' ? 'text-yellow-600' : 'text-red-600'
                             }`}>
-                              {predictions.riskLevel}
+                              {predictions.sentimentAnalysis?.riskLevel || 'N/A'}
                             </div>
                             <div className="text-sm text-gray-600">Risk Level</div>
                           </div>
                           <div className="text-center p-4 bg-gray-50 rounded-lg">
                             <div className="text-lg font-bold text-blue-600 mb-1">
-                              {predictions.confidence}%
+                              {predictions.sentimentAnalysis?.confidence || 'N/A'}%
                             </div>
                             <div className="text-sm text-gray-600">Prediction Accuracy</div>
                           </div>
@@ -410,7 +426,7 @@ export default function MarketPredictorPage() {
                         <ResponsiveContainer width="100%" height={400}>
                           <AreaChart data={predictions.chartData}>
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" />
+                            <XAxis dataKey="period" />
                             <YAxis />
                             <Tooltip 
                               formatter={(value: any) => [`₹${value.toLocaleString()}/sqft`, 'Price']}
@@ -450,7 +466,7 @@ export default function MarketPredictorPage() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          {predictions.factors.map((factor: any, index: number) => (
+                          {predictions.marketFactors?.map((factor: any, index: number) => (
                             <div key={index}>
                               <div className="flex justify-between items-center mb-2">
                                 <div className="flex items-center space-x-2">
@@ -464,6 +480,9 @@ export default function MarketPredictorPage() {
                                 <span className="text-sm font-bold text-gray-900">{factor.impact}%</span>
                               </div>
                               <Progress value={factor.impact} className="h-2" />
+                              {factor.description && (
+                                <p className="text-xs text-gray-500 mt-1">{factor.description}</p>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -480,7 +499,7 @@ export default function MarketPredictorPage() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          {predictions.recommendations.map((rec: any, index: number) => (
+                          {predictions.recommendations?.map((rec: any, index: number) => (
                             <div key={index} className="p-4 border border-gray-200 rounded-lg">
                               <div className="flex items-center justify-between mb-2">
                                 <h4 className="font-semibold text-gray-900">{rec.timeframe}</h4>
@@ -496,6 +515,16 @@ export default function MarketPredictorPage() {
                                 </div>
                               </div>
                               <p className="text-sm text-gray-600">{rec.reason}</p>
+                              {rec.expectedReturn && (
+                                <div className="mt-2 text-xs text-gray-500">
+                                  Expected Return: {rec.expectedReturn}
+                                </div>
+                              )}
+                              {rec.riskLevel && (
+                                <div className="mt-1 text-xs text-gray-500">
+                                  Risk Level: {rec.riskLevel}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>

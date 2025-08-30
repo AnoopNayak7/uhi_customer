@@ -45,10 +45,7 @@ export function PropertyList({
       <MotionWrapper variant="fadeInUp">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
           <div className="flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold">Properties</h1>
-            <p className="text-gray-500 text-sm">
-              {properties?.length} properties found
-            </p>
+            {/* Heading removed to avoid duplication with main page */}
           </div>
           <div className="flex items-center space-x-2 w-full sm:w-auto">
             <div className="bg-gray-100 rounded-md p-1 flex w-full sm:w-auto">

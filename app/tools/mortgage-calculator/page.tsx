@@ -31,15 +31,26 @@ export default function MortgageCalculatorPage() {
   const [loanTenure, setLoanTenure] = useState([20]); // 20 years
   const [downPayment, setDownPayment] = useState([1000000]); // 10L
   const [results, setResults] = useState<any>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   useEffect(() => {
     calculateEMI();
   }, [loanAmount, interestRate, loanTenure, downPayment]);
 
   const calculateEMI = () => {
-    const principal = loanAmount[0];
-    const rate = interestRate[0] / (12 * 100);
-    const tenure = loanTenure[0] * 12;
+    // Validate inputs
+    if (loanAmount[0] <= 0 || interestRate[0] <= 0 || loanTenure[0] <= 0) {
+      setResults(null);
+      return;
+    }
+
+    setIsCalculating(true);
+    
+    // Use setTimeout to simulate calculation and prevent UI blocking
+    setTimeout(() => {
+      const principal = loanAmount[0];
+      const rate = interestRate[0] / (12 * 100);
+      const tenure = loanTenure[0] * 12;
 
     const emi = (principal * rate * Math.pow(1 + rate, tenure)) / (Math.pow(1 + rate, tenure) - 1);
     const totalAmount = emi * tenure;
@@ -63,42 +74,46 @@ export default function MortgageCalculatorPage() {
       });
     }
 
-    // Generate yearly breakdown
+    // Generate yearly breakdown for the full tenure
     const yearlyBreakdown = [];
     let yearlyBalance = principal;
     
-    for (let year = 1; year <= Math.min(loanTenure[0], 10); year++) {
+    for (let year = 1; year <= loanTenure[0]; year++) {
       let yearlyPrincipal = 0;
       let yearlyInterest = 0;
       
       for (let month = 1; month <= 12; month++) {
-        const monthlyInterest = yearlyBalance * rate;
-        const monthlyPrincipal = emi - monthlyInterest;
-        yearlyPrincipal += monthlyPrincipal;
-        yearlyInterest += monthlyInterest;
-        yearlyBalance -= monthlyPrincipal;
+        if (yearlyBalance > 0) {
+          const monthlyInterest = yearlyBalance * rate;
+          const monthlyPrincipal = emi - monthlyInterest;
+          yearlyPrincipal += monthlyPrincipal;
+          yearlyInterest += monthlyInterest;
+          yearlyBalance -= monthlyPrincipal;
+        }
       }
       
       yearlyBreakdown.push({
         year,
         principal: Math.round(yearlyPrincipal),
         interest: Math.round(yearlyInterest),
-        balance: Math.round(yearlyBalance)
+        balance: Math.round(Math.max(0, yearlyBalance))
       });
     }
 
-    setResults({
-      emi: Math.round(emi),
-      totalAmount: Math.round(totalAmount),
-      totalInterest: Math.round(totalInterest),
-      propertyValue: principal + downPayment[0],
-      schedule,
-      yearlyBreakdown,
-      pieData: [
-        { name: 'Principal', value: Math.round(principal), color: '#3b82f6' },
-        { name: 'Interest', value: Math.round(totalInterest), color: '#ef4444' }
-      ]
-    });
+          setResults({
+        emi: Math.round(emi),
+        totalAmount: Math.round(totalAmount),
+        totalInterest: Math.round(totalInterest),
+        propertyValue: principal + downPayment[0],
+        schedule,
+        yearlyBreakdown,
+        pieData: [
+          { name: 'Principal', value: Math.round(principal), color: '#3b82f6' },
+          { name: 'Interest', value: Math.round(totalInterest), color: '#ef4444' }
+        ]
+      });
+      setIsCalculating(false);
+    }, 100);
   };
 
   const formatPrice = (price: number) => {
@@ -162,7 +177,7 @@ export default function MortgageCalculatorPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Input Panel */}
               <div className="lg:col-span-1">
-                <Card className="sticky top-8">
+                <Card className="lg:sticky lg:top-8">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <Calculator className="w-5 h-5" />
@@ -264,92 +279,67 @@ export default function MortgageCalculatorPage() {
 
               {/* Results Panel */}
               <div className="lg:col-span-2">
-                {results && (
+                {isCalculating && (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Calculating your EMI...</p>
+                    </div>
+                  </div>
+                )}
+                {!isCalculating && !results && (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                      <Calculator className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-600">Adjust the loan parameters above to see your EMI calculation</p>
+                    </div>
+                  </div>
+                )}
+                {!isCalculating && results && (
                   <div className="space-y-6">
                     {/* EMI Summary */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                       <Card>
-                        <CardContent className="p-6 text-center">
-                          <div className="text-2xl font-bold text-blue-600 mb-1">
+                        <CardContent className="p-4 md:p-6 text-center">
+                          <div className="text-lg md:text-2xl font-bold text-blue-600 mb-1">
                             ₹{results.emi.toLocaleString()}
                           </div>
-                          <div className="text-sm text-gray-600">Monthly EMI</div>
+                          <div className="text-xs md:text-sm text-gray-600">Monthly EMI</div>
                         </CardContent>
                       </Card>
 
                       <Card>
-                        <CardContent className="p-6 text-center">
-                          <div className="text-2xl font-bold text-green-600 mb-1">
+                        <CardContent className="p-4 md:p-6 text-center">
+                          <div className="text-lg md:text-2xl font-bold text-green-600 mb-1">
                             {formatPrice(results.totalAmount)}
                           </div>
-                          <div className="text-sm text-gray-600">Total Amount</div>
+                          <div className="text-xs md:text-sm text-gray-600">Total Amount</div>
                         </CardContent>
                       </Card>
 
                       <Card>
-                        <CardContent className="p-6 text-center">
-                          <div className="text-2xl font-bold text-red-600 mb-1">
+                        <CardContent className="p-4 md:p-6 text-center">
+                          <div className="text-lg md:text-2xl font-bold text-red-600 mb-1">
                             {formatPrice(results.totalInterest)}
                           </div>
-                          <div className="text-sm text-gray-600">Total Interest</div>
+                          <div className="text-xs md:text-sm text-gray-600">Total Interest</div>
                         </CardContent>
                       </Card>
 
                       <Card>
-                        <CardContent className="p-6 text-center">
-                          <div className="text-2xl font-bold text-purple-600 mb-1">
+                        <CardContent className="p-4 md:p-6 text-center">
+                          <div className="text-lg md:text-2xl font-bold text-purple-600 mb-1">
                             {formatPrice(results.propertyValue)}
                           </div>
-                          <div className="text-sm text-gray-600">Property Value</div>
+                          <div className="text-xs md:text-sm text-gray-600">Property Value</div>
                         </CardContent>
                       </Card>
                     </div>
 
                     {/* Charts */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
                       {/* Principal vs Interest */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center space-x-2">
-                            <PieChart className="w-5 h-5" />
-                            <span>Principal vs Interest</span>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ResponsiveContainer width="100%" height={250}>
-                            <PieChart>
-                              <Pie
-                                data={results.pieData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={100}
-                                paddingAngle={5}
-                                dataKey="value"
-                              >
-                                {results.pieData.map((entry: any, index: number) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                              </Pie>
-                              <Tooltip formatter={(value: any) => formatPrice(value)} />
-                            </PieChart>
-                          </ResponsiveContainer>
-                          <div className="mt-4 space-y-2">
-                            {results.pieData.map((item: any, index: number) => (
-                              <div key={index} className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                  <div 
-                                    className="w-3 h-3 rounded-full mr-2"
-                                    style={{ backgroundColor: item.color }}
-                                  />
-                                  <span className="text-sm text-gray-600">{item.name}</span>
-                                </div>
-                                <span className="text-sm font-medium">{formatPrice(item.value)}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
+                      
 
                       {/* Yearly Breakdown */}
                       <Card>
@@ -360,16 +350,30 @@ export default function MortgageCalculatorPage() {
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={results.yearlyBreakdown}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="year" />
-                              <YAxis />
-                              <Tooltip formatter={(value: any) => formatPrice(value)} />
-                              <Bar dataKey="principal" fill="#3b82f6" />
-                              <Bar dataKey="interest" fill="#ef4444" />
-                            </BarChart>
-                          </ResponsiveContainer>
+                          <div className="h-[250px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={results.yearlyBreakdown}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis 
+                                  dataKey="year" 
+                                  label={{ value: 'Year', position: 'insideBottom', offset: -5 }}
+                                />
+                                <YAxis 
+                                  label={{ value: 'Amount (₹)', angle: -90, position: 'insideLeft' }}
+                                  tickFormatter={(value) => formatPrice(value)}
+                                />
+                                <Tooltip 
+                                  formatter={(value: any) => formatPrice(value)}
+                                  labelFormatter={(label) => `Year ${label}`}
+                                />
+                                <Bar dataKey="principal" fill="#3b82f6" name="Principal" />
+                                <Bar dataKey="interest" fill="#ef4444" name="Interest" />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
+                          <div className="mt-4 text-xs text-gray-500 text-center">
+                            Shows breakdown for all {loanTenure[0]} years of your loan tenure
+                          </div>
                         </CardContent>
                       </Card>
                     </div>
@@ -381,7 +385,7 @@ export default function MortgageCalculatorPage() {
                       </CardHeader>
                       <CardContent>
                         <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
+                          <table className="w-full text-xs md:text-sm">
                             <thead>
                               <tr className="border-b">
                                 <th className="text-left p-2">Month</th>
@@ -393,8 +397,8 @@ export default function MortgageCalculatorPage() {
                             </thead>
                             <tbody>
                               {results.schedule.map((row: any) => (
-                                <tr key={row.month} className="border-b">
-                                  <td className="p-2">{row.month}</td>
+                                <tr key={row.month} className="border-b hover:bg-gray-50">
+                                  <td className="p-2 font-medium">{row.month}</td>
                                   <td className="text-right p-2">₹{row.emi.toLocaleString()}</td>
                                   <td className="text-right p-2">₹{row.principal.toLocaleString()}</td>
                                   <td className="text-right p-2">₹{row.interest.toLocaleString()}</td>
@@ -424,9 +428,18 @@ export default function MortgageCalculatorPage() {
                           <div>
                             <h4 className="font-medium text-gray-900 mb-2">📊 Your Loan Profile</h4>
                             <div className="text-sm text-gray-600 space-y-1">
-                              <div>Loan-to-Value: {((loanAmount[0] / results.propertyValue) * 100).toFixed(1)}%</div>
-                              <div>Interest-to-Principal: {((results.totalInterest / loanAmount[0]) * 100).toFixed(1)}%</div>
-                              <div>EMI-to-Income: Calculate based on your income</div>
+                              <div className="flex justify-between">
+                                <span>Loan-to-Value:</span>
+                                <span className="font-medium">{((loanAmount[0] / results.propertyValue) * 100).toFixed(1)}%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Interest-to-Principal:</span>
+                                <span className="font-medium">{((results.totalInterest / loanAmount[0]) * 100).toFixed(1)}%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>EMI-to-Income:</span>
+                                <span className="font-medium">Calculate based on your income</span>
+                              </div>
                             </div>
                           </div>
                         </div>

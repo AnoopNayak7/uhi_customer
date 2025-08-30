@@ -7,7 +7,7 @@ import { Heart, MapPin, Bed, Bath, Square, BarChart3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CardHover } from "@/components/animations/page-transitions";
 import { motion } from "framer-motion";
-import { PropertyListImage } from "@/components/ui/optimized-image";
+import Image from "next/image";
 import { PROPERTY_IMAGES, BLUR_DATA_URLS } from "@/lib/images";
 import { usePropertyStore, useAuthStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
@@ -148,14 +148,15 @@ export const PropertyCard = ({
                 compact ? "h-[200px] sm:h-[160px]" : "h-48 sm:h-52"
               } overflow-hidden`}
             >
-              <PropertyListImage
+              <Image
                 src={property.images?.[0] || defaultImage}
-                alt={property.title}
+                alt={property.title || 'Property'}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                 blurDataURL={BLUR_DATA_URLS.property}
-                fallbackSrc={defaultImage}
-                index={0}
+                onError={() => {
+                  console.log('Image failed to load for property:', property.id);
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>

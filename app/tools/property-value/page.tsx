@@ -38,6 +38,7 @@ import {
   Award,
   AlertCircle,
   Settings,
+  Loader2,
 } from "lucide-react";
 import {
   PieChart,
@@ -54,6 +55,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { PageContent } from "@/components/animations/layout-wrapper";
 import { MotionWrapper } from "@/components/animations/motion-wrapper";
+import { apiClient } from "@/lib/api";
+import { toast } from "sonner";
 
 const cities = [
   "Bangalore",
@@ -104,174 +107,70 @@ export default function PropertyValuePage() {
   const [valuation, setValuation] = useState<any>(null);
   const [areas, setAreas] = useState<any[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [areasLoading, setAreasLoading] = useState(false);
 
   useEffect(() => {
-    setAreas(getAreasForCity(selectedCity));
-    setSelectedArea("");
+    fetchAreasForCity();
   }, [selectedCity]);
 
-  const getAreasForCity = (city: string) => {
-    const cityAreas = {
-      Bangalore: [
-        { name: "Whitefield", basePrice: 7800, growth: 12 },
-        { name: "Koramangala", basePrice: 9750, growth: 8 },
-        { name: "Indiranagar", basePrice: 9100, growth: 6 },
-        { name: "Electronic City", basePrice: 5850, growth: 15 },
-        { name: "Sarjapur Road", basePrice: 7150, growth: 18 },
-        { name: "Hebbal", basePrice: 6500, growth: 10 },
-        { name: "JP Nagar", basePrice: 7800, growth: 7 },
-        { name: "Marathahalli", basePrice: 7150, growth: 12 },
-        { name: "HSR Layout", basePrice: 8450, growth: 9 },
-        { name: "Bellandur", basePrice: 7800, growth: 14 },
-      ],
-      Mumbai: [
-        { name: "Bandra", basePrice: 36000, growth: 5 },
-        { name: "Andheri", basePrice: 23400, growth: 8 },
-        { name: "Powai", basePrice: 25200, growth: 10 },
-        { name: "Thane", basePrice: 14400, growth: 12 },
-        { name: "Navi Mumbai", basePrice: 16200, growth: 15 },
-        { name: "Malad", basePrice: 19800, growth: 9 },
-        { name: "Goregaon", basePrice: 21600, growth: 7 },
-        { name: "Kandivali", basePrice: 18000, growth: 11 },
-      ],
-      Delhi: [
-        { name: "Gurgaon", basePrice: 15600, growth: 10 },
-        { name: "Noida", basePrice: 13200, growth: 12 },
-        { name: "Dwarka", basePrice: 14400, growth: 8 },
-        { name: "Rohini", basePrice: 10800, growth: 6 },
-        { name: "Lajpat Nagar", basePrice: 16800, growth: 5 },
-        { name: "Vasant Kunj", basePrice: 18000, growth: 7 },
-        { name: "Greater Noida", basePrice: 9600, growth: 18 },
-        { name: "Faridabad", basePrice: 10800, growth: 14 },
-      ],
-    };
-
-    return cityAreas[city as keyof typeof cityAreas] || cityAreas["Bangalore"];
+  const fetchAreasForCity = async () => {
+    setAreasLoading(true);
+    try {
+      // Include prices for property value calculator
+      const response: any = await apiClient.getToolsAreasForCity(selectedCity, { includePrices: true });
+      
+      if (response.success) {
+        setAreas(response.data.areas || []);
+        setSelectedArea("");
+        setValuation(null);
+      } else {
+        toast.error(response.message || 'Failed to fetch areas');
+        setAreas([]);
+      }
+    } catch (error) {
+      console.error("Error fetching areas:", error);
+      toast.error('Failed to fetch areas for the selected city');
+      setAreas([]);
+    } finally {
+      setAreasLoading(false);
+    }
   };
 
-  const calculatePropertyValue = () => {
-    if (!selectedArea) return;
+  const calculatePropertyValue = async () => {
+    if (!selectedArea) {
+      toast.error('Please select an area first');
+      return;
+    }
 
     setLoading(true);
-
-    setTimeout(() => {
-      const areaData = areas.find((area) => area.name === selectedArea);
-      if (!areaData) return;
-
-      let basePrice = areaData.basePrice;
-
-      const typeMultipliers = {
-        flat: 1.0,
-        house: 1.2,
-        villa: 1.5,
-        plot: 0.6,
-        office: 1.1,
-        shop: 1.3,
-      };
-
-      basePrice *=
-        typeMultipliers[selectedPropertyType as keyof typeof typeMultipliers];
-
-      const ageData = ageOptions.find((age) => age.value === propertyAge);
-      basePrice *= ageData?.multiplier || 1.0;
-
-      const furnishingData = furnishingOptions.find(
-        (f) => f.value === furnishing
-      );
-      basePrice *= furnishingData?.multiplier || 1.0;
-
-      let floorMultiplier = 1.0;
-      if (selectedPropertyType !== "plot") {
-        const floorRatio = floor / totalFloors;
-        if (floorRatio > 0.8) floorMultiplier = 0.95;
-        else if (floorRatio > 0.5) floorMultiplier = 1.05;
-        else if (floorRatio > 0.2) floorMultiplier = 1.0;
-        else floorMultiplier = 0.9;
-      }
-
-      basePrice *= floorMultiplier;
-
-      const totalValue = Math.round(basePrice * builtUpArea);
-      const pricePerSqft = Math.round(basePrice);
-
-      // Generate comparable properties
-      const comparables = generateComparables(areaData, basePrice);
-
-      // Generate valuation breakdown
-      const breakdown = [
-        {
-          name: "Base Price",
-          value: areaData.basePrice * builtUpArea,
-          percentage: 70,
-        },
-        { name: "Location Premium", value: totalValue * 0.15, percentage: 15 },
-        { name: "Property Features", value: totalValue * 0.1, percentage: 10 },
-        { name: "Market Conditions", value: totalValue * 0.05, percentage: 5 },
-      ];
-
-      setValuation({
-        totalValue,
-        pricePerSqft,
-        areaData,
-        comparables,
-        breakdown,
-        confidence: Math.round(85 + Math.random() * 10), // 85-95% confidence
-        marketTrend:
-          areaData.growth > 10
-            ? "Strong Growth"
-            : areaData.growth > 5
-            ? "Moderate Growth"
-            : "Stable",
-        recommendation:
-          totalValue > areaData.basePrice * builtUpArea * 1.1
-            ? "Overpriced"
-            : totalValue < areaData.basePrice * builtUpArea * 0.9
-            ? "Underpriced"
-            : "Fair Value",
+    try {
+      const response: any = await apiClient.getToolsPropertyValue({
+        cityName: selectedCity,
+        areaName: selectedArea,
+        propertyType: selectedPropertyType,
+        builtUpArea,
+        bedrooms,
+        bathrooms,
+        propertyAge,
+        furnishing,
+        floor,
+        totalFloors
       });
 
+      if (response.success) {
+        setValuation(response.data);
+        toast.success('Property value calculated successfully!');
+      } else {
+        toast.error(response.message || 'Failed to calculate property value');
+        setValuation(null);
+      }
+    } catch (error) {
+      console.error("Error calculating property value:", error);
+      toast.error('Failed to calculate property value. Please try again.');
+      setValuation(null);
+    } finally {
       setLoading(false);
-    }, 1500);
-  };
-
-  const generateComparables = (areaData: any, basePrice: number) => {
-    return [
-      {
-        title: `Similar ${
-          propertyTypes.find((t) => t.value === selectedPropertyType)?.label
-        } in ${selectedArea}`,
-        area: builtUpArea + Math.round((Math.random() - 0.5) * 200),
-        price: Math.round(
-          (basePrice + (Math.random() - 0.5) * 1000) *
-            (builtUpArea + Math.round((Math.random() - 0.5) * 200))
-        ),
-        pricePerSqft: Math.round(basePrice + (Math.random() - 0.5) * 1000),
-        bedrooms: bedrooms + Math.round((Math.random() - 0.5) * 2),
-        age: Math.round(Math.random() * 10) + 1,
-      },
-      {
-        title: `Comparable Property in ${selectedArea}`,
-        area: builtUpArea + Math.round((Math.random() - 0.5) * 300),
-        price: Math.round(
-          (basePrice + (Math.random() - 0.5) * 1200) *
-            (builtUpArea + Math.round((Math.random() - 0.5) * 300))
-        ),
-        pricePerSqft: Math.round(basePrice + (Math.random() - 0.5) * 1200),
-        bedrooms: bedrooms + Math.round((Math.random() - 0.5) * 1),
-        age: Math.round(Math.random() * 8) + 1,
-      },
-      {
-        title: `Recent Sale in ${selectedArea}`,
-        area: builtUpArea + Math.round((Math.random() - 0.5) * 150),
-        price: Math.round(
-          (basePrice + (Math.random() - 0.5) * 800) *
-            (builtUpArea + Math.round((Math.random() - 0.5) * 150))
-        ),
-        pricePerSqft: Math.round(basePrice + (Math.random() - 0.5) * 800),
-        bedrooms: bedrooms,
-        age: Math.round(Math.random() * 5) + 1,
-      },
-    ];
+    }
   };
 
   const formatPrice = (price: number) => {
@@ -311,18 +210,24 @@ export default function PropertyValuePage() {
 
         <div>
           <Label>Area/Locality *</Label>
-          <Select value={selectedArea} onValueChange={setSelectedArea}>
+          <Select 
+            value={selectedArea} 
+            onValueChange={setSelectedArea}
+            disabled={areasLoading}
+          >
             <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Select area" />
+              <SelectValue placeholder={areasLoading ? "Loading areas..." : "Select area"} />
             </SelectTrigger>
             <SelectContent>
               {areas.map((area) => (
                 <SelectItem key={area.name} value={area.name}>
                   <div className="flex items-center justify-between w-full">
                     <span>{area.name}</span>
-                    <Badge variant="outline" className="ml-2">
-                      ₹{area.basePrice.toLocaleString()}/sqft
-                    </Badge>
+                    {area.basePrice > 0 && (
+                      <Badge variant="outline" className="ml-2">
+                        ₹{area.basePrice.toLocaleString()}/sqft
+                      </Badge>
+                    )}
                   </div>
                 </SelectItem>
               ))}
@@ -346,7 +251,8 @@ export default function PropertyValuePage() {
               <SelectItem key={type.value} value={type.value}>
                 <div className="flex items-center">
                   <type.icon className="w-4 h-4 mr-2" />
-                  {type.label}
+                  <span className="hidden sm:inline">{type.label}</span>
+                  <span className="sm:hidden">{type.label.split('/')[0]}</span>
                 </div>
               </SelectItem>
             ))}
@@ -361,15 +267,33 @@ export default function PropertyValuePage() {
           <Slider
             value={[builtUpArea]}
             onValueChange={(value) => setBuiltUpArea(value[0])}
-            max={5000}
+            max={10000}
             min={300}
             step={50}
             className="mb-2"
           />
           <div className="flex justify-between text-sm text-gray-600">
             <span>300 sqft</span>
-            <span className="font-medium">{builtUpArea} sqft</span>
-            <span>5000 sqft</span>
+            <span className="font-medium">{builtUpArea.toLocaleString()} sqft</span>
+            <span>10,000 sqft</span>
+          </div>
+          {/* Manual input for precise control */}
+          <div className="mt-3">
+            <Input
+              type="number"
+              value={builtUpArea}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                if (value >= 300 && value <= 10000) {
+                  setBuiltUpArea(value);
+                }
+              }}
+              min={300}
+              max={10000}
+              step={50}
+              className="text-center"
+              placeholder="Enter exact area"
+            />
           </div>
         </div>
       </div>
@@ -488,12 +412,17 @@ export default function PropertyValuePage() {
           disabled={!selectedArea || loading}
           className="w-full bg-green-500 hover:bg-green-600"
         >
-          <motion.span
-            animate={loading ? { opacity: [1, 0.5, 1] } : { opacity: 1 }}
-            transition={loading ? { duration: 1, repeat: Infinity } : {}}
-          >
-            {loading ? "Calculating..." : "Calculate Property Value"}
-          </motion.span>
+          {loading ? (
+            <div className="flex items-center">
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Calculating...
+            </div>
+          ) : (
+            <div className="flex items-center">
+              <Calculator className="w-4 h-4 mr-2" />
+              Calculate Property Value
+            </div>
+          )}
         </Button>
       </motion.div>
     </div>
@@ -531,7 +460,7 @@ export default function PropertyValuePage() {
           </section>
 
           {/* Calculator Section */}
-          <section className="py-16">
+          <section className="py-8 lg:py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               {/* Mobile: Bottom Sheet Trigger */}
               <MotionWrapper variant="slideInUp" className="lg:hidden mb-6">
@@ -567,7 +496,7 @@ export default function PropertyValuePage() {
                 </Sheet>
               </MotionWrapper>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 {/* Desktop: Input Form Sidebar */}
                 <MotionWrapper
                   variant="fadeInLeft"
@@ -591,7 +520,7 @@ export default function PropertyValuePage() {
                   <AnimatePresence mode="wait">
                     {valuation ? (
                       <motion.div
-                        className="space-y-6"
+                        className="space-y-4 lg:space-y-6"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -601,7 +530,7 @@ export default function PropertyValuePage() {
                         <MotionWrapper variant="fadeInRight" delay={0.1}>
                           <Card>
                             <CardHeader>
-                              <CardTitle className="flex items-center justify-between">
+                              <CardTitle className="flex items-center justify-between flex-wrap gap-2">
                                 <div className="flex items-center space-x-2">
                                   <IndianRupee className="w-5 h-5" />
                                   <span>Property Valuation</span>
@@ -631,7 +560,7 @@ export default function PropertyValuePage() {
                               </CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
                                 <motion.div
                                   className="text-center"
                                   initial={{ opacity: 0, y: 20 }}
@@ -642,7 +571,7 @@ export default function PropertyValuePage() {
                                     Estimated Value
                                   </p>
                                   <motion.p
-                                    className="text-3xl font-bold text-green-600"
+                                    className="text-2xl lg:text-3xl font-bold text-green-600"
                                     initial={{ scale: 0.5 }}
                                     animate={{ scale: 1 }}
                                     transition={{
@@ -664,7 +593,7 @@ export default function PropertyValuePage() {
                                     Price per sqft
                                   </p>
                                   <motion.p
-                                    className="text-2xl font-bold text-blue-600"
+                                    className="text-xl lg:text-2xl font-bold text-blue-600"
                                     initial={{ scale: 0.5 }}
                                     animate={{ scale: 1 }}
                                     transition={{
@@ -686,7 +615,7 @@ export default function PropertyValuePage() {
                                     Confidence Level
                                   </p>
                                   <motion.p
-                                    className="text-2xl font-bold text-purple-600"
+                                    className="text-xl lg:text-2xl font-bold text-purple-600"
                                     initial={{ scale: 0.5 }}
                                     animate={{ scale: 1 }}
                                     transition={{
@@ -701,7 +630,7 @@ export default function PropertyValuePage() {
                               </div>
 
                               <motion.div
-                                className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4"
+                                className="mt-4 lg:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.8 }}
@@ -714,10 +643,10 @@ export default function PropertyValuePage() {
                                     stiffness: 300,
                                   }}
                                 >
-                                  <span className="text-gray-600">
+                                  <span className="text-gray-600 text-sm">
                                     Market Trend
                                   </span>
-                                  <span className="font-medium text-green-600">
+                                  <span className="font-medium text-green-600 text-sm">
                                     {valuation.marketTrend}
                                   </span>
                                 </motion.div>
@@ -729,10 +658,10 @@ export default function PropertyValuePage() {
                                     stiffness: 300,
                                   }}
                                 >
-                                  <span className="text-gray-600">
+                                  <span className="text-gray-600 text-sm">
                                     Area Growth
                                   </span>
-                                  <span className="font-medium text-blue-600">
+                                  <span className="font-medium text-blue-600 text-sm">
                                     +{valuation.areaData.growth}% YoY
                                   </span>
                                 </motion.div>
@@ -743,7 +672,7 @@ export default function PropertyValuePage() {
 
                         {/* Valuation Breakdown */}
                         <motion.div
-                          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                          className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6"
                           initial={{ opacity: 0, y: 30 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.9 }}
@@ -758,10 +687,11 @@ export default function PropertyValuePage() {
                                   initial={{ scale: 0.8, opacity: 0 }}
                                   animate={{ scale: 1, opacity: 1 }}
                                   transition={{ delay: 1.2, duration: 0.5 }}
+                                  className="h-64 lg:h-80"
                                 >
                                   <ResponsiveContainer
                                     width="100%"
-                                    height={250}
+                                    height="100%"
                                   >
                                     <PieChart>
                                       <Pie
@@ -831,12 +761,12 @@ export default function PropertyValuePage() {
                                 <CardTitle>Comparable Properties</CardTitle>
                               </CardHeader>
                               <CardContent>
-                                <div className="space-y-4">
+                                <div className="space-y-3 lg:space-y-4">
                                   {valuation.comparables.map(
                                     (comp: any, index: number) => (
                                       <motion.div
                                         key={index}
-                                        className="p-3 border border-gray-200 rounded-lg"
+                                        className="p-3 lg:p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{
@@ -848,16 +778,23 @@ export default function PropertyValuePage() {
                                             "0 4px 12px rgba(0,0,0,0.1)",
                                         }}
                                       >
-                                        <h4 className="font-medium text-gray-900 mb-2 text-sm">
-                                          {comp.title}
-                                        </h4>
-                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div className="flex items-start justify-between mb-2 lg:mb-3">
+                                          <h4 className="font-medium text-gray-900 text-xs lg:text-sm">
+                                            {comp.title}
+                                          </h4>
+                                          {comp.microlocation && (
+                                            <Badge variant="secondary" className="text-xs">
+                                              {comp.microlocation}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 lg:gap-3 text-xs">
                                           <div>
                                             <span className="text-gray-600">
                                               Area:{" "}
                                             </span>
                                             <span className="font-medium">
-                                              {comp.area} sqft
+                                              {comp.area.toLocaleString()} sqft
                                             </span>
                                           </div>
                                           <div>
@@ -887,6 +824,13 @@ export default function PropertyValuePage() {
                                             </span>
                                           </div>
                                         </div>
+                                        {comp.originalPrice && (
+                                          <div className="mt-2 pt-2 border-t border-gray-100">
+                                            <span className="text-xs text-gray-500">
+                                              Base Price: ₹{comp.originalPrice.toLocaleString()}/sqft
+                                            </span>
+                                          </div>
+                                        )}
                                       </motion.div>
                                     )
                                   )}
@@ -996,6 +940,53 @@ export default function PropertyValuePage() {
                             </CardContent>
                           </Card>
                         </MotionWrapper>
+
+                        {/* Dynamic Market Insights from API */}
+                        {valuation.marketInsights && valuation.marketInsights.length > 0 && (
+                          <motion.div
+                            className="mt-6 pt-6 border-t border-gray-200"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 2.6 }}
+                          >
+                            <h4 className="font-medium text-gray-900 mb-4">AI-Generated Insights</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {valuation.marketInsights.map((insight: any, index: number) => (
+                                <motion.div
+                                  key={index}
+                                  className={`p-4 rounded-lg border ${
+                                    insight.impact === 'high' 
+                                      ? 'border-green-200 bg-green-50' 
+                                      : insight.impact === 'positive'
+                                      ? 'border-blue-200 bg-blue-50'
+                                      : 'border-gray-200 bg-gray-50'
+                                  }`}
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: 2.7 + index * 0.1 }}
+                                >
+                                  <h5 className="font-medium text-gray-900 mb-2">{insight.title}</h5>
+                                  <p className="text-sm text-gray-600">{insight.description}</p>
+                                  <div className="mt-2">
+                                    <Badge 
+                                      variant="outline" 
+                                      className={`${
+                                        insight.impact === 'high' 
+                                          ? 'border-green-300 text-green-700' 
+                                          : insight.impact === 'positive'
+                                          ? 'border-blue-300 text-blue-700'
+                                          : 'border-gray-300 text-gray-700'
+                                      }`}
+                                    >
+                                      {insight.impact === 'high' ? 'High Impact' : 
+                                       insight.impact === 'positive' ? 'Positive' : 'Neutral'}
+                                    </Badge>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
                       </motion.div>
                     ) : (
                       <MotionWrapper variant="fadeInUp">

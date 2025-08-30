@@ -56,6 +56,7 @@ import { FloorPlans } from "@/components/property/FloorPlans";
 import { BuilderInfo } from "@/components/property/BuilderInfo";
 import { ContactAgent } from "@/components/property/ContactAgent";
 import { PropertyInsights } from "@/components/property/PropertyInsights";
+import { PropertySEO } from "@/components/seo/PropertySEO";
 import { toast } from "sonner";
 
 // Dynamically import the Map and NearbyPlaces components to avoid SSR issues with Leaflet
@@ -1226,6 +1227,8 @@ export default function PropertyDetailPage() {
             handleFavorite={handleFavorite}
           />
 
+          <PropertySEO property={property} />
+
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <div className="xl:col-span-2 space-y-4 sm:space-y-6">
               <PropertyHeader property={property} formatPrice={formatPrice} />
@@ -1310,7 +1313,7 @@ export default function PropertyDetailPage() {
                       { id: "amenities", label: "Amenities" },
                       { id: "details", label: "Details" },
                       { id: "location", label: "Location" },
-                      { id: "price-trends", label: "Price Trends" },
+                      // { id: "price-trends", label: "Price Trends" },
                     ].map((tab) => (
                       <button
                         key={tab.id}

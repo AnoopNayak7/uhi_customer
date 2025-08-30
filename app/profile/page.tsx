@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { useAuthStore } from '@/lib/store';
 import { apiClient } from '@/lib/api';
 import { useForm } from 'react-hook-form';
@@ -23,22 +24,23 @@ import {
   MapPin, 
   Edit, 
   Save,
-  Calculator,
-  TrendingUp,
-  Home,
-  Target,
-  BarChart3,
-  Crown,
-  Lock,
   Star,
-  Zap,
+  Eye,
+  BarChart3,
+  Bell,
   Shield,
-  Award,
-  Eye
+  FileText,
+  Settings,
+  Calendar,
+  Smartphone,
+  Globe,
+  Lock,
+  EyeOff,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { CITIES } from '@/lib/config';
 
 const profileSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -54,6 +56,22 @@ export default function ProfilePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: true,
+    smsNotifications: false,
+    pushNotifications: true,
+    propertyAlerts: true,
+    marketUpdates: false,
+    promotionalEmails: false
+  });
+  const [privacySettings, setPrivacySettings] = useState({
+    profileVisibility: 'public',
+    showContactInfo: 'verified',
+    allowMessages: true,
+    showOnlineStatus: false
+  });
 
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
@@ -68,10 +86,10 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       form.reset({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phone,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
       });
     }
   }, [user, form]);
@@ -79,11 +97,13 @@ export default function ProfilePage() {
   const onSubmit = async (data: ProfileForm) => {
     setLoading(true);
     try {
-      const response:any = await apiClient.updateProfile(data);
+      const response: any = await apiClient.updateProfile(data);
       if (response.success) {
         updateUser(data);
         toast.success('Profile updated successfully!');
         setEditing(false);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
       }
     } catch (error) {
       toast.error('Failed to update profile. Please try again.');
@@ -92,104 +112,51 @@ export default function ProfilePage() {
     }
   };
 
-  const premiumTools = [
-    {
-      id: 'mortgage-calculator',
-      title: 'Advanced Mortgage Calculator',
-      description: 'Calculate EMI, interest rates, and loan eligibility with detailed breakdowns',
-      icon: Calculator,
-      href: '/tools/mortgage-calculator',
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-50',
-      premium: true
-    },
-    {
-      id: 'property-comparison',
-      title: 'Property Comparison Tool',
-      description: 'Compare multiple properties side-by-side with detailed analysis',
-      icon: BarChart3,
-      href: '/tools/property-comparison',
-      color: 'text-green-500',
-      bgColor: 'bg-green-50',
-      premium: true
-    },
-    {
-      id: 'investment-calculator',
-      title: 'ROI Investment Calculator',
-      description: 'Calculate returns, rental yields, and investment projections',
-      icon: TrendingUp,
-      href: '/tools/investment-calculator',
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-50',
-      premium: true
-    },
-    {
-      id: 'home-affordability',
-      title: 'Home Affordability Calculator',
-      description: 'Determine how much house you can afford based on your income',
-      icon: Home,
-      href: '/tools/home-affordability',
-      color: 'text-orange-500',
-      bgColor: 'bg-orange-50',
-      premium: true
-    },
-    {
-      id: 'market-predictor',
-      title: 'Market Trend Predictor',
-      description: 'AI-powered predictions for property price movements',
-      icon: Target,
-      href: '/tools/market-predictor',
-      color: 'text-red-500',
-      bgColor: 'bg-red-50',
-      premium: true
-    }
-  ];
+  const handleNotificationChange = (key: string, value: boolean) => {
+    setNotificationSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
 
-  const basicTools = [
-    {
-      id: 'price-trends',
-      title: 'Price Trends',
-      description: 'Track property prices & market analysis',
-      icon: TrendingUp,
-      href: '/tools/price-trends',
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-50',
-      premium: false
-    },
-    {
-      id: 'property-value',
-      title: 'Property Value',
-      description: 'Calculate estimated property worth',
-      icon: Calculator,
-      href: '/tools/property-value',
-      color: 'text-green-500',
-      bgColor: 'bg-green-50',
-      premium: false
-    },
-    {
-      id: 'area-insights',
-      title: 'Area Insights',
-      description: 'Explore neighbourhood statistics',
-      icon: MapPin,
-      href: '/tools/area-insights',
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-50',
-      premium: false
+  const handlePrivacyChange = (key: string, value: string | boolean) => {
+    setPrivacySettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      // Here you would typically save to backend
+      // For now, we'll just show a success message
+      // In a real app, you'd call an API endpoint like:
+      // await apiClient.updateSettings({ notifications: notificationSettings, privacy: privacySettings });
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success('Settings saved successfully!');
+    } catch (error) {
+      toast.error('Failed to save settings. Please try again.');
+    } finally {
+      setSavingSettings(false);
     }
-  ];
+  };
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle>Please Login</CardTitle>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <CardTitle className="text-xl">Please Login</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 mb-4">
+          <CardContent className="space-y-4">
+            <p className="text-gray-600 text-center">
               Please login to view your profile.
             </p>
-            <Button asChild>
+            <Button asChild className="w-full">
               <Link href="/auth/login">Login</Link>
             </Button>
           </CardContent>
@@ -199,113 +166,176 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
       
-      <main className="flex-1 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-            <p className="text-gray-600">Manage your account settings and preferences</p>
+      <main className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          {/* Header Section */}
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              My Profile
+            </h1>
+            <p className="text-gray-600 text-sm sm:text-base">
+              Manage your account settings and preferences
+            </p>
           </div>
 
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="tools">Premium Tools</TabsTrigger>
-              <TabsTrigger value="preferences">Preferences</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-gray-100">
+              <TabsTrigger value="profile" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <User className="w-4 h-4 mr-2 hidden sm:inline" />
+                Profile
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <Settings className="w-4 h-4 mr-2 hidden sm:inline" />
+                Settings
+              </TabsTrigger>
+              <TabsTrigger value="privacy" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <Shield className="w-4 h-4 mr-2 hidden sm:inline" />
+                Privacy
+              </TabsTrigger>
             </TabsList>
 
             {/* Profile Tab */}
-            <TabsContent value="profile">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <TabsContent value="profile" className="space-y-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Profile Info */}
                 <div className="lg:col-span-2">
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                      <CardTitle className="flex items-center space-x-2">
-                        <User className="w-5 h-5" />
+                  <Card className="shadow-sm border-0 bg-white hover:shadow-md transition-shadow duration-200">
+                    <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 pb-6">
+                      <CardTitle className="flex items-center space-x-2 text-lg">
+                        <User className="w-5 h-5 text-gray-600" />
                         <span>Personal Information</span>
                       </CardTitle>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setEditing(!editing)}
+                        className="w-full sm:w-auto"
                       >
                         <Edit className="w-4 h-4 mr-2" />
-                        {editing ? 'Cancel' : 'Edit'}
+                        {editing ? 'Cancel' : 'Edit Profile'}
                       </Button>
                     </CardHeader>
                     <CardContent>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="firstName">First Name</Label>
+                      {showSuccess && (
+                        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <p className="text-sm font-medium text-green-800">
+                              Profile updated successfully! Your changes have been saved.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          <div className="space-y-3">
+                            <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                              First Name
+                            </Label>
                             <Input
                               {...form.register('firstName')}
                               disabled={!editing}
-                              className="mt-1"
+                              className="h-11 border-gray-200 focus:border-red-500 focus:ring-red-500 focus:ring-2 transition-colors duration-200"
+                              placeholder="Enter first name"
+                              aria-describedby={editing ? "firstName-error" : undefined}
                             />
                             {form.formState.errors.firstName && (
-                              <p className="text-sm text-red-500 mt-1">
+                              <p id="firstName-error" className="text-sm text-red-500 flex items-center mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                                <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
                                 {form.formState.errors.firstName.message}
                               </p>
                             )}
                           </div>
 
-                          <div>
-                            <Label htmlFor="lastName">Last Name</Label>
+                          <div className="space-y-3">
+                            <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                              Last Name
+                            </Label>
                             <Input
                               {...form.register('lastName')}
                               disabled={!editing}
-                              className="mt-1"
+                              className="h-11 border-gray-200 focus:border-red-500 focus:ring-red-500 focus:ring-2 transition-colors duration-200"
+                              placeholder="Enter last name"
                             />
                             {form.formState.errors.lastName && (
-                              <p className="text-sm text-red-500 mt-1">
+                              <p className="text-sm text-red-500 flex items-center">
+                                <AlertCircle className="w-4 h-4 mr-1" />
                                 {form.formState.errors.lastName.message}
                               </p>
                             )}
                           </div>
                         </div>
 
-                        <div>
-                          <Label htmlFor="email">Email Address</Label>
-                          <Input
-                            {...form.register('email')}
-                            disabled={!editing}
-                            className="mt-1"
-                          />
+                        <div className="space-y-3">
+                          <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                            Email Address
+                          </Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Input
+                              {...form.register('email')}
+                              disabled={!editing}
+                              className="h-11 pl-10 border-gray-200 focus:border-red-500 focus:ring-red-500 focus:ring-2 transition-colors duration-200"
+                              placeholder="Enter email address"
+                            />
+                          </div>
                           {form.formState.errors.email && (
-                            <p className="text-sm text-red-500 mt-1">
+                            <p className="text-sm text-red-500 flex items-center">
+                              <AlertCircle className="w-4 h-4 mr-1" />
                               {form.formState.errors.email.message}
                             </p>
                           )}
                         </div>
 
-                        <div>
-                          <Label htmlFor="phone">Phone Number</Label>
-                          <Input
-                            {...form.register('phone')}
-                            disabled={!editing}
-                            className="mt-1"
-                          />
+                        <div className="space-y-3">
+                          <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                            Phone Number
+                          </Label>
+                          <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Input
+                              {...form.register('phone')}
+                              disabled={!editing}
+                              className="h-11 pl-10 border-gray-200 focus:border-red-500 focus:ring-red-500 focus:ring-2 transition-colors duration-200"
+                              placeholder="Enter phone number"
+                            />
+                          </div>
                           {form.formState.errors.phone && (
-                            <p className="text-sm text-red-500 mt-1">
+                            <p className="text-sm text-red-500 flex items-center">
+                              <AlertCircle className="w-4 h-4 mr-1" />
                               {form.formState.errors.phone.message}
+                            </p>
+                          )}
+                          {!editing && !form.getValues('phone') && (
+                            <p className="text-sm text-amber-600 flex items-center">
+                              <AlertCircle className="w-4 h-4 mr-1" />
+                              Phone number not set. Please edit to add your phone number.
                             </p>
                           )}
                         </div>
 
                         {editing && (
-                          <Button 
-                            type="submit" 
-                            disabled={loading}
-                            className="bg-red-500 hover:bg-red-600"
-                          >
-                            <Save className="w-4 h-4 mr-2" />
-                            {loading ? 'Saving...' : 'Save Changes'}
-                          </Button>
+                          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+                            <Button 
+                              type="submit" 
+                              disabled={loading}
+                              className="w-full sm:w-auto bg-red-500 hover:bg-red-600 h-11 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Save className="w-4 h-4 mr-2" />
+                              {loading ? 'Saving...' : 'Save Changes'}
+                            </Button>
+                            <Button 
+                              type="button"
+                              variant="outline"
+                              onClick={() => setEditing(false)}
+                              className="w-full sm:w-auto h-11 px-6"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
                         )}
                       </form>
                     </CardContent>
@@ -314,48 +344,48 @@ export default function ProfilePage() {
 
                 {/* Profile Stats */}
                 <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Account Status</CardTitle>
+                  <Card className="shadow-sm border-0 bg-white hover:shadow-md transition-shadow duration-200">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-base">Account Status</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Account Type</span>
-                        <Badge className={user.role === 'builder' ? 'bg-blue-500' : 'bg-green-500'}>
+                        <span className="text-sm text-gray-600">Account Type</span>
+                        <Badge className={user.role === 'builder' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}>
                           {user.role === 'builder' ? 'Builder' : 'User'}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Verification</span>
-                        <Badge className={user.isVerified ? 'bg-green-500' : 'bg-yellow-500'}>
+                        <span className="text-sm text-gray-600">Verification</span>
+                        <Badge className={user.isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
                           {user.isVerified ? 'Verified' : 'Pending'}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Member Since</span>
+                        <span className="text-sm text-gray-600">Member Since</span>
                         <span className="text-sm text-gray-900">Jan 2024</span>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Quick Actions</CardTitle>
+                  <Card className="shadow-sm border-0 bg-white hover:shadow-md transition-shadow duration-200">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-base">Quick Actions</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2">
-                      <Button variant="outline" size="sm" className="w-full justify-start" asChild>
+                    <CardContent className="space-y-3">
+                      <Button variant="outline" size="sm" className="w-full justify-start h-10" asChild>
                         <Link href="/favourites">
                           <Star className="w-4 h-4 mr-2" />
                           View Favourites
                         </Link>
                       </Button>
-                      <Button variant="outline" size="sm" className="w-full justify-start" asChild>
+                      <Button variant="outline" size="sm" className="w-full justify-start h-10" asChild>
                         <Link href="/viewed-properties">
                           <Eye className="w-4 h-4 mr-2" />
                           Recently Viewed
                         </Link>
                       </Button>
-                      <Button variant="outline" size="sm" className="w-full justify-start" asChild>
+                      <Button variant="outline" size="sm" className="w-full justify-start h-10" asChild>
                         <Link href="/dashboard">
                           <BarChart3 className="w-4 h-4 mr-2" />
                           Dashboard
@@ -367,239 +397,127 @@ export default function ProfilePage() {
               </div>
             </TabsContent>
 
-            {/* Premium Tools Tab */}
-            <TabsContent value="tools">
-              <div className="space-y-8">
-                {/* Premium Tools Header */}
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-4">
-                    <Crown className="w-8 h-8 text-yellow-500 mr-2" />
-                    <h2 className="text-2xl font-bold text-gray-900">Premium Tools</h2>
-                  </div>
-                  <p className="text-gray-600 max-w-2xl mx-auto">
-                    Exclusive tools available to registered users for advanced property analysis and decision making
-                  </p>
-                </div>
-
-                {/* Basic Tools */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Free Tools</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {basicTools.map((tool) => (
-                      <Card key={tool.id} className="hover:shadow-lg transition-all duration-300">
-                        <CardContent className="p-6">
-                          <div className={`w-12 h-12 ${tool.bgColor} rounded-lg flex items-center justify-center mb-4`}>
-                            <tool.icon className={`w-6 h-6 ${tool.color}`} />
-                          </div>
-                          <h4 className="font-semibold text-gray-900 mb-2">{tool.title}</h4>
-                          <p className="text-gray-600 text-sm mb-4">{tool.description}</p>
-                          <Button variant="outline" size="sm" className="w-full" asChild>
-                            <Link href={tool.href}>Use Tool</Link>
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Premium Tools */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Premium Tools</h3>
-                    <Badge className="bg-yellow-500 text-white">
-                      <Crown className="w-3 h-3 mr-1" />
-                      Members Only
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {premiumTools.map((tool) => (
-                      <Card key={tool.id} className="relative hover:shadow-lg transition-all duration-300 border-yellow-200">
-                        <div className="absolute top-3 right-3">
-                          <Crown className="w-5 h-5 text-yellow-500" />
-                        </div>
-                        <CardContent className="p-6">
-                          <div className={`w-12 h-12 ${tool.bgColor} rounded-lg flex items-center justify-center mb-4`}>
-                            <tool.icon className={`w-6 h-6 ${tool.color}`} />
-                          </div>
-                          <h4 className="font-semibold text-gray-900 mb-2">{tool.title}</h4>
-                          <p className="text-gray-600 text-sm mb-4">{tool.description}</p>
-                          <Button className="w-full bg-yellow-500 hover:bg-yellow-600" asChild>
-                            <Link href={tool.href}>
-                              <Zap className="w-4 h-4 mr-2" />
-                              Use Premium Tool
-                            </Link>
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Benefits Section */}
-                <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
-                  <CardContent className="p-6">
-                    <div className="text-center">
-                      <Award className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">Premium Member Benefits</h3>
-                      <p className="text-gray-600 mb-6">
-                        Get access to advanced tools and exclusive features as a registered member
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="text-center">
-                          <Shield className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-                          <h4 className="font-medium text-gray-900">Advanced Analytics</h4>
-                          <p className="text-sm text-gray-600">Detailed market insights and trends</p>
-                        </div>
-                        <div className="text-center">
-                          <Calculator className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                          <h4 className="font-medium text-gray-900">Financial Tools</h4>
-                          <p className="text-sm text-gray-600">Mortgage and investment calculators</p>
-                        </div>
-                        <div className="text-center">
-                          <Target className="w-8 h-8 text-purple-500 mx-auto mb-2" />
-                          <h4 className="font-medium text-gray-900">Smart Recommendations</h4>
-                          <p className="text-sm text-gray-600">AI-powered property suggestions</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Preferences Tab */}
-            <TabsContent value="preferences">
-              <Card>
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="space-y-8">
+              <Card className="shadow-sm border-0 bg-white hover:shadow-md transition-shadow duration-200">
                 <CardHeader>
-                  <CardTitle>Search Preferences</CardTitle>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Bell className="w-5 h-5 text-gray-600" />
+                    <span>Notification Settings</span>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label>Preferred Cities</Label>
-                      <Select>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select preferred cities" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {CITIES.map((city) => (
-                            <SelectItem key={city} value={city}>
-                              {city}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-gray-900 flex items-center">
+                        <Mail className="w-4 h-4 mr-2 text-gray-500" />
+                        Email Notifications
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                          <div>
+                            <p className="text-sm font-medium text-gray-700">Property Alerts</p>
+                            <p className="text-xs text-gray-500">Get notified about new properties</p>
+                          </div>
+                          <Switch
+                            checked={notificationSettings.propertyAlerts}
+                            onCheckedChange={(checked) => handleNotificationChange('propertyAlerts', checked)}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                          <div>
+                            <p className="text-sm font-medium text-gray-700">Market Updates</p>
+                            <p className="text-xs text-gray-500">Receive market trend updates</p>
+                          </div>
+                          <Switch
+                            checked={notificationSettings.marketUpdates}
+                            onCheckedChange={(checked) => handleNotificationChange('marketUpdates', checked)}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                          <div>
+                            <p className="text-sm font-medium text-gray-700">Promotional Emails</p>
+                            <p className="text-xs text-gray-500">Receive special offers and deals</p>
+                          </div>
+                          <Switch
+                            checked={notificationSettings.promotionalEmails}
+                            onCheckedChange={(checked) => handleNotificationChange('promotionalEmails', checked)}
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    <div>
-                      <Label>Budget Range</Label>
-                      <Select>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select budget range" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="0-50">₹0 - ₹50L</SelectItem>
-                          <SelectItem value="50-100">₹50L - ₹1Cr</SelectItem>
-                          <SelectItem value="100-200">₹1Cr - ₹2Cr</SelectItem>
-                          <SelectItem value="200+">₹2Cr+</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label>Property Type</Label>
-                      <Select>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select property type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="apartment">Apartment</SelectItem>
-                          <SelectItem value="house">House</SelectItem>
-                          <SelectItem value="villa">Villa</SelectItem>
-                          <SelectItem value="plot">Plot</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label>Notification Preferences</Label>
-                      <Select>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select notification frequency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
-                          <SelectItem value="never">Never</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-gray-900 flex items-center">
+                        <Smartphone className="w-4 h-4 mr-2 text-gray-500" />
+                        Other Notifications
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                          <div>
+                            <p className="text-sm font-medium text-gray-700">SMS Notifications</p>
+                            <p className="text-xs text-gray-500">Receive text messages</p>
+                          </div>
+                          <Switch
+                            checked={notificationSettings.smsNotifications}
+                            onCheckedChange={(checked) => handleNotificationChange('smsNotifications', checked)}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                          <div>
+                            <p className="text-sm font-medium text-gray-700">Push Notifications</p>
+                            <p className="text-xs text-gray-500">Browser push notifications</p>
+                          </div>
+                          <Switch
+                            checked={notificationSettings.pushNotifications}
+                            onCheckedChange={(checked) => handleNotificationChange('pushNotifications', checked)}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <Button className="bg-red-500 hover:bg-red-600">
-                    Save Preferences
-                  </Button>
+                  <div className="pt-4 border-t border-gray-200">
+                    <Button onClick={saveSettings} className="bg-red-500 hover:bg-red-600" disabled={savingSettings}>
+                      {savingSettings ? 'Saving...' : 'Save Notification Settings'}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* Security Tab */}
-            <TabsContent value="security">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Account Security</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Email Verification</h4>
-                        <p className="text-sm text-gray-600">Your email is verified and secure</p>
-                      </div>
-                      <Badge className="bg-green-500">Verified</Badge>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Phone Verification</h4>
-                        <p className="text-sm text-gray-600">Your phone number is verified</p>
-                      </div>
-                      <Badge className="bg-green-500">Verified</Badge>
-                    </div>
-
-                    
-                  </CardContent>
-                </Card>
-
-                {/* <Card>
-                  <CardHeader>
-                    <CardTitle>Privacy Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Profile Visibility</h4>
-                        <p className="text-sm text-gray-600">Control who can see your profile</p>
-                      </div>
-                      <Select defaultValue="private">
-                        <SelectTrigger className="w-32">
+            {/* Privacy Tab */}
+            <TabsContent value="privacy" className="space-y-8">
+              <Card className="shadow-sm border-0 bg-white hover:shadow-md transition-shadow duration-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Shield className="w-5 h-5 text-gray-600" />
+                    <span>Privacy Settings</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-gray-900">Profile Visibility</h4>
+                      <Select value={privacySettings.profileVisibility} onValueChange={(value) => handlePrivacyChange('profileVisibility', value)}>
+                        <SelectTrigger className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="public">Public</SelectItem>
                           <SelectItem value="private">Private</SelectItem>
+                          <SelectItem value="friends">Friends Only</SelectItem>
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-gray-500">
+                        Control who can see your profile information
+                      </p>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">Contact Information</h4>
-                        <p className="text-sm text-gray-600">Show contact info to property owners</p>
-                      </div>
-                      <Select defaultValue="verified">
-                        <SelectTrigger className="w-32">
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-gray-900">Contact Information</h4>
+                      <Select value={privacySettings.showContactInfo} onValueChange={(value) => handlePrivacyChange('showContactInfo', value)}>
+                        <SelectTrigger className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -608,10 +526,71 @@ export default function ProfilePage() {
                           <SelectItem value="none">None</SelectItem>
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-gray-500">
+                        Show contact info to property owners
+                      </p>
                     </div>
-                  </CardContent>
-                </Card> */}
-              </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-gray-900">Additional Privacy Options</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Allow Messages</p>
+                          <p className="text-xs text-gray-500">Let other users send you messages</p>
+                        </div>
+                        <Switch
+                          checked={privacySettings.allowMessages}
+                          onCheckedChange={(checked) => handlePrivacyChange('allowMessages', checked)}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Show Online Status</p>
+                          <p className="text-xs text-gray-500">Display when you're online</p>
+                        </div>
+                        <Switch
+                          checked={privacySettings.showOnlineStatus}
+                          onCheckedChange={(checked) => handlePrivacyChange('showOnlineStatus', checked)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-200">
+                    <Button onClick={saveSettings} className="bg-red-500 hover:bg-red-600 w-full sm:w-auto" disabled={savingSettings}>
+                      {savingSettings ? 'Saving...' : 'Save Privacy Settings'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Legal & Policy Section */}
+              <Card className="shadow-sm border-0 bg-white hover:shadow-md transition-shadow duration-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <FileText className="w-5 h-5 text-gray-600" />
+                    <span>Legal & Policies</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Button variant="outline" className="justify-start h-12" asChild>
+                      <Link href="/privacy">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Privacy Policy
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="justify-start h-12" asChild>
+                      <Link href="/terms">
+                        <FileText className="w-4 h-4 mr-2" />
+                        Terms of Service
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

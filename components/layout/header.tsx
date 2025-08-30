@@ -75,37 +75,40 @@ export function Header() {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white shadow-lg border-b border-gray-100 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Logo />
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-10">
             {navigationItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-gray-700 hover:text-red-500 transition-colors duration-200 font-medium"
+                className="text-gray-700 hover:text-red-500 transition-all duration-300 font-medium text-base relative group"
               >
                 {item.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-500 transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ))}
           </nav>
 
           {/* Desktop Auth & Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            {/* Location Selector */}
-            <LocationSelector />
-            
+          <div className="hidden md:flex items-center space-x-5">
             {/* Compare Button */}
-            <Button variant="outline" size="sm" asChild className="relative">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              asChild 
+              className="relative border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all duration-300"
+            >
               <Link href="/tools/property-comparison">
                 <GitCompare className="w-4 h-4 mr-2" />
                 Compare
                 {compareList.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-semibold shadow-lg">
                     {compareList.length}
                   </span>
                 )}
@@ -115,7 +118,12 @@ export function Header() {
             {isAuthenticated && user ? (
               <>
                 {user.role === "builder" && (
-                  <Button variant="outline" size="sm" asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    asChild
+                    className="border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all duration-300"
+                  >
                     <Link href="/dashboard/property/create">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Property
@@ -127,66 +135,82 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="relative h-10 w-10 rounded-full"
+                      className="relative h-12 w-12 rounded-full hover:bg-gray-100 transition-all duration-300 p-0"
                     >
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback>
+                      <Avatar className="h-12 w-12 border-2 border-gray-100 hover:border-gray-200 transition-all duration-300">
+                        <AvatarFallback className="bg-gray-900 text-white font-semibold text-lg hover:bg-gray-800 transition-all duration-300">
                           {user.firstName?.[0]}
                           {user.lastName?.[0]}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end">
-                    <div className="flex items-center justify-start gap-2 p-2">
+                  <DropdownMenuContent className="w-64 p-2" align="end">
+                    <div className="flex items-center justify-start gap-3 p-3 bg-gray-50 rounded-lg mb-2">
+                      <Avatar className="h-12 w-12 border-2 border-gray-200">
+                        <AvatarFallback className="bg-gray-900 text-white font-semibold text-lg">
+                          {user.firstName?.[0]}
+                          {user.lastName?.[0]}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="flex flex-col space-y-1 leading-none">
-                        <p className="font-medium">
+                        <p className="font-semibold text-gray-900">
                           {user.firstName} {user.lastName}
                         </p>
-                        <p className="w-[200px] truncate text-sm text-muted-foreground">
+                        <p className="w-[200px] truncate text-sm text-gray-600">
                           {user.email}
                         </p>
                       </div>
                     </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuSeparator className="my-2" />
+                    <DropdownMenuItem asChild className="p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                       <Link href="/dashboard">
-                        <BarChart3 className="mr-2 h-4 w-4" />
-                        Dashboard
+                        <BarChart3 className="mr-3 h-4 w-4 text-blue-600" />
+                        <span className="font-medium">Dashboard</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                       <Link href="/profile">
-                        <User className="mr-2 h-4 w-4" />
-                        Profile
+                        <User className="mr-3 h-4 w-4 text-green-600" />
+                        <span className="font-medium">Profile</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                       <Link href="/favourites">
-                        <Heart className="mr-2 h-4 w-4" />
-                        Favourites
+                        <Heart className="mr-3 h-4 w-4 text-red-600" />
+                        <span className="font-medium">Favourites</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                       <Link href="/viewed-properties">
-                        <Eye className="mr-2 h-4 w-4" />
-                        Recently Viewed
+                        <Eye className="mr-3 h-4 w-4 text-purple-600" />
+                        <span className="font-medium">Recently Viewed</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Log out
+                    <DropdownMenuSeparator className="my-2" />
+                    <DropdownMenuItem 
+                      onClick={logout}
+                      className="p-3 rounded-lg hover:bg-red-50 transition-colors duration-200 text-red-600 hover:text-red-700"
+                    >
+                      <LogOut className="mr-3 h-4 w-4" />
+                      <span className="font-medium">Log out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
             ) : (
-              <div className="flex items-center space-x-3">
-                <Button variant="ghost" asChild>
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  asChild
+                  className="text-gray-700 hover:text-red-500 hover:bg-red-50 transition-all duration-300 font-medium"
+                >
                   <Link href="/auth/login">Sign In</Link>
                 </Button>
-                <Button className="bg-red-500 hover:bg-red-600" asChild>
+                <Button 
+                  className="bg-red-500 hover:bg-red-600 shadow-lg hover:shadow-xl transition-all duration-300 font-medium px-6 py-2.5 rounded-lg" 
+                  asChild
+                >
                   <Link href="/auth/signup">Sign Up</Link>
                 </Button>
               </div>
@@ -197,7 +221,7 @@ export function Header() {
           <div className="md:hidden">
             <TouchButton
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-md text-gray-700 hover:text-red-500 hover:bg-gray-100 transition-colors"
+              className="p-2.5 rounded-lg text-gray-700 hover:text-red-500 hover:bg-red-50 transition-all duration-300"
               haptic={true}
             >
               <motion.div
@@ -219,13 +243,13 @@ export function Header() {
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
-              className="md:hidden overflow-hidden"
+              className="md:hidden overflow-hidden border-t border-gray-100"
               variants={mobileMenuVariants}
               initial="closed"
               animate="open"
               exit="closed"
             >
-              <motion.div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
+              <motion.div className="px-4 pt-4 pb-6 space-y-2 bg-gray-50/50">
                 {navigationItems.map((item, index) => (
                   <motion.div
                     key={item.href}
@@ -234,7 +258,7 @@ export function Header() {
                   >
                     <Link
                       href={item.href}
-                      className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-500 hover:bg-gray-50 rounded-md transition-colors duration-200"
+                      className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-red-500 hover:bg-white rounded-xl transition-all duration-300 border border-transparent hover:border-red-100"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {item.label}
@@ -243,8 +267,8 @@ export function Header() {
                 ))}
 
                 {/* Mobile Location Selector */}
-                <motion.div variants={menuItemVariants} className="px-3 py-2">
-                  <div className="text-sm font-medium text-gray-700 mb-2">Location</div>
+                <motion.div variants={menuItemVariants} className="px-4 py-3">
+                  <div className="text-sm font-medium text-gray-700 mb-3">Location</div>
                   <LocationSelector />
                 </motion.div>
 
@@ -252,17 +276,17 @@ export function Header() {
                 <motion.div variants={menuItemVariants}>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start relative"
+                    className="w-full justify-start relative px-4 py-3 h-auto rounded-xl hover:bg-white hover:border-red-100 border border-transparent transition-all duration-300"
                     asChild
                   >
                     <Link
                       href="/tools/property-comparison"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <GitCompare className="mr-2 h-4 w-4" />
+                      <GitCompare className="mr-3 h-4 w-4" />
                       Compare Properties
                       {compareList.length > 0 && (
-                        <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-semibold shadow-lg">
                           {compareList.length}
                         </span>
                       )}
@@ -272,13 +296,13 @@ export function Header() {
 
                 {!isAuthenticated ? (
                   <motion.div
-                    className="pt-4 border-t border-gray-200 space-y-2"
+                    className="pt-4 border-t border-gray-200 space-y-3"
                     variants={menuItemVariants}
                   >
                     <motion.div variants={menuItemVariants}>
                       <Button
                         variant="ghost"
-                        className="w-full justify-start"
+                        className="w-full justify-start px-4 py-3 h-auto rounded-xl hover:bg-white hover:border-gray-200 border border-transparent transition-all duration-300"
                         asChild
                       >
                         <Link
@@ -291,7 +315,7 @@ export function Header() {
                     </motion.div>
                     <motion.div variants={menuItemVariants}>
                       <Button
-                        className="w-full bg-red-500 hover:bg-red-600"
+                        className="w-full bg-red-500 hover:bg-red-600 px-4 py-3 h-auto rounded-xl shadow-lg transition-all duration-300"
                         asChild
                       >
                         <Link
@@ -305,20 +329,20 @@ export function Header() {
                   </motion.div>
                 ) : (
                   <motion.div
-                    className="pt-4 border-t border-gray-200 space-y-2"
+                    className="pt-4 border-t border-gray-200 space-y-3"
                     variants={menuItemVariants}
                   >
                     <motion.div variants={menuItemVariants}>
                       <Button
                         variant="ghost"
-                        className="w-full justify-start"
+                        className="w-full justify-start px-4 py-3 h-auto rounded-xl hover:bg-white hover:border-gray-200 border border-transparent transition-all duration-300"
                         asChild
                       >
                         <Link
                           href="/dashboard"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          <BarChart3 className="mr-2 h-4 w-4" />
+                          <BarChart3 className="mr-3 h-4 w-4 text-blue-600" />
                           Dashboard
                         </Link>
                       </Button>
@@ -326,14 +350,14 @@ export function Header() {
                     <motion.div variants={menuItemVariants}>
                       <Button
                         variant="ghost"
-                        className="w-full justify-start"
+                        className="w-full justify-start px-4 py-3 h-auto rounded-xl hover:bg-white hover:border-gray-200 border border-transparent transition-all duration-300"
                         asChild
                       >
                         <Link
                           href="/profile"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          <User className="mr-2 h-4 w-4" />
+                          <User className="mr-3 h-4 w-4 text-green-600" />
                           Profile
                         </Link>
                       </Button>
@@ -342,14 +366,14 @@ export function Header() {
                       <motion.div variants={menuItemVariants}>
                         <Button
                           variant="ghost"
-                          className="w-full justify-start"
+                          className="w-full justify-start px-4 py-3 h-auto rounded-xl hover:bg-white hover:border-gray-200 border border-transparent transition-all duration-300"
                           asChild
                         >
                           <Link
                             href="/dashboard/property/create"
                             onClick={() => setIsMobileMenuOpen(false)}
                           >
-                            <Plus className="mr-2 h-4 w-4" />
+                            <Plus className="mr-3 h-4 w-4 text-green-600" />
                             Add Property
                           </Link>
                         </Button>
@@ -366,9 +390,9 @@ export function Header() {
                       >
                         <Button
                           variant="ghost"
-                          className="w-full justify-start text-red-600 pointer-events-none"
+                          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 px-4 py-3 h-auto rounded-xl hover:border-red-200 border border-transparent transition-all duration-300 pointer-events-none"
                         >
-                          <LogOut className="mr-2 h-4 w-4" />
+                          <LogOut className="mr-3 h-4 w-4" />
                           Log out
                         </Button>
                       </TouchButton>

@@ -30,6 +30,7 @@ import {
   Utensils,
   Sparkles,
   ArrowRight,
+  AlertCircle,
 } from "lucide-react";
 import {
   XAxis,
@@ -48,6 +49,8 @@ import {
   PolarRadiusAxis,
   Radar,
 } from "recharts";
+import { apiClient } from "@/lib/api";
+import { toast } from "sonner";
 
 const cities = [
   "Bangalore",
@@ -68,312 +71,52 @@ export default function AreaInsightsPage() {
   const [areas, setAreas] = useState<any[]>([]);
 
   useEffect(() => {
-    setAreas(getAreasForCity(selectedCity));
-    setSelectedArea("");
-    setAreaData(null);
+    fetchAreasForCity();
   }, [selectedCity]);
 
-  const getAreasForCity = (city: string) => {
-    const cityAreas = {
-      Bangalore: [
-        "Whitefield",
-        "Koramangala",
-        "Indiranagar",
-        "Electronic City",
-        "Sarjapur Road",
-        "Hebbal",
-        "JP Nagar",
-        "Marathahalli",
-        "HSR Layout",
-        "Bellandur",
-      ],
-      Mumbai: [
-        "Bandra",
-        "Andheri",
-        "Powai",
-        "Thane",
-        "Navi Mumbai",
-        "Malad",
-        "Goregaon",
-        "Kandivali",
-        "Borivali",
-        "Juhu",
-      ],
-      Delhi: [
-        "Gurgaon",
-        "Noida",
-        "Dwarka",
-        "Rohini",
-        "Lajpat Nagar",
-        "Vasant Kunj",
-        "Greater Noida",
-        "Faridabad",
-        "Connaught Place",
-        "Karol Bagh",
-      ],
-      Chennai: [
-        "Anna Nagar",
-        "T. Nagar",
-        "Velachery",
-        "Adyar",
-        "Porur",
-        "OMR",
-        "Tambaram",
-        "Chrompet",
-        "Mylapore",
-        "Nungambakkam",
-      ],
-      Hyderabad: [
-        "Hitech City",
-        "Gachibowli",
-        "Kondapur",
-        "Madhapur",
-        "Banjara Hills",
-        "Jubilee Hills",
-        "Kukatpally",
-        "Miyapur",
-        "Secunderabad",
-        "Begumpet",
-      ],
-      Pune: [
-        "Koregaon Park",
-        "Hinjewadi",
-        "Wakad",
-        "Baner",
-        "Aundh",
-        "Kharadi",
-        "Magarpatta",
-        "Hadapsar",
-        "Viman Nagar",
-        "Kalyani Nagar",
-      ],
-    };
-
-    return cityAreas[city as keyof typeof cityAreas] || cityAreas["Bangalore"];
+  const fetchAreasForCity = async () => {
+    try {
+      const response: any = await apiClient.getToolsAreasForCity(selectedCity);
+      
+      if (response.success) {
+        setAreas(response.data.areas || []);
+        setSelectedArea("");
+        setAreaData(null);
+      } else {
+        toast.error(response.message || 'Failed to fetch areas');
+        setAreas([]);
+      }
+    } catch (error) {
+      console.error("Error fetching areas:", error);
+      toast.error('Failed to fetch areas for the selected city');
+      setAreas([]);
+    }
   };
 
   const fetchAreaInsights = async () => {
-    if (!selectedArea) return;
+    if (!selectedArea) {
+      toast.error('Please select an area first');
+      return;
+    }
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      const mockData = generateAreaInsights(selectedCity, selectedArea);
-      setAreaData(mockData);
+      const response: any = await apiClient.getToolsAreaInsights(selectedCity, selectedArea);
+      
+      if (response.success) {
+        setAreaData(response.data);
+        toast.success('Area insights loaded successfully!');
+      } else {
+        toast.error(response.message || 'Failed to fetch area insights');
+        setAreaData(null);
+      }
     } catch (error) {
       console.error("Error fetching area insights:", error);
+      toast.error('Failed to fetch area insights. Please try again.');
+      setAreaData(null);
     } finally {
       setLoading(false);
     }
-  };
-
-  const generateAreaInsights = (city: string, area: string) => {
-    // Base data for different cities and areas
-    const baseData: any = {
-      Bangalore: {
-        Whitefield: {
-          basePrice: 7800,
-          growth: 12,
-          safety: 85,
-          connectivity: 90,
-        },
-        Koramangala: {
-          basePrice: 9750,
-          growth: 8,
-          safety: 90,
-          connectivity: 95,
-        },
-        Indiranagar: {
-          basePrice: 9100,
-          growth: 6,
-          safety: 88,
-          connectivity: 92,
-        },
-        "Electronic City": {
-          basePrice: 5850,
-          growth: 15,
-          safety: 82,
-          connectivity: 85,
-        },
-        "Sarjapur Road": {
-          basePrice: 7150,
-          growth: 18,
-          safety: 80,
-          connectivity: 88,
-        },
-      },
-      Mumbai: {
-        Bandra: { basePrice: 36000, growth: 5, safety: 92, connectivity: 98 },
-        Andheri: { basePrice: 23400, growth: 8, safety: 85, connectivity: 95 },
-        Powai: { basePrice: 25200, growth: 10, safety: 88, connectivity: 90 },
-      },
-    };
-
-    const areaInfo: any = baseData[city as keyof typeof baseData]?.[
-      area as keyof (typeof baseData)["Bangalore"]
-    ] || { basePrice: 8000, growth: 10, safety: 85, connectivity: 88 };
-
-    return {
-      overview: {
-        name: area,
-        city: city,
-        avgPrice: areaInfo.basePrice,
-        growth: areaInfo.growth,
-        safety: areaInfo.safety,
-        connectivity: areaInfo.connectivity,
-        livability: Math.round(
-          (areaInfo.safety + areaInfo.connectivity + 80) / 3
-        ),
-        population: Math.round(Math.random() * 200000 + 50000),
-        pincode: Math.floor(Math.random() * 99999 + 100000),
-      },
-      priceAnalysis: {
-        residential: [
-          {
-            type: "1 BHK",
-            avgPrice: Math.round(areaInfo.basePrice * 600),
-            range: "₹45L - ₹65L",
-          },
-          {
-            type: "2 BHK",
-            avgPrice: Math.round(areaInfo.basePrice * 900),
-            range: "₹65L - ₹95L",
-          },
-          {
-            type: "3 BHK",
-            avgPrice: Math.round(areaInfo.basePrice * 1200),
-            range: "₹95L - ₹1.4Cr",
-          },
-          {
-            type: "4+ BHK",
-            avgPrice: Math.round(areaInfo.basePrice * 1800),
-            range: "₹1.4Cr - ₹2.2Cr",
-          },
-        ],
-        commercial: [
-          {
-            type: "Office Space",
-            rate: Math.round(areaInfo.basePrice * 1.2),
-            unit: "per sqft",
-          },
-          {
-            type: "Retail Shop",
-            rate: Math.round(areaInfo.basePrice * 1.5),
-            unit: "per sqft",
-          },
-          {
-            type: "Warehouse",
-            rate: Math.round(areaInfo.basePrice * 0.8),
-            unit: "per sqft",
-          },
-        ],
-      },
-      demographics: {
-        ageGroups: [
-          { name: "18-25", value: 25, color: "#3b82f6" },
-          { name: "26-35", value: 35, color: "#10b981" },
-          { name: "36-50", value: 28, color: "#f59e0b" },
-          { name: "50+", value: 12, color: "#ef4444" },
-        ],
-        familyTypes: [
-          { name: "Young Professionals", percentage: 40 },
-          { name: "Nuclear Families", percentage: 35 },
-          { name: "Joint Families", percentage: 15 },
-          { name: "Senior Citizens", percentage: 10 },
-        ],
-      },
-      infrastructure: {
-        transportation: {
-          metro: Math.random() > 0.5,
-          bus: true,
-          auto: true,
-          taxi: true,
-          score: areaInfo.connectivity,
-        },
-        utilities: {
-          electricity: Math.round(85 + Math.random() * 10),
-          water: Math.round(80 + Math.random() * 15),
-          internet: Math.round(90 + Math.random() * 8),
-          waste: Math.round(75 + Math.random() * 20),
-        },
-      },
-      amenities: {
-        education: {
-          schools: Math.round(Math.random() * 20 + 10),
-          colleges: Math.round(Math.random() * 5 + 2),
-          rating: Math.round(Math.random() * 2 + 3.5),
-        },
-        healthcare: {
-          hospitals: Math.round(Math.random() * 8 + 3),
-          clinics: Math.round(Math.random() * 25 + 15),
-          rating: Math.round(Math.random() * 1.5 + 3.5),
-        },
-        shopping: {
-          malls: Math.round(Math.random() * 5 + 2),
-          markets: Math.round(Math.random() * 10 + 5),
-          rating: Math.round(Math.random() * 1.5 + 3.5),
-        },
-        recreation: {
-          parks: Math.round(Math.random() * 8 + 3),
-          gyms: Math.round(Math.random() * 15 + 8),
-          restaurants: Math.round(Math.random() * 50 + 30),
-        },
-      },
-      trends: {
-        priceHistory: generatePriceHistory(areaInfo.basePrice, areaInfo.growth),
-        demandSupply: generateDemandSupplyData(),
-        futureProjects: [
-          { name: "Metro Extension", completion: "2025", impact: "High" },
-          { name: "IT Park Development", completion: "2024", impact: "Medium" },
-          { name: "Shopping Complex", completion: "2026", impact: "Medium" },
-        ],
-      },
-      livabilityScore: {
-        overall: Math.round(
-          (areaInfo.safety + areaInfo.connectivity + 80 + 85 + 78) / 5
-        ),
-        factors: [
-          { name: "Safety", score: areaInfo.safety, max: 100 },
-          { name: "Connectivity", score: areaInfo.connectivity, max: 100 },
-          { name: "Environment", score: 80, max: 100 },
-          { name: "Social Infrastructure", score: 85, max: 100 },
-          { name: "Economic Factors", score: 78, max: 100 },
-        ],
-      },
-    };
-  };
-
-  const generatePriceHistory = (basePrice: number, growth: number) => {
-    const data = [];
-    for (let i = 12; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const variation = (Math.random() - 0.5) * 0.1;
-      const price = Math.round(
-        basePrice * (1 + (growth / 100) * (i / 12) + variation)
-      );
-      data.push({
-        month: date.toLocaleDateString("en-US", {
-          month: "short",
-          year: "2-digit",
-        }),
-        price: price,
-      });
-    }
-    return data;
-  };
-
-  const generateDemandSupplyData = () => {
-    return [
-      { month: "Jan", demand: 85, supply: 70 },
-      { month: "Feb", demand: 88, supply: 72 },
-      { month: "Mar", demand: 92, supply: 75 },
-      { month: "Apr", demand: 90, supply: 78 },
-      { month: "May", demand: 95, supply: 80 },
-      { month: "Jun", demand: 93, supply: 82 },
-    ];
   };
 
   const formatPrice = (price: number) => {
@@ -502,9 +245,10 @@ export default function AreaInsightsPage() {
                       <Select
                         value={selectedArea}
                         onValueChange={setSelectedArea}
+                        disabled={areas.length === 0}
                       >
-                        <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-purple-300 focus:border-purple-500 transition-all duration-200 bg-white/80">
-                          <SelectValue placeholder="Select area" />
+                        <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-purple-300 focus:border-purple-500 transition-all duration-200 bg-white/80 disabled:opacity-50">
+                          <SelectValue placeholder={areas.length === 0 ? "Loading areas..." : "Select area"} />
                         </SelectTrigger>
                         <SelectContent className="bg-white/95 backdrop-blur-sm">
                           {areas.map((area) => (

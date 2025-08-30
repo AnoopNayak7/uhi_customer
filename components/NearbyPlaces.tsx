@@ -1407,7 +1407,7 @@ const EnhancedNearbyPlaces = ({
   }, []);
 
   return (
-    <div className="p-2 md:p-4 max-w-6xl mx-auto space-y-3 md:space-y-6">
+    <div className="sm:p-4 sm:max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30">
         <div className="p-3 md:p-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">

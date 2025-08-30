@@ -11,10 +11,12 @@ import { PropertyListings } from "@/components/home/property-listings";
 import { CTASection } from "@/components/home/cta-section";
 import { PageContent } from "@/components/animations/layout-wrapper";
 import { SectionReveal } from "@/components/animations/page-transitions";
+import { HomePageSEO } from "@/components/seo/HomePageSEO";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
+      <HomePageSEO />
       <Header />
 
       <main className="flex-1">

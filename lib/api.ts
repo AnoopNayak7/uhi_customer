@@ -282,6 +282,45 @@ class ApiClient {
     return this.request(`/tools/price-trends/${encodeURIComponent(cityName.toLowerCase())}?propertyType=${propertyType}&timeRange=${timeRange}`);
   }
 
+  async getToolsAreasForCity(cityName: string, options?: { includePrices?: boolean }) {
+    const queryParams = options?.includePrices ? '?includePrices=true' : '';
+    return this.request(`/tools/areas/${encodeURIComponent(cityName.toLowerCase())}${queryParams}`);
+  }
+
+  async getToolsAreaInsights(cityName: string, areaName: string) {
+    return this.request(`/tools/area-insights/${encodeURIComponent(cityName.toLowerCase())}/${encodeURIComponent(areaName)}`);
+  }
+
+  async getToolsPropertyValue(data: {
+    cityName: string;
+    areaName: string;
+    propertyType: string;
+    builtUpArea: number;
+    bedrooms?: number;
+    bathrooms?: number;
+    propertyAge?: string;
+    furnishing?: string;
+    floor?: number;
+    totalFloors?: number;
+  }) {
+    return this.request('/tools/property-value', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getToolsMarketPredictions(data: {
+    cityName: string;
+    areaName: string;
+    propertyType?: string;
+    predictionYears?: number;
+  }) {
+    return this.request('/tools/market-predictor', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   async getLocationComparison(cityName: string, locations: string[]) {
     return this.request(`/area-insights/cities/${encodeURIComponent(cityName)}/compare`, {
       method: 'POST',

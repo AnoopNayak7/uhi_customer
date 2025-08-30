@@ -87,6 +87,27 @@ class LocationDataManager {
         loading: false
       };
 
+      // Ensure all properties have images
+      const ensurePropertiesHaveImages = (properties: any[]) => {
+        return properties.map((property: any) => {
+          if (!property.images || property.images.length === 0) {
+            // Add default images if none exist
+            property.images = [
+              'https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=Property+Image',
+              'https://via.placeholder.com/800x600/10B981/FFFFFF?text=Property+Image',
+              'https://via.placeholder.com/800x600/F59E0B/FFFFFF?text=Property+Image'
+            ];
+            console.log(`Added default images to property ${property.id} in location data`);
+          }
+          return property;
+        });
+      };
+
+      // Apply image fallback to all property arrays
+      result.featuredProperties = ensurePropertiesHaveImages(result.featuredProperties);
+      result.trendingProperties = ensurePropertiesHaveImages(result.trendingProperties);
+      result.topProperties = ensurePropertiesHaveImages(result.topProperties);
+
       console.log(`✅ LocationDataManager: Successfully fetched data for ${city}`);
 
       // Update cache

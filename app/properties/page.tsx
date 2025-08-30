@@ -8,11 +8,15 @@ import { Button } from "@/components/ui/button";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useSearchStore } from "@/lib/store";
-import { Search, Navigation, Loader2, Grid3X3, MapIcon } from "lucide-react";
+import { Search, Navigation, Loader2, Grid3X3, MapIcon, Filter, X } from "lucide-react";
 import { toast } from "sonner";
 import { FilterSection } from "@/components/propertyListing/FilterSection";
 import { PropertyList } from "@/components/propertyListing/PropertyList";
 import { MapView } from "@/components/propertyListing/MapView";
+import { MobileFilterDrawer } from "@/components/propertyListing/MobileFilterDrawer";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { PageContent } from "@/components/animations/layout-wrapper";
 
@@ -27,26 +31,22 @@ interface LocationSuggestion {
 export default function PropertiesPage() {
   const searchParams: any = useSearchParams();
   const router = useRouter();
-  const { searchFilters, updateSearchFilters } = useSearchStore();
   const { user } = useAuthStore();
+  const { searchFilters, updateSearchFilters } = useSearchStore();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<any>("grid");
-  const [mapType, setMapType] = useState<"map" | "satellite">("map");
-  const [showFilters, setShowFilters] = useState(false);
-
-  // Autocomplete states
-  const [searchQuery, setSearchQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
-
-  // Near me functionality
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(
-    null
-  );
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [mapType, setMapType] = useState<"map" | "satellite">("map");
 
   // Cleanup search timeout
   useEffect(() => {
@@ -75,7 +75,27 @@ export default function PropertiesPage() {
       const response: any = await apiClient.getProperties(params);
 
       if (response.success && response.data) {
-        setProperties(response.data);
+        console.log('Properties API response:', response);
+        console.log('Properties data:', response.data);
+        console.log('First property sample:', response.data[0]);
+        
+        // Ensure all properties have images
+        const propertiesWithImages = response.data.map((property: any) => {
+          if (!property.images || property.images.length === 0) {
+            // Add default images if none exist - using more reliable URLs
+            property.images = [
+              'https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=Property+Image',
+              'https://via.placeholder.com/800x600/10B981/FFFFFF?text=Property+Image',
+              'https://via.placeholder.com/800x600/F59E0B/FFFFFF?text=Property+Image'
+            ];
+            console.log(`Added default images to property ${property.id}:`, property.images);
+          } else {
+            console.log(`Property ${property.id} already has images:`, property.images);
+          }
+          return property;
+        });
+        
+        setProperties(propertiesWithImages);
       } else {
         throw new Error("Failed to fetch properties");
       }
@@ -86,7 +106,7 @@ export default function PropertiesPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchParams]);
+  }, [searchParams, setLoading]); // Added setLoading to dependency array
 
   useEffect(() => {
     // Update search filters from URL params
@@ -247,8 +267,77 @@ export default function PropertiesPage() {
 
       <main className="flex-1 container mx-auto px-3 sm:px-4 md:px-6 lg:px-[3%] py-4 sm:py-6 md:py-8">
         <PageContent>
-          {/* Search bar */}
-          <div className="mb-4 sm:mb-6">
+          {/* Mobile Search Interface */}
+          <div className="block lg:hidden mb-6">
+            <div className="rounded-2xl shadow-lg border border-gray-100">
+              {/* Search Bar with Search Button */}
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Input
+                  type="text"
+                  placeholder="Search by location, landmark, project..."
+                  className="pl-12 pr-4 py-4 w-full text-base h-14 border border-gray-200 bg-white focus:bg-white focus:ring-2 focus:ring-red-200 rounded-xl transition-all duration-300"
+                  value={searchQuery}
+                  onChange={handleSearchInputChange}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() =>
+                    setTimeout(() => setShowSuggestions(false), 200)
+                  }
+                />
+
+                {/* Search Button beside search bar */}
+                <Button
+                  onClick={handleSearch}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 p-0 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Search className="w-5 h-5" />
+                </Button>
+
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-20 mt-2 w-full bg-white shadow-xl rounded-xl border border-gray-200 max-h-60 overflow-y-auto">
+                    {suggestions.map((suggestion) => (
+                      <div
+                        key={suggestion.place_id}
+                        className="px-4 py-3 hover:bg-red-50 cursor-pointer text-sm border-b border-gray-100 last:border-b-0 transition-colors duration-200"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                      >
+                        <div className="flex items-center">
+                          <div className="w-2 h-2 bg-red-400 rounded-full mr-3"></div>
+                          <span className="text-gray-700">{suggestion.display_name}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {isSearching && (
+                  <div className="absolute right-16 top-1/2 transform -translate-y-1/2">
+                    <Loader2 className="animate-spin h-5 w-5 text-gray-400" />
+                  </div>
+                )}
+              </div>
+
+              {/* Near Me Button - Hidden on mobile */}
+              <div className="hidden">
+                <Button
+                  variant="outline"
+                  className="w-full h-12 border-gray-200 hover:border-red-300 hover:bg-red-50 text-gray-700 font-medium rounded-xl transition-all duration-300"
+                  onClick={getUserLocation}
+                  disabled={isGettingLocation}
+                >
+                  {isGettingLocation ? (
+                    <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                  ) : (
+                    <Navigation className="h-4 w-4 mr-2" />
+                  )}
+                  Near Me
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Search bar */}
+          <div className="hidden lg:block mb-4 sm:mb-6">
             <div className="relative">
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
                 <div className="relative flex-1 order-1 sm:order-1">
@@ -324,6 +413,38 @@ export default function PropertiesPage() {
 
             {/* Main Content */}
             <div className="flex-1 min-w-0">
+              {/* Mobile Filter Toggle */}
+              <div className="block lg:hidden mb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900">
+                      Properties
+                    </h1>
+                    <p className="text-gray-500 text-sm">
+                      {properties.length} properties found
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2 h-10 px-4 border-gray-200 hover:border-red-300 hover:bg-red-50 rounded-lg transition-all duration-300"
+                    onClick={() => setMobileFilterOpen(true)}
+                  >
+                    <Filter className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700">Filters</span>
+                    {(() => {
+                      const activeFiltersCount = Object.values(searchFilters).filter(
+                        (value) => value && value !== "" && value !== 0
+                      ).length;
+                      return activeFiltersCount > 0 ? (
+                        <div className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {activeFiltersCount}
+                        </div>
+                      ) : null;
+                    })()}
+                  </Button>
+                </div>
+              </div>
+
               {viewMode === "grid" ? (
                 <PropertyList
                   properties={properties}
@@ -336,9 +457,6 @@ export default function PropertiesPage() {
                 <div className="flex-1">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
                     <div className="flex-1">
-                      <h1 className="text-xl sm:text-2xl font-bold">
-                        Properties
-                      </h1>
                       <p className="text-gray-500 text-sm">
                         {
                           properties.filter((p) => p.latitude && p.longitude)
@@ -350,7 +468,7 @@ export default function PropertiesPage() {
                     <div className="flex items-center space-x-2 w-full sm:w-auto">
                       <div className="bg-gray-100 rounded-md p-1 flex w-full sm:w-auto">
                         <Button
-                          variant={viewMode === "grid" ? "default" : "ghost"}
+                          variant={"ghost"}
                           size="sm"
                           className="h-10 sm:h-8 px-3 sm:px-2 flex-1 sm:flex-none text-sm"
                           onClick={() => setViewMode("grid")}
@@ -381,6 +499,136 @@ export default function PropertiesPage() {
               )}
             </div>
           </div>
+
+          {/* Mobile Filter Drawer - triggered by main Filters button */}
+          <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
+            <SheetContent side="bottom" className="h-[85vh] p-0">
+              <div className="flex flex-col h-full">
+                {/* Header */}
+                <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white flex-shrink-0 shadow-sm">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Search Filters</h2>
+                    <p className="text-sm text-gray-500">
+                      {Object.values(searchFilters).filter((value) => value && value !== "" && value !== 0).length} filters applied
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-10 w-10 p-0 rounded-full hover:bg-gray-100"
+                    onClick={() => setMobileFilterOpen(false)}
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+
+                {/* Filter Content */}
+                <div className="flex-1 overflow-y-auto bg-gray-50/30">
+                  <div className="px-4 space-y-4 py-4">
+                    {/* Property Type */}
+                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                      <h3 className="font-medium text-base text-gray-900 mb-3">Property Type</h3>
+                      <div className="space-y-2">
+                        {["flat", "house", "villa", "plot"].map((type) => (
+                          <div key={type} className="flex items-center">
+                            <Checkbox
+                              id={`mobile-type-${type}`}
+                              checked={searchFilters.type === type}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  handleFilterChange("type", type);
+                                } else {
+                                  handleFilterChange("type", "");
+                                }
+                              }}
+                            />
+                            <label htmlFor={`mobile-type-${type}`} className="ml-2 text-sm text-gray-700 capitalize">
+                              {type}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Budget */}
+                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                      <h3 className="font-medium text-base text-gray-900 mb-3">Budget</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">Min Price</label>
+                          <Select value={searchFilters.minPrice?.toString() || ""} onValueChange={(value) => handleFilterChange("minPrice", value)}>
+                            <SelectTrigger className="h-10 rounded-lg">
+                              <SelectValue placeholder="Min" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[0, 100000, 200000, 500000, 1000000, 2000000, 5000000].map((price) => (
+                                <SelectItem key={price} value={price.toString()}>
+                                  ₹{price.toLocaleString()}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">Max Price</label>
+                          <Select value={searchFilters.maxPrice?.toString() || ""} onValueChange={(value) => handleFilterChange("maxPrice", value)}>
+                            <SelectTrigger className="h-10 rounded-lg">
+                              <SelectValue placeholder="Max" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[100000, 200000, 500000, 1000000, 2000000, 5000000, 10000000].map((price) => (
+                                <SelectItem key={price} value={price.toString()}>
+                                  ₹{price.toLocaleString()}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bedrooms */}
+                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                      <h3 className="font-medium text-base text-gray-900 mb-3">Bedrooms</h3>
+                      <div className="grid grid-cols-3 gap-2">
+                        {["1", "2", "3", "4", "5+", "Any"].map((bhk) => (
+                          <div key={bhk} className="flex items-center">
+                            <Checkbox
+                              id={`mobile-bhk-${bhk}`}
+                              checked={searchFilters.bedrooms === bhk}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  handleFilterChange("bedrooms", bhk);
+                                } else {
+                                  handleFilterChange("bedrooms", "");
+                                }
+                              }}
+                            />
+                            <label htmlFor={`mobile-bhk-${bhk}`} className="ml-2 text-sm text-gray-700">
+                              {bhk}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Button */}
+                <div className="p-4 border-t border-gray-100 bg-gradient-to-r from-white to-gray-50 flex-shrink-0 shadow-lg">
+                  <Button
+                    onClick={() => {
+                      handleSearch();
+                      setMobileFilterOpen(false);
+                    }}
+                    className="w-full h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    Apply Filters
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </PageContent>
       </main>
 

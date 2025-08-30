@@ -14,7 +14,6 @@ import {
   ChevronRight,
   BarChart3,
 } from "lucide-react";
-import { PropertyListImage } from "@/components/ui/optimized-image";
 import { BLUR_DATA_URLS } from "@/lib/images";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -23,6 +22,7 @@ import { usePropertyStore, useAuthStore } from "@/lib/store";
 import { useLocationData } from "@/hooks/use-location-data";
 import { LoginModal } from "@/components/ui/login-modal";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface Property {
   id: string;
@@ -262,7 +262,7 @@ function PropertyCard({
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const defaultImage = `https://www.jllhomes.co.in/_next/image?url=https%3A%2F%2Fjll-global-gdim-res.cloudinary.com%2Fimage%2Fupload%2Fv1706009716%2FIN%2FHorizon%2FResi%2FPROD%2FJLL_Bengaluru_Concorde%2520Antares_9706_EXT_1.jpg&w=3840&q=75`;
+  const defaultImage = `https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=Property+Image`;
 
   const formatPrice = (price: number) => {
     if (price >= 10000000) {
@@ -305,14 +305,12 @@ function PropertyCard({
       >
         <div className="relative">
           <div className="relative h-[160px] overflow-hidden m-[4px] rounded-t-md">
-            <PropertyListImage
+            <Image
               src={property.images?.[0] || defaultImage}
               alt={property.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-              blurDataURL={BLUR_DATA_URLS.property}
-              fallbackSrc={defaultImage}
-              index={0}
+              layout="fill"
+              objectFit="cover"
+              className="group-hover:scale-105 transition-transform duration-500"
             />
           </div>
 

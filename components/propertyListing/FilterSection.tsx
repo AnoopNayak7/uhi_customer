@@ -41,14 +41,8 @@ export function FilterSection({
 
   return (
     <>
-      {/* Mobile filter drawer - only show on mobile */}
-      <div className="sm:hidden mb-4">
-        <MobileFilterDrawer
-          onSearch={onSearch}
-          handleFilterChange={handleFilterChange}
-        />
-      </div>
-
+      {/* Mobile filter drawer - removed to avoid duplication */}
+      
       {/* Tablet filter toggle */}
       <div className="hidden sm:block lg:hidden mb-4">
         <Button
