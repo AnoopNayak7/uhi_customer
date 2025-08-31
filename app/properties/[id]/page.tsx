@@ -169,24 +169,90 @@ const ImageGallery = ({
                   {propertyImages.length}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
-                <div className="space-y-3">
-                  <h2 className="text-lg font-semibold">{property.title}</h2>
-                  <div className="grid grid-cols-1 gap-3 max-h-[80vh] overflow-y-auto">
-                    {propertyImages.map((image: any, index: any) => (
-                      <div
-                        key={index}
-                        className="relative h-64 w-full rounded-lg overflow-hidden"
-                      >
-                        <ImageWithFallback
-                          src={image}
-                          alt={`${property.title} - Image ${index + 1}`}
-                          index={index}
-                          fill={true}
-                          className="hover:scale-105 transition-transform duration-300"
-                        />
+              <DialogContent className="max-w-[95vw] max-h-[95vh] p-0">
+                <div className="relative">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold">{property.title}</h2>
+                    <div className="text-sm text-gray-500">
+                      {propertyImages.length} photos
+                    </div>
+                  </div>
+
+                  {/* Carousel Container */}
+                  <div className="relative">
+                    {/* Main Image */}
+                    <div className="relative h-[50vh] w-full bg-black">
+                      <ImageWithFallback
+                        src={propertyImages[currentImageIndex]}
+                        alt={`${property.title} - Image ${
+                          currentImageIndex + 1
+                        }`}
+                        index={currentImageIndex}
+                        fill={true}
+                        className="object-contain"
+                        style={{ objectPosition: "center" }}
+                      />
+
+                      {/* Navigation Arrows */}
+                      {propertyImages.length > 1 && (
+                        <>
+                          <button
+                            onClick={() =>
+                              setCurrentImageIndex(
+                                currentImageIndex === 0
+                                  ? propertyImages.length - 1
+                                  : currentImageIndex - 1
+                              )
+                            }
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 hover:bg-white active:scale-95"
+                          >
+                            <ChevronRight className="w-5 h-5 rotate-180" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              setCurrentImageIndex(
+                                currentImageIndex === propertyImages.length - 1
+                                  ? 0
+                                  : currentImageIndex + 1
+                              )
+                            }
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 hover:bg-white active:scale-95"
+                          >
+                            <ChevronRight className="w-5 h-5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Thumbnail Navigation */}
+                    <div className="p-4 bg-transparent backdrop-blur-sm">
+                      <div className="flex justify-center">
+                        <div className="flex space-x-2 overflow-x-auto scrollbar-hide max-w-full justify-center">
+                          {propertyImages.map((image: any, index: any) => (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentImageIndex(index)}
+                              className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                                currentImageIndex === index
+                                  ? "border-red-500 scale-105"
+                                  : "border-white/30 hover:border-white/50"
+                              }`}
+                            >
+                              <ImageWithFallback
+                                src={image}
+                                alt={`${property.title} - Thumbnail ${
+                                  index + 1
+                                }`}
+                                index={index}
+                                fill={true}
+                                className="object-cover"
+                              />
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
               </DialogContent>
@@ -343,9 +409,10 @@ const ImageGallery = ({
                     </div>
                   </div>
                 </DialogTrigger>
-                <DialogContent className="max-w-6xl max-h-[90vh]">
-                  <div className="p-2">
-                    <div className="flex items-center justify-between mb-4">
+                <DialogContent className="max-w-6xl max-h-[90vh] p-0">
+                  <div className="relative">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-4 border-b border-gray-200">
                       <h2 className="text-lg font-semibold">
                         {property.title}
                       </h2>
@@ -353,21 +420,80 @@ const ImageGallery = ({
                         {propertyImages.length} photos
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
-                      {propertyImages.map((image: any, index: any) => (
-                        <div
-                          key={index}
-                          className="relative h-48 w-full rounded-lg overflow-hidden"
-                        >
-                          <ImageWithFallback
-                            src={image}
-                            alt={`${property.title} - Image ${index + 1}`}
-                            index={index}
-                            fill={true}
-                            className="hover:scale-105 transition-transform duration-300"
-                          />
+
+                    {/* Carousel Container */}
+                    <div className="relative">
+                      {/* Main Image */}
+                      <div className="relative h-[60vh] w-full bg-black">
+                        <ImageWithFallback
+                          src={propertyImages[currentImageIndex]}
+                          alt={`${property.title} - Image ${
+                            currentImageIndex + 1
+                          }`}
+                          index={currentImageIndex}
+                          fill={true}
+                          className="object-contain"
+                          style={{ objectPosition: "center" }}
+                        />
+
+                        {/* Navigation Arrows */}
+                        {propertyImages.length > 1 && (
+                          <>
+                            <button
+                              onClick={() =>
+                                setCurrentImageIndex(
+                                  currentImageIndex === 0
+                                    ? propertyImages.length - 1
+                                    : currentImageIndex - 1
+                                )
+                              }
+                              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 hover:bg-white active:scale-95"
+                            >
+                              <ChevronRight className="w-6 h-6 rotate-180" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                setCurrentImageIndex(
+                                  currentImageIndex ===
+                                    propertyImages.length - 1
+                                    ? 0
+                                    : currentImageIndex + 1
+                                )
+                              }
+                              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 hover:bg-white active:scale-95"
+                            >
+                              <ChevronRight className="w-6 h-6" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Thumbnail Navigation */}
+                      <div className="p-4 bg-transparent backdrop-blur-sm">
+                        <div className="flex space-x-2 overflow-x-auto scrollbar-hide justify-center">
+                          {propertyImages.map((image: any, index: any) => (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentImageIndex(index)}
+                              className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                                currentImageIndex === index
+                                  ? "border-red-500 scale-105"
+                                  : "border-white/30 hover:border-white/50"
+                              }`}
+                            >
+                              <ImageWithFallback
+                                src={image}
+                                alt={`${property.title} - Thumbnail ${
+                                  index + 1
+                                }`}
+                                index={index}
+                                fill={true}
+                                className="object-cover"
+                              />
+                            </button>
+                          ))}
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
                 </DialogContent>
@@ -388,26 +514,90 @@ const ImageGallery = ({
                   Show all
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-5xl max-h-[90vh]">
-                <div className="p-2">
-                  <h2 className="text-lg font-semibold mb-4">
-                    {property.title}
-                  </h2>
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 max-h-[75vh] overflow-y-auto">
-                    {propertyImages.map((image: any, index: any) => (
-                      <div
-                        key={index}
-                        className="relative h-48 lg:h-56 w-full rounded-lg overflow-hidden"
-                      >
-                        <ImageWithFallback
-                          src={image}
-                          alt={`${property.title} - Image ${index + 1}`}
-                          index={index}
-                          fill={true}
-                          className="hover:scale-105 transition-transform duration-300"
-                        />
+              <DialogContent className="max-w-5xl max-h-[90vh] p-0">
+                <div className="relative">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold">{property.title}</h2>
+                    <div className="text-sm text-gray-500">
+                      {propertyImages.length} photos
+                    </div>
+                  </div>
+
+                  {/* Carousel Container */}
+                  <div className="relative">
+                    {/* Main Image */}
+                    <div className="relative h-[55vh] w-full bg-black">
+                      <ImageWithFallback
+                        src={propertyImages[currentImageIndex]}
+                        alt={`${property.title} - Image ${
+                          currentImageIndex + 1
+                        }`}
+                        index={currentImageIndex}
+                        fill={true}
+                        className="object-contain"
+                        style={{ objectPosition: "center" }}
+                      />
+
+                      {/* Navigation Arrows */}
+                      {propertyImages.length > 1 && (
+                        <>
+                          <button
+                            onClick={() =>
+                              setCurrentImageIndex(
+                                currentImageIndex === 0
+                                  ? propertyImages.length - 1
+                                  : currentImageIndex - 1
+                              )
+                            }
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 hover:bg-white active:scale-95"
+                          >
+                            <ChevronRight className="w-6 h-6 rotate-180" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              setCurrentImageIndex(
+                                currentImageIndex === propertyImages.length - 1
+                                  ? 0
+                                  : currentImageIndex + 1
+                              )
+                            }
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 hover:bg-white active:scale-95"
+                          >
+                            <ChevronRight className="w-6 h-6" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Thumbnail Navigation */}
+                    <div className="p-4 bg-transparent backdrop-blur-sm">
+                      <div className="flex justify-center">
+                        <div className="flex space-x-2 overflow-x-auto scrollbar-hide max-w-full justify-center">
+                          {propertyImages.map((image: any, index: any) => (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentImageIndex(index)}
+                              className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                                currentImageIndex === index
+                                  ? "border-red-500 scale-105"
+                                  : "border-white/30 hover:border-white/50"
+                              }`}
+                            >
+                              <ImageWithFallback
+                                src={image}
+                                alt={`${property.title} - Thumbnail ${
+                                  index + 1
+                                }`}
+                                index={index}
+                                fill={true}
+                                className="object-cover"
+                              />
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
               </DialogContent>

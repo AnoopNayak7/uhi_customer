@@ -77,42 +77,45 @@ export default function AreaInsightsPage() {
   const fetchAreasForCity = async () => {
     try {
       const response: any = await apiClient.getToolsAreasForCity(selectedCity);
-      
+
       if (response.success) {
         setAreas(response.data.areas || []);
         setSelectedArea("");
         setAreaData(null);
       } else {
-        toast.error(response.message || 'Failed to fetch areas');
+        toast.error(response.message || "Failed to fetch areas");
         setAreas([]);
       }
     } catch (error) {
       console.error("Error fetching areas:", error);
-      toast.error('Failed to fetch areas for the selected city');
+      toast.error("Failed to fetch areas for the selected city");
       setAreas([]);
     }
   };
 
   const fetchAreaInsights = async () => {
     if (!selectedArea) {
-      toast.error('Please select an area first');
+      toast.error("Please select an area first");
       return;
     }
 
     setLoading(true);
     try {
-      const response: any = await apiClient.getToolsAreaInsights(selectedCity, selectedArea);
-      
+      const response: any = await apiClient.getToolsAreaInsights(
+        selectedCity,
+        selectedArea
+      );
+
       if (response.success) {
         setAreaData(response.data);
-        toast.success('Area insights loaded successfully!');
+        toast.success("Area insights loaded successfully!");
       } else {
-        toast.error(response.message || 'Failed to fetch area insights');
+        toast.error(response.message || "Failed to fetch area insights");
         setAreaData(null);
       }
     } catch (error) {
       console.error("Error fetching area insights:", error);
-      toast.error('Failed to fetch area insights. Please try again.');
+      toast.error("Failed to fetch area insights. Please try again.");
       setAreaData(null);
     } finally {
       setLoading(false);
@@ -248,7 +251,13 @@ export default function AreaInsightsPage() {
                         disabled={areas.length === 0}
                       >
                         <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-purple-300 focus:border-purple-500 transition-all duration-200 bg-white/80 disabled:opacity-50">
-                          <SelectValue placeholder={areas.length === 0 ? "Loading areas..." : "Select area"} />
+                          <SelectValue
+                            placeholder={
+                              areas.length === 0
+                                ? "Loading areas..."
+                                : "Select area"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent className="bg-white/95 backdrop-blur-sm">
                           {areas.map((area) => (
