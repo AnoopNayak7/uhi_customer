@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -127,115 +127,7 @@ export default function PriceTrendsPage() {
   const [trendData, setTrendData] = useState<PriceTrendData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Function to create fallback data
-  const createFallbackData = (): PriceTrendData => {
-    return {
-      cityName: selectedCity,
-      propertyType: selectedPropertyType,
-      timeRange: selectedTimeRange,
-      averagePricePerSqft: 8500,
-      priceGrowth: 12.5,
-      marketStatus: "Strong Growth",
-      bestAction: "Invest",
-      priceTrendGraph: [
-        { year: "2020", price: 6500, growth: 0, dataPoints: 45 },
-        { year: "2021", price: 7200, growth: 10.8, dataPoints: 52 },
-        { year: "2022", price: 7800, growth: 8.3, dataPoints: 58 },
-        { year: "2023", price: 8200, growth: 5.1, dataPoints: 61 },
-        { year: "2024", price: 8500, growth: 3.7, dataPoints: 65 },
-      ],
-      topPerformingAreas: [
-        {
-          rank: 1,
-          name: "Indiranagar",
-          zone: "East Bangalore",
-          currentPrice: 12000,
-          growthRate: 18.5,
-          coordinates: [12.978, 77.641],
-          highlights: [
-            "IT Hub Proximity",
-            "High Green Cover",
-            "Safe Neighborhood",
-          ],
-          trendIndicator: "rising",
-        },
-        {
-          rank: 2,
-          name: "Whitefield",
-          zone: "East Bangalore",
-          currentPrice: 11000,
-          growthRate: 15.2,
-          coordinates: [12.969, 77.749],
-          highlights: [
-            "Tech Corridor",
-            "Metro Connectivity",
-            "Shopping Centers",
-          ],
-          trendIndicator: "rising",
-        },
-        {
-          rank: 3,
-          name: "HSR Layout",
-          zone: "South Bangalore",
-          currentPrice: 10500,
-          growthRate: 14.8,
-          coordinates: [12.914, 77.644],
-          highlights: ["Residential Hub", "Good Schools", "Parks Nearby"],
-          trendIndicator: "rising",
-        },
-      ],
-      marketInsights: [
-        {
-          type: "price_range",
-          title: "Price Variation Analysis",
-          description:
-            "Property prices in Bangalore show a 45.2% variation across different areas, ranging from ₹6.5L to ₹12.0L per sq ft.",
-          impact: "high",
-        },
-        {
-          type: "growth_trend",
-          title: "Recent Market Movement",
-          description:
-            "The market has shown positive momentum with an average 8.3% price change in the recent period.",
-          impact: "medium",
-        },
-        {
-          type: "zone_performance",
-          title: "Zone Analysis",
-          description:
-            "East Bangalore emerges as the premium zone with average prices of ₹11.5L per sq ft, driven by excellent connectivity and infrastructure development.",
-          impact: "medium",
-        },
-      ],
-      totalLocations: 25,
-      dataQuality: "High",
-      lastUpdated: new Date().toISOString(),
-      areaPerformanceGraph: [
-        {
-          areaName: "Indiranagar",
-          currentPrice: 12000,
-          growthRate: 18.5,
-          volatility: 10,
-        },
-        {
-          areaName: "Whitefield",
-          currentPrice: 11000,
-          growthRate: 15.2,
-          volatility: 8,
-        },
-        {
-          areaName: "HSR Layout",
-          currentPrice: 10500,
-          growthRate: 14.8,
-          volatility: 12,
-        },
-      ],
-    };
-  };
-
   useEffect(() => {
-    // Show demo data immediately for better UX
-    setTrendData(createFallbackData());
     fetchPriceTrends();
   }, [selectedCity, selectedPropertyType, selectedTimeRange]);
 
@@ -299,6 +191,12 @@ export default function PriceTrendsPage() {
       setLoading(false);
     }
   };
+
+  // Load data only once when component mounts with default values
+  useEffect(() => {
+    fetchPriceTrends();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - runs only once on mount
 
   const selectedPropertyTypeData = propertyTypes.find(
     (type) => type.value === selectedPropertyType
