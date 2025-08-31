@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -120,10 +120,6 @@ export default function PriceTrendsPage() {
   const [trendData, setTrendData] = useState<PriceTrendData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchPriceTrends();
-  }, [selectedCity, selectedPropertyType, selectedTimeRange]);
-
   const fetchPriceTrends = async () => {
     setLoading(true);
     setError(null);
@@ -184,6 +180,12 @@ export default function PriceTrendsPage() {
       setLoading(false);
     }
   };
+
+  // Load data only once when component mounts with default values
+  useEffect(() => {
+    fetchPriceTrends();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - runs only once on mount
 
   const selectedPropertyTypeData = propertyTypes.find(
     (type) => type.value === selectedPropertyType
