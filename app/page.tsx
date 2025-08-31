@@ -47,9 +47,9 @@ export default function HomePage() {
           <SectionReveal>
             <PropertyListings />
           </SectionReveal>
-          <SectionReveal>
+          {/* <SectionReveal>
             <CTASection />
-          </SectionReveal>
+          </SectionReveal> */}
         </PageContent>
       </main>
 

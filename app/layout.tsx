@@ -39,6 +39,17 @@ export const metadata: Metadata = {
   authors: [{ name: "UrbanHouseIN Team" }],
   viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+  },
   openGraph: {
     title: "UrbanHouseIN - Find Your Dream Property",
     description:
@@ -63,6 +74,52 @@ export default function RootLayout({
   return (
     <html lang="en" className={manrope.variable}>
       <head>
+        {/* Favicon - Multiple formats for maximum compatibility */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+        <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+        
+        {/* Force favicon refresh and prevent caching */}
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <meta name="format-detection" content="telephone=no" />
+        
+        {/* Favicon debugging script */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            // Check if favicon is loaded
+            window.addEventListener('load', function() {
+              const favicon = document.querySelector('link[rel="icon"]');
+              if (favicon) {
+                console.log('Favicon found:', favicon.href);
+                // Test favicon loading
+                const img = new Image();
+                img.onload = function() {
+                  console.log('Favicon loaded successfully');
+                };
+                img.onerror = function() {
+                  console.log('Favicon failed to load');
+                };
+                img.src = favicon.href;
+              } else {
+                console.log('No favicon found');
+              }
+            });
+          `
+        }} />
+        
+        {/* Additional favicon meta tags for better compatibility */}
+        <meta name="msapplication-TileColor" content="#dc2626" />
+        <meta name="msapplication-TileImage" content="/favicon-32x32.png" />
+        <meta name="theme-color" content="#dc2626" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+        
         {/* Preload critical font weights */}
         <link
           rel="preload"

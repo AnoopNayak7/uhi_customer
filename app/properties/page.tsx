@@ -558,11 +558,11 @@ export default function PropertiesPage() {
             >
               <div className="flex flex-col h-full bg-gradient-to-b from-gray-50 to-white">
                 {/* Enhanced Header with smooth animations */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white shadow-sm">
+                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white shadow-sm">
                   <div className="space-y-1">
                     <h2 className="text-xl font-bold text-gray-900">Search Filters</h2>
                     <p className="text-sm text-gray-500">
-                      {Object.values(searchFilters).filter((value) => value && value !== "" && value !== 0).length} filters applied
+                      {Object.values(searchFilters).filter((value) => value && value !== "" && value !== 0).length + selectedLocalities.length} filters applied
                     </p>
                   </div>
                   <Button
@@ -575,13 +575,91 @@ export default function PropertiesPage() {
                   </Button>
                 </div>
 
-                                {/* Enhanced Filter Content with smooth scrolling */}
+                {/* Enhanced Filter Content with smooth scrolling */}
                 <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white">
-                  <div className="px-4 space-y-3 py-4">
+                  <div className="px-6 space-y-6 py-6">
+                    {/* Select Localities with enhanced styling */}
+                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                      <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center">
+                        <MapPin className="w-5 h-5 text-red-500 mr-2" />
+                        Select Localities
+                      </h3>
+
+                      {/* Enhanced Locality Search */}
+                      {showLocalitySearch && (
+                        <div className="mb-4">
+                          <div className="relative">
+                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Input
+                              placeholder="Search localities..."
+                              value={localitySearchQuery}
+                              onChange={(e) => setLocalitySearchQuery(e.target.value)}
+                              onKeyDown={handleLocalitySearch}
+                              className="pl-12 pr-12 h-12 border-2 border-gray-200 focus:border-red-300 focus:ring-red-200 rounded-xl transition-all duration-300"
+                            />
+                            {isSearchingLocalities && (
+                              <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-red-500" />
+                            )}
+                          </div>
+
+                          {/* Enhanced Suggestions */}
+                          {localitySuggestions.length > 0 && (
+                            <div className="mt-3 bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                              {localitySuggestions.map((suggestion, index) => (
+                                <div
+                                  key={suggestion.place_id}
+                                  className="px-4 py-3 hover:bg-red-50 cursor-pointer text-sm border-b border-gray-100 last:border-b-0 transition-all duration-200 group"
+
+                                  onClick={() => handleLocalitySelect(suggestion)}
+                                >
+                                  <div className="flex items-center">
+                                    <MapPin className="w-4 h-4 text-red-400 mr-3 group-hover:text-red-500 transition-colors duration-200" />
+                                    <span className="text-gray-700 group-hover:text-gray-900 transition-colors duration-200">{suggestion.display_name}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Enhanced Selected Localities */}
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {selectedLocalities.map((locality, index) => (
+                          <Badge
+                            key={locality}
+                            variant="secondary"
+                            className="bg-green-100 text-green-800 border-green-200 px-3 py-1 text-sm font-medium"
+                          >
+                            {locality}
+                            <button
+                              onClick={() => removeLocality(locality)}
+                              className="ml-2 hover:bg-green-200 rounded-full p-1 transition-all duration-200 hover:scale-110"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+
+                      {/* Enhanced Add Locality Button */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowLocalitySearch(!showLocalitySearch)}
+                        className={`text-sm h-10 px-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 ${
+                          showLocalitySearch 
+                            ? 'border-red-200 text-red-600 hover:bg-red-50 bg-red-50' 
+                            : 'border-gray-200 text-gray-600 hover:border-red-200 hover:text-red-600 hover:bg-red-50'
+                        }`}
+                      >
+                        {showLocalitySearch ? "Cancel" : "+ Add Locality"}
+                      </Button>
+                    </div>
 
                     {/* Enhanced Property Type */}
-                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
-                      <h3 className="text-base font-semibold text-gray-900 mb-3">Property Type</h3>
+                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                      <h3 className="text-base font-semibold text-gray-900 mb-4">Property Type</h3>
                       <div className="grid grid-cols-2 gap-3">
                         {["flat", "house", "villa", "plot"].map((type, index) => (
                           <div 
@@ -608,11 +686,46 @@ export default function PropertiesPage() {
                       </div>
                     </div>
 
-                    
+                    {/* Enhanced Property Category */}
+                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                      <h3 className="text-base font-semibold text-gray-900 mb-4">Property Category</h3>
+                      <div className="grid grid-cols-3 gap-4">
+                        {PROPERTY_CATEGORIES.slice(0, 3).map((category, index) => (
+                          <div
+                            key={category.value}
+                            className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 hover:scale-105 ${
+                              searchFilters.propertyCategory === category.value
+                                ? "border-red-500 bg-red-50 shadow-lg"
+                                : "border-gray-200 hover:border-red-200 hover:bg-red-50/30"
+                            }`}
+
+                            onClick={() =>
+                              handleFilterChange("propertyCategory", 
+                                searchFilters.propertyCategory === category.value ? "" : category.value
+                              )
+                            }
+                          >
+                            {searchFilters.propertyCategory === category.value && (
+                              <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in duration-300">
+                                <div className="w-3 h-3 bg-white rounded-full"></div>
+                              </div>
+                            )}
+                            <div className="text-center">
+                              <div className="w-10 h-10 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                                <MapPin className="w-5 h-5 text-gray-600" />
+                              </div>
+                              <span className="text-sm font-medium text-gray-700">
+                                {category.label}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
                     {/* Enhanced Budget */}
-                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
-                      <h3 className="text-base font-semibold text-gray-900 mb-3">Budget Range</h3>
+                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                      <h3 className="text-base font-semibold text-gray-900 mb-4">Budget Range</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <Select
                           value={searchFilters.minPrice?.toString() || "0"}
@@ -653,8 +766,8 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Enhanced Covered Area */}
-                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
-                      <h3 className="text-base font-semibold text-gray-900 mb-3">Covered Area (sqft)</h3>
+                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                      <h3 className="text-base font-semibold text-gray-900 mb-4">Covered Area (sqft)</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <Select
                           value={searchFilters.minArea?.toString() || "0"}
@@ -692,8 +805,8 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Enhanced Bedrooms */}
-                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
-                      <h3 className="text-base font-semibold text-gray-900 mb-3">Bedrooms</h3>
+                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                      <h3 className="text-base font-semibold text-gray-900 mb-4">Bedrooms</h3>
                       <div className="grid grid-cols-2 gap-3">
                         {BHK_OPTIONS.slice(0, 6).map((bhk, index) => (
                           <div 
@@ -725,8 +838,8 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Enhanced Furnishing Status */}
-                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
-                      <h3 className="text-base font-semibold text-gray-900 mb-3">Furnishing Status</h3>
+                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                      <h3 className="text-base font-semibold text-gray-900 mb-4">Furnishing Status</h3>
                       <div className="space-y-3">
                         {FURNISHING_STATUS.map((status, index) => (
                           <div 
@@ -758,8 +871,8 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Enhanced Possession Status */}
-                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
-                      <h3 className="text-base font-semibold text-gray-900 mb-3">Possession Status</h3>
+                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                      <h3 className="text-base font-semibold text-gray-900 mb-4">Possession Status</h3>
                       <div className="space-y-3">
                         {POSSESSION_STATUS.map((status, index) => (
                           <div 
@@ -793,9 +906,14 @@ export default function PropertiesPage() {
                 </div>
 
                 {/* Enhanced Action Button */}
-                <div className="p-4 border-t border-gray-100 bg-white shadow-lg">
+                <div className="p-6 border-t border-gray-100 bg-white shadow-lg">
                   <Button
                     onClick={() => {
+                      // Update search filters with selected localities
+                      if (selectedLocalities.length > 0) {
+                        const area = selectedLocalities.join(",");
+                        updateSearchFilters({ area });
+                      }
                       handleSearch();
                       setMobileFilterOpen(false);
                     }}
