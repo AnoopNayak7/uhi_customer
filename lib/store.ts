@@ -78,6 +78,8 @@ interface SearchState {
     propertyCategory: string;
     furnishingStatus: string;
     possessionStatus: string;
+    minArea: number;
+    maxArea: number;
   };
   updateSearchFilters: (filters: Partial<SearchState['searchFilters']>) => void;
   clearFilters: () => void;
@@ -245,7 +247,9 @@ export const useSearchStore = create<SearchState>((set) => ({
     bedrooms: '',
     propertyCategory: '',
     furnishingStatus: '',
-    possessionStatus: ''
+    possessionStatus: '',
+    minArea: 0,
+    maxArea: 0
   },
   updateSearchFilters: (filters) => set((state) => ({
     searchFilters: { ...state.searchFilters, ...filters }
@@ -260,7 +264,9 @@ export const useSearchStore = create<SearchState>((set) => ({
       bedrooms: '',
       propertyCategory: '',
       furnishingStatus: '',
-      possessionStatus: ''
+      possessionStatus: '',
+      minArea: 0,
+      maxArea: 0
     }
   })
 }));

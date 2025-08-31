@@ -137,8 +137,8 @@ export function Header() {
                       variant="ghost"
                       className="relative h-12 w-12 rounded-full hover:bg-gray-100 transition-all duration-300 p-0"
                     >
-                      <Avatar className="h-12 w-12 border-2 border-gray-100 hover:border-gray-200 transition-all duration-300">
-                        <AvatarFallback className="bg-gray-900 text-white font-semibold text-lg hover:bg-gray-800 transition-all duration-300">
+                      <Avatar className="h-10 w-10 border-2 border-gray-100 hover:border-gray-200 transition-all duration-300">
+                        <AvatarFallback className="bg-gray-900 text-white font-semibold text-sm hover:bg-gray-800 transition-all duration-300">
                           {user.firstName?.[0]}
                           {user.lastName?.[0]}
                         </AvatarFallback>

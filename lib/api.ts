@@ -9,7 +9,8 @@ const BYPASS_AUTH_ENDPOINTS = [
   '/properties',
   '/properties/',
   '/area-insights',
-  '/tools'
+  '/tools',
+  '/business-partnerships'
 ];
 
 class ApiClient {
@@ -418,6 +419,31 @@ class ApiClient {
 
   async getViewedProperties(userId: string, limit: number = 20) {
     return this.request(`/auth/viewed-properties/${userId}?limit=${limit}`);
+  }
+
+  // Business Partnership methods
+  async createBusinessPartnership(data: {
+    name: string;
+    email: string;
+    phone: string;
+    company: string;
+    city?: string;
+    propertyTypes?: string;
+    experience?: string;
+    message?: string;
+    website?: string;
+    employeeCount?: string;
+    annualRevenue?: string;
+    targetMarkets?: string;
+  }) {
+    return this.request('/business-partnerships/partnerships', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async checkPartnershipStatus(email: string) {
+    return this.request(`/business-partnerships/partnerships/check-status?email=${encodeURIComponent(email)}`);
   }
 
 }
