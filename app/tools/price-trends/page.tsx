@@ -65,9 +65,9 @@ const propertyTypes = [
   { value: "flats", label: "Apartment/Flat", icon: Building },
   { value: "houses", label: "Independent House", icon: Home },
   { value: "villas", label: "Villa", icon: Home },
-  { value: "plots", label: "Plot/Land", icon: TreePine },
-  { value: "offices", label: "Office Space", icon: Briefcase },
-  { value: "shops", label: "Shop/Retail", icon: Store },
+  // { value: "plots", label: "Plot/Land", icon: TreePine },
+  // { value: "offices", label: "Office Space", icon: Briefcase },
+  // { value: "shops", label: "Shop/Retail", icon: Store },
 ];
 
 const timeRanges = [
@@ -130,26 +130,56 @@ export default function PriceTrendsPage() {
     try {
       // Map frontend property types to backend property types
       const propertyTypeMap: { [key: string]: string } = {
-        'flats': 'apartments',
-        'houses': 'independent_houses',
-        'villas': 'villas',
-        'plots': 'all',
-        'offices': 'all',
-        'shops': 'all'
+        flats: "apartments",
+        houses: "independent_houses",
+        villas: "villas",
+        plots: "all",
+        offices: "all",
+        shops: "all",
       };
-      
-      const backendPropertyType = propertyTypeMap[selectedPropertyType] || 'all';
-      
-      const response: any = await apiClient.getToolsPriceTrends(selectedCity, backendPropertyType, selectedTimeRange);
-      
+
+      const backendPropertyType =
+        propertyTypeMap[selectedPropertyType] || "all";
+
+      console.log("Fetching price trends with:", {
+        city: selectedCity,
+        propertyType: backendPropertyType,
+        timeRange: selectedTimeRange,
+      });
+
+      const response: any = await apiClient.getToolsPriceTrends(
+        selectedCity,
+        backendPropertyType,
+        selectedTimeRange
+      );
+
+      console.log("API Response:", response);
+
       if (response.success) {
+        console.log("Trend data received:", response.data);
+        console.log("Price trend graph:", response.data.priceTrendGraph);
+
+        // Always set the trend data if API succeeds, even if chart data is empty
         setTrendData(response.data);
+
+        // Show warning if no chart data, but don't prevent other sections from showing
+        if (
+          !response.data.priceTrendGraph ||
+          response.data.priceTrendGraph.length === 0
+        ) {
+          console.warn(
+            "API returned empty priceTrendGraph, chart will show no data message"
+          );
+        }
       } else {
-        setError(response.message || 'Failed to fetch price trends');
+        console.error("API Error:", response.message);
+        setError(
+          response.message || "Failed to fetch price trends. Please try again."
+        );
       }
     } catch (error) {
       console.error("Error fetching price trends:", error);
-      setError('Failed to fetch price trends. Please try again.');
+      setError("Failed to fetch price trends. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -424,10 +454,16 @@ export default function PriceTrendsPage() {
                   <CardContent className="p-6 text-center">
                     <div className="flex items-center justify-center space-x-2 mb-4">
                       <TrendingDown className="w-6 h-6 text-red-500" />
-                      <h3 className="text-lg font-semibold text-red-800">Error Loading Data</h3>
+                      <h3 className="text-lg font-semibold text-red-800">
+                        Error Loading Data
+                      </h3>
                     </div>
                     <p className="text-red-700 mb-4">{error}</p>
-                    <Button onClick={fetchPriceTrends} variant="outline" className="border-red-300 text-red-700 hover:bg-red-100">
+                    <Button
+                      onClick={fetchPriceTrends}
+                      variant="outline"
+                      className="border-red-300 text-red-700 hover:bg-red-100"
+                    >
                       Try Again
                     </Button>
                   </CardContent>
@@ -476,7 +512,8 @@ export default function PriceTrendsPage() {
                                   stiffness: 200,
                                 }}
                               >
-                                ₹{trendData.averagePricePerSqft.toLocaleString()}
+                                ₹
+                                {trendData.averagePricePerSqft.toLocaleString()}
                               </motion.p>
                             </div>
                             <motion.div
@@ -657,164 +694,177 @@ export default function PriceTrendsPage() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 1.2, duration: 0.5 }}
-                          className="relative"
-                        >
-                          {/* Chart background with subtle gradient */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-indigo-50/30 rounded-lg -m-2"></div>
+                        {trendData.priceTrendGraph &&
+                        trendData.priceTrendGraph.length > 0 ? (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 1.2, duration: 0.5 }}
+                            className="relative"
+                          >
+                            {/* Chart background with subtle gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-indigo-50/30 rounded-lg -m-2"></div>
 
-                          <ResponsiveContainer width="100%" height={400}>
-                            <LineChart
-                              data={trendData.priceTrendGraph}
-                              margin={{
-                                top: 20,
-                                right: 30,
-                                left: 20,
-                                bottom: 20,
-                              }}
-                            >
-                              {/* Modern grid with subtle styling */}
-                              <CartesianGrid
-                                strokeDasharray="2 4"
-                                stroke="#e2e8f0"
-                                strokeOpacity={0.6}
-                                horizontal={true}
-                                vertical={false}
-                              />
-
-                              {/* Enhanced X-axis */}
-                              <XAxis
-                                dataKey="year"
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{
-                                  fontSize: 12,
-                                  fill: "#64748b",
-                                  fontWeight: 500,
+                            <ResponsiveContainer width="100%" height={400}>
+                              <LineChart
+                                data={trendData.priceTrendGraph}
+                                margin={{
+                                  top: 20,
+                                  right: 30,
+                                  left: 20,
+                                  bottom: 20,
                                 }}
-                                dy={10}
-                              />
+                              >
+                                {/* Modern grid with subtle styling */}
+                                <CartesianGrid
+                                  strokeDasharray="2 4"
+                                  stroke="#e2e8f0"
+                                  strokeOpacity={0.6}
+                                  horizontal={true}
+                                  vertical={false}
+                                />
 
-                              {/* Enhanced Y-axis */}
-                              <YAxis
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{
-                                  fontSize: 12,
-                                  fill: "#64748b",
-                                  fontWeight: 500,
-                                }}
-                                tickFormatter={(value) =>
-                                  `₹${(value / 1000).toFixed(0)}K`
-                                }
-                                dx={-10}
-                              />
+                                {/* Enhanced X-axis */}
+                                <XAxis
+                                  dataKey="year"
+                                  axisLine={false}
+                                  tickLine={false}
+                                  tick={{
+                                    fontSize: 12,
+                                    fill: "#64748b",
+                                    fontWeight: 500,
+                                  }}
+                                  dy={10}
+                                />
 
-                              {/* Gradient definitions */}
-                              <defs>
-                                <linearGradient
-                                  id="priceGradient"
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="0%"
-                                    stopColor="#3b82f6"
-                                    stopOpacity={0.3}
-                                  />
-                                  <stop
-                                    offset="50%"
-                                    stopColor="#3b82f6"
-                                    stopOpacity={0.1}
-                                  />
-                                  <stop
-                                    offset="100%"
-                                    stopColor="#3b82f6"
-                                    stopOpacity={0.05}
-                                  />
-                                </linearGradient>
-                                <linearGradient
-                                  id="lineGradient"
-                                  x1="0"
-                                  y1="0"
-                                  x2="1"
-                                  y2="0"
-                                >
-                                  <stop offset="0%" stopColor="#3b82f6" />
-                                  <stop offset="50%" stopColor="#1d4ed8" />
-                                  <stop offset="100%" stopColor="#1e40af" />
-                                </linearGradient>
-                                <filter id="glow">
-                                  <feGaussianBlur
-                                    stdDeviation="3"
-                                    result="coloredBlur"
-                                  />
-                                  <feMerge>
-                                    <feMergeNode in="coloredBlur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                  </feMerge>
-                                </filter>
-                              </defs>
+                                {/* Enhanced Y-axis */}
+                                <YAxis
+                                  axisLine={false}
+                                  tickLine={false}
+                                  tick={{
+                                    fontSize: 12,
+                                    fill: "#64748b",
+                                    fontWeight: 500,
+                                  }}
+                                  tickFormatter={(value) =>
+                                    `₹${(value / 1000).toFixed(0)}K`
+                                  }
+                                  dx={-10}
+                                />
 
-                              {/* Area fill for gradient effect */}
-                              <Area
-                                type="monotone"
-                                dataKey="price"
-                                stroke="none"
-                                fill="url(#priceGradient)"
-                                fillOpacity={1}
-                              />
+                                {/* Gradient definitions */}
+                                <defs>
+                                  <linearGradient
+                                    id="priceGradient"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                  >
+                                    <stop
+                                      offset="0%"
+                                      stopColor="#3b82f6"
+                                      stopOpacity={0.3}
+                                    />
+                                    <stop
+                                      offset="50%"
+                                      stopColor="#3b82f6"
+                                      stopOpacity={0.1}
+                                    />
+                                    <stop
+                                      offset="100%"
+                                      stopColor="#3b82f6"
+                                      stopOpacity={0.05}
+                                    />
+                                  </linearGradient>
+                                  <linearGradient
+                                    id="lineGradient"
+                                    x1="0"
+                                    y1="0"
+                                    x2="1"
+                                    y2="0"
+                                  >
+                                    <stop offset="0%" stopColor="#3b82f6" />
+                                    <stop offset="50%" stopColor="#1d4ed8" />
+                                    <stop offset="100%" stopColor="#1e40af" />
+                                  </linearGradient>
+                                  <filter id="glow">
+                                    <feGaussianBlur
+                                      stdDeviation="3"
+                                      result="coloredBlur"
+                                    />
+                                    <feMerge>
+                                      <feMergeNode in="coloredBlur" />
+                                      <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                  </filter>
+                                </defs>
 
-                              {/* Custom tooltip */}
-                              <Tooltip content={<CustomTooltip />} />
+                                {/* Area fill for gradient effect */}
+                                <Area
+                                  type="monotone"
+                                  dataKey="price"
+                                  stroke="none"
+                                  fill="url(#priceGradient)"
+                                  fillOpacity={1}
+                                />
 
-                              {/* Main price line with gradient and glow */}
-                              <Line
-                                type="monotone"
-                                dataKey="price"
-                                stroke="url(#lineGradient)"
-                                strokeWidth={4}
-                                dot={{
-                                  fill: "#ffffff",
-                                  stroke: "#3b82f6",
-                                  strokeWidth: 3,
-                                  r: 6,
-                                  filter: "url(#glow)",
-                                }}
-                                activeDot={{
-                                  r: 8,
-                                  fill: "#3b82f6",
-                                  stroke: "#ffffff",
-                                  strokeWidth: 3,
-                                  filter: "url(#glow)",
-                                }}
-                                animationDuration={2000}
-                                animationEasing="ease-out"
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
+                                {/* Custom tooltip */}
+                                <Tooltip content={<CustomTooltip />} />
 
-                          {/* Chart legend */}
-                          <div className="flex items-center justify-center space-x-6 mt-4 text-sm">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-4 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
-                              <span className="text-gray-600 font-medium">
-                                Price per sqft
-                              </span>
+                                {/* Main price line with gradient and glow */}
+                                <Line
+                                  type="monotone"
+                                  dataKey="price"
+                                  stroke="url(#lineGradient)"
+                                  strokeWidth={4}
+                                  dot={{
+                                    fill: "#ffffff",
+                                    stroke: "#3b82f6",
+                                    strokeWidth: 3,
+                                    r: 6,
+                                    filter: "url(#glow)",
+                                  }}
+                                  activeDot={{
+                                    r: 8,
+                                    fill: "#3b82f6",
+                                    stroke: "#ffffff",
+                                    strokeWidth: 3,
+                                    filter: "url(#glow)",
+                                  }}
+                                  animationDuration={2000}
+                                  animationEasing="ease-out"
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+
+                            {/* Chart legend */}
+                            <div className="flex items-center justify-center space-x-6 mt-4 text-sm">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
+                                <span className="text-gray-600 font-medium">
+                                  Price per sqft
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <span className="text-gray-600 font-medium">
+                                  Annual Growth
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              <span className="text-gray-600 font-medium">
-                                Annual Growth
-                              </span>
-                            </div>
+                          </motion.div>
+                        ) : (
+                          <div className="text-center py-16 text-gray-500">
+                            <TrendingUp className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                            <p className="text-lg font-medium">
+                              No chart data available
+                            </p>
+                            <p className="text-sm">
+                              Please try different filters or check back later
+                            </p>
                           </div>
-                        </motion.div>
+                        )}
                       </CardContent>
                     </Card>
                   </MotionWrapper>
@@ -833,7 +883,8 @@ export default function PriceTrendsPage() {
                                 Top Performing Areas
                               </CardTitle>
                               <p className="text-sm text-gray-500 mt-1">
-                                Best performing localities in {trendData.cityName}
+                                Best performing localities in{" "}
+                                {trendData.cityName}
                               </p>
                             </div>
                           </div>
@@ -1061,18 +1112,21 @@ export default function PriceTrendsPage() {
                                     stiffness: 200,
                                   }}
                                 >
-                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg ${
-                                    insight.impact === 'high' 
-                                      ? 'bg-gradient-to-br from-red-500 to-red-600' 
-                                      : insight.impact === 'medium'
-                                      ? 'bg-gradient-to-br from-yellow-500 to-orange-600'
-                                      : 'bg-gradient-to-br from-green-500 to-green-600'
-                                  }`}>
+                                  <div
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg ${
+                                      insight.impact === "high"
+                                        ? "bg-gradient-to-br from-red-500 to-red-600"
+                                        : insight.impact === "medium"
+                                        ? "bg-gradient-to-br from-yellow-500 to-orange-600"
+                                        : "bg-gradient-to-br from-green-500 to-green-600"
+                                    }`}
+                                  >
                                     <span className="text-white font-bold text-sm">
                                       {index + 1}
                                     </span>
                                   </div>
-                                  {index < trendData.marketInsights.length - 1 && (
+                                  {index <
+                                    trendData.marketInsights.length - 1 && (
                                     <div className="absolute top-8 left-1/2 transform -translate-x-1/2 w-0.5 h-6 bg-gradient-to-b from-blue-200 to-transparent"></div>
                                   )}
                                 </motion.div>
@@ -1084,20 +1138,24 @@ export default function PriceTrendsPage() {
                                     {insight.description}
                                   </p>
                                   <div className="mt-2 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <div className={`w-2 h-2 rounded-full ${
-                                      insight.impact === 'high' 
-                                        ? 'bg-red-400' 
-                                        : insight.impact === 'medium'
-                                        ? 'bg-yellow-400'
-                                        : 'bg-green-400'
-                                    }`}></div>
-                                    <span className={`text-xs font-medium capitalize ${
-                                      insight.impact === 'high' 
-                                        ? 'text-red-600' 
-                                        : insight.impact === 'medium'
-                                        ? 'text-yellow-600'
-                                        : 'text-green-600'
-                                    }`}>
+                                    <div
+                                      className={`w-2 h-2 rounded-full ${
+                                        insight.impact === "high"
+                                          ? "bg-red-400"
+                                          : insight.impact === "medium"
+                                          ? "bg-yellow-400"
+                                          : "bg-green-400"
+                                      }`}
+                                    ></div>
+                                    <span
+                                      className={`text-xs font-medium capitalize ${
+                                        insight.impact === "high"
+                                          ? "text-red-600"
+                                          : insight.impact === "medium"
+                                          ? "text-yellow-600"
+                                          : "text-green-600"
+                                      }`}
+                                    >
                                       {insight.impact} Impact
                                     </span>
                                   </div>
@@ -1117,7 +1175,10 @@ export default function PriceTrendsPage() {
                               </span>
                             </div>
                             <div className="text-xs text-gray-500">
-                              Last Updated: {new Date(trendData.lastUpdated).toLocaleDateString()}
+                              Last Updated:{" "}
+                              {new Date(
+                                trendData.lastUpdated
+                              ).toLocaleDateString()}
                             </div>
                           </div>
                         </div>
