@@ -21,6 +21,7 @@ import {
   Clock,
 } from "lucide-react";
 import Link from "next/link";
+import { PropertyCard } from "@/components/propertyListing/PropertyCard";
 
 import {
   LineChart,
@@ -38,7 +39,7 @@ import {
   Cell,
 } from "recharts";
 import Image from "next/image";
-
+import { toast } from "sonner";
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -46,7 +47,9 @@ export default function DashboardPage() {
   const [analytics, setAnalytics] = useState<any>(null);
   const [properties, setProperties] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
-  const [recentlyViewedProperties, setRecentlyViewedProperties] = useState<any[]>([]);
+  const [recentlyViewedProperties, setRecentlyViewedProperties] = useState<
+    any[]
+  >([]);
   const [bookVisits, setBookVisits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -65,18 +68,23 @@ export default function DashboardPage() {
         setProperties(propertiesRes.data || []);
         setLeads(leadsRes.data || []);
       } else {
-        const [propertiesRes, recentlyViewedRes, bookVisitsRes]: any = await Promise.all([
-          apiClient.getProperties({ limit: 5 }),
-          user ? apiClient.getRecentlyViewedProperties(user.id, 5) : Promise.resolve({ data: [] }),
-          user ? apiClient.getUserBookVisits(5) : Promise.resolve({ data: [] }),
-        ]);
-        
-        console.log('Dashboard API responses:', {
+        const [propertiesRes, recentlyViewedRes, bookVisitsRes]: any =
+          await Promise.all([
+            apiClient.getProperties({ limit: 5 }),
+            user
+              ? apiClient.getRecentlyViewedProperties(user.id, 5)
+              : Promise.resolve({ data: [] }),
+            user
+              ? apiClient.getUserBookVisits(5)
+              : Promise.resolve({ data: [] }),
+          ]);
+
+        console.log("Dashboard API responses:", {
           properties: propertiesRes,
           recentlyViewed: recentlyViewedRes,
-          bookVisits: bookVisitsRes
+          bookVisits: bookVisitsRes,
         });
-        
+
         setProperties(propertiesRes.data || []);
         setRecentlyViewedProperties(recentlyViewedRes.data || []);
         setBookVisits(bookVisitsRes.data || []);
@@ -346,7 +354,39 @@ function BuilderDashboard({ analytics, properties, leads, loading }: any) {
   );
 }
 
-function UserDashboard({ properties, loading, recentlyViewedProperties, favourites, viewedProperties, bookVisits }: any) {
+function UserDashboard({
+  properties,
+  loading,
+  recentlyViewedProperties,
+  favourites,
+  viewedProperties,
+  bookVisits,
+}: any) {
+  const { addToFavourites, removeFromFavourites } = usePropertyStore();
+  const { user } = useAuthStore();
+
+  const handleFavorite = async (property: any) => {
+    if (!user) {
+      toast.error("Please login to add favourites");
+      return;
+    }
+
+    try {
+      const isFavorite = favourites.some((p: any) => p.id === property.id);
+      if (isFavorite) {
+        await apiClient.removeFromFavourites(property.id);
+        removeFromFavourites(property.id);
+        toast.success("Property removed from favourites");
+      } else {
+        await apiClient.addToFavourites(property.id);
+        addToFavourites(property);
+        toast.success("Property added to favourites");
+      }
+    } catch (error) {
+      console.error("Error updating favourite:", error);
+      toast.error("Failed to update favourite");
+    }
+  };
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -362,9 +402,24 @@ function UserDashboard({ properties, loading, recentlyViewedProperties, favourit
 
   // User activity data
   const userStats = [
-    { title: "Favourites", value: favourites?.length || 0, icon: Heart, color: "text-red-600" },
-    { title: "Recently Viewed", value: recentlyViewedProperties?.length || 0, icon: Clock, color: "text-blue-600" },
-    { title: "Booked Visits", value: bookVisits?.length || 0, icon: Eye, color: "text-green-600" },
+    {
+      title: "Favourites",
+      value: favourites?.length || 0,
+      icon: Heart,
+      color: "text-red-600",
+    },
+    {
+      title: "Recently Viewed",
+      value: recentlyViewedProperties?.length || 0,
+      icon: Clock,
+      color: "text-blue-600",
+    },
+    {
+      title: "Booked Visits",
+      value: bookVisits?.length || 0,
+      icon: Eye,
+      color: "text-green-600",
+    },
   ];
 
   return (
@@ -443,47 +498,16 @@ function UserDashboard({ properties, loading, recentlyViewedProperties, favourit
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recentlyViewedProperties && recentlyViewedProperties.length > 0 ? (
               recentlyViewedProperties.map((property: any) => (
-                <div
+                <PropertyCard
                   key={property.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-                >
-                  <div className="h-32 bg-gray-200 relative">
-                    {property.images && property.images[0] ? (
-                      <Image
-                        src={property.images[0]}
-                        alt={property.title}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                        <Building className="w-8 h-8 text-gray-400" />
-                      </div>
-                    )}
-                    <div className="absolute top-2 left-2 bg-white px-2 py-1 rounded text-xs font-medium">
-                      {property.propertyType || 'Property'}
-                    </div>
-                  </div>
-                  <div className="p-3">
-                    <h3 className="font-medium text-gray-900 text-sm mb-1 line-clamp-1">
-                      {property.title}
-                    </h3>
-                    <p className="text-xs text-gray-500 mb-2">
-                      {property.city}, {property.state}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-blue-600 text-sm">
-                        ₹{(property.price / 100000).toFixed(1)}L
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {property.bedrooms}BHK • {property.area} sq ft
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                  property={property}
+                  onFavorite={() => handleFavorite(property)}
+                  isFavorite={favourites.some((p: any) => p.id === property.id)}
+                  compact={true}
+                />
               ))
             ) : (
               <div className="col-span-3 text-center py-8 text-gray-500">
