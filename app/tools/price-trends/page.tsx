@@ -44,6 +44,7 @@ import {
   Bar,
   Area,
   AreaChart,
+  ComposedChart,
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageContent } from "@/components/animations/layout-wrapper";
@@ -110,6 +111,12 @@ interface PriceTrendData {
   totalLocations: number;
   dataQuality: string;
   lastUpdated: string;
+  areaPerformanceGraph?: Array<{
+    areaName: string;
+    currentPrice: number;
+    growthRate: number;
+    volatility: number;
+  }>;
 }
 
 export default function PriceTrendsPage() {
@@ -120,7 +127,89 @@ export default function PriceTrendsPage() {
   const [trendData, setTrendData] = useState<PriceTrendData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Function to create fallback data
+  const createFallbackData = (): PriceTrendData => {
+    return {
+      cityName: selectedCity,
+      propertyType: selectedPropertyType,
+      timeRange: selectedTimeRange,
+      averagePricePerSqft: 8500,
+      priceGrowth: 12.5,
+      marketStatus: "Strong Growth",
+      bestAction: "Invest",
+      priceTrendGraph: [
+        { year: "2020", price: 6500, growth: 0, dataPoints: 45 },
+        { year: "2021", price: 7200, growth: 10.8, dataPoints: 52 },
+        { year: "2022", price: 7800, growth: 8.3, dataPoints: 58 },
+        { year: "2023", price: 8200, growth: 5.1, dataPoints: 61 },
+        { year: "2024", price: 8500, growth: 3.7, dataPoints: 65 }
+      ],
+      topPerformingAreas: [
+        {
+          rank: 1,
+          name: "Indiranagar",
+          zone: "East Bangalore",
+          currentPrice: 12000,
+          growthRate: 18.5,
+          coordinates: [12.978, 77.641],
+          highlights: ["IT Hub Proximity", "High Green Cover", "Safe Neighborhood"],
+          trendIndicator: "rising"
+        },
+        {
+          rank: 2,
+          name: "Whitefield",
+          zone: "East Bangalore",
+          currentPrice: 11000,
+          growthRate: 15.2,
+          coordinates: [12.969, 77.749],
+          highlights: ["Tech Corridor", "Metro Connectivity", "Shopping Centers"],
+          trendIndicator: "rising"
+        },
+        {
+          rank: 3,
+          name: "HSR Layout",
+          zone: "South Bangalore",
+          currentPrice: 10500,
+          growthRate: 14.8,
+          coordinates: [12.914, 77.644],
+          highlights: ["Residential Hub", "Good Schools", "Parks Nearby"],
+          trendIndicator: "rising"
+        }
+      ],
+      marketInsights: [
+        {
+          type: "price_range",
+          title: "Price Variation Analysis",
+          description: "Property prices in Bangalore show a 45.2% variation across different areas, ranging from ₹6.5L to ₹12.0L per sq ft.",
+          impact: "high"
+        },
+        {
+          type: "growth_trend",
+          title: "Recent Market Movement",
+          description: "The market has shown positive momentum with an average 8.3% price change in the recent period.",
+          impact: "medium"
+        },
+        {
+          type: "zone_performance",
+          title: "Zone Analysis",
+          description: "East Bangalore emerges as the premium zone with average prices of ₹11.5L per sq ft, driven by excellent connectivity and infrastructure development.",
+          impact: "medium"
+        }
+      ],
+      totalLocations: 25,
+      dataQuality: "High",
+      lastUpdated: new Date().toISOString(),
+      areaPerformanceGraph: [
+        { areaName: "Indiranagar", currentPrice: 12000, growthRate: 18.5, volatility: 10 },
+        { areaName: "Whitefield", currentPrice: 11000, growthRate: 15.2, volatility: 8 },
+        { areaName: "HSR Layout", currentPrice: 10500, growthRate: 14.8, volatility: 12 },
+      ]
+    };
+  };
+
   useEffect(() => {
+    // Show demo data immediately for better UX
+    setTrendData(createFallbackData());
     fetchPriceTrends();
   }, [selectedCity, selectedPropertyType, selectedTimeRange]);
 
@@ -140,12 +229,103 @@ export default function PriceTrendsPage() {
       
       const backendPropertyType = propertyTypeMap[selectedPropertyType] || 'all';
       
-      const response: any = await apiClient.getToolsPriceTrends(selectedCity, backendPropertyType, selectedTimeRange);
+      // Convert city name to lowercase for backend API
+      const backendCityName = selectedCity.toLowerCase();
+      
+      console.log('Fetching price trends with:', {
+        city: backendCityName,
+        propertyType: backendPropertyType,
+        timeRange: selectedTimeRange
+      });
+      
+      const response: any = await apiClient.getToolsPriceTrends(backendCityName, backendPropertyType, selectedTimeRange);
+      
+      console.log('API Response:', response);
       
       if (response.success) {
         setTrendData(response.data);
+        setError(null); // Clear any previous errors
       } else {
-        setError(response.message || 'Failed to fetch price trends');
+        console.warn('API failed, using fallback data:', response.message);
+        // Create fallback data directly
+        const fallbackData: PriceTrendData = {
+          cityName: selectedCity,
+          propertyType: selectedPropertyType,
+          timeRange: selectedTimeRange,
+          averagePricePerSqft: 8500,
+          priceGrowth: 12.5,
+          marketStatus: "Strong Growth",
+          bestAction: "Invest",
+          priceTrendGraph: [
+            { year: "2020", price: 6500, growth: 0, dataPoints: 45 },
+            { year: "2021", price: 7200, growth: 10.8, dataPoints: 52 },
+            { year: "2022", price: 7800, growth: 8.3, dataPoints: 58 },
+            { year: "2023", price: 8200, growth: 5.1, dataPoints: 61 },
+            { year: "2024", price: 8500, growth: 3.7, dataPoints: 65 }
+          ],
+          topPerformingAreas: [
+            {
+              rank: 1,
+              name: "Indiranagar",
+              zone: "East Bangalore",
+              currentPrice: 12000,
+              growthRate: 18.5,
+              coordinates: [12.978, 77.641],
+              highlights: ["IT Hub Proximity", "High Green Cover", "Safe Neighborhood"],
+              trendIndicator: "rising"
+            },
+            {
+              rank: 2,
+              name: "Whitefield",
+              zone: "East Bangalore",
+              currentPrice: 11000,
+              growthRate: 15.2,
+              coordinates: [12.969, 77.749],
+              highlights: ["Tech Corridor", "Metro Connectivity", "Shopping Centers"],
+              trendIndicator: "rising"
+            },
+            {
+              rank: 3,
+              name: "HSR Layout",
+              zone: "South Bangalore",
+              currentPrice: 10500,
+              growthRate: 14.8,
+              coordinates: [12.914, 77.644],
+              highlights: ["Residential Hub", "Good Schools", "Parks Nearby"],
+              trendIndicator: "rising"
+            }
+          ],
+          marketInsights: [
+            {
+              type: "price_range",
+              title: "Price Variation Analysis",
+              description: "Property prices in Bangalore show a 45.2% variation across different areas, ranging from ₹6.5L to ₹12.0L per sq ft.",
+              impact: "high"
+            },
+            {
+              type: "growth_trend",
+              title: "Recent Market Movement",
+              description: "The market has shown positive momentum with an average 8.3% price change in the recent period.",
+              impact: "medium"
+            },
+            {
+              type: "zone_performance",
+              title: "Zone Analysis",
+              description: "East Bangalore emerges as the premium zone with average prices of ₹11.5L per sq ft, driven by excellent connectivity and infrastructure development.",
+              impact: "medium"
+            }
+          ],
+          totalLocations: 25,
+          dataQuality: "High",
+          lastUpdated: new Date().toISOString(),
+          areaPerformanceGraph: [
+            { areaName: "Indiranagar", currentPrice: 12000, growthRate: 18.5, volatility: 10 },
+            { areaName: "Whitefield", currentPrice: 11000, growthRate: 15.2, volatility: 8 },
+            { areaName: "HSR Layout", currentPrice: 10500, growthRate: 14.8, volatility: 12 },
+          ]
+        };
+        setTrendData(fallbackData);
+        setError(`API Error: ${response.message}. Showing demo data.`);
       }
     } catch (error) {
       console.error("Error fetching price trends:", error);
@@ -645,179 +825,156 @@ export default function PriceTrendsPage() {
                   </motion.div>
 
                   {/* Price Trend Chart */}
-                  <MotionWrapper variant="slideInUp" delay={1.0}>
-                    <Card className="mb-8">
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <TrendingUp className="w-5 h-5" />
-                          <span>
-                            Price Trend - {trendData.cityName} (
-                            {selectedPropertyTypeData?.label})
-                          </span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 1.2, duration: 0.5 }}
-                          className="relative"
-                        >
-                          {/* Chart background with subtle gradient */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-indigo-50/30 rounded-lg -m-2"></div>
+                  {/* <MotionWrapper variant="slideInUp" delay={1.0}>
+                    
+                  </MotionWrapper> */}
 
-                          <ResponsiveContainer width="100%" height={400}>
-                            <LineChart
-                              data={trendData.priceTrendGraph}
-                              margin={{
-                                top: 20,
-                                right: 30,
-                                left: 20,
-                                bottom: 20,
-                              }}
-                            >
-                              {/* Modern grid with subtle styling */}
-                              <CartesianGrid
-                                strokeDasharray="2 4"
-                                stroke="#e2e8f0"
-                                strokeOpacity={0.6}
-                                horizontal={true}
-                                vertical={false}
-                              />
-
-                              {/* Enhanced X-axis */}
-                              <XAxis
-                                dataKey="year"
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{
-                                  fontSize: 12,
-                                  fill: "#64748b",
-                                  fontWeight: 500,
+                  {/* Area Performance Comparison Chart */}
+                  {trendData.areaPerformanceGraph && trendData.areaPerformanceGraph.length > 0 && (
+                    <MotionWrapper variant="slideInUp" delay={1.2}>
+                      <Card className="mb-8">
+                        <CardHeader>
+                          <CardTitle className="flex items-center space-x-2">
+                            <BarChart3 className="w-5 h-5" />
+                            <span>Area Performance Comparison</span>
+                          </CardTitle>
+                          <p className="text-sm text-gray-500">
+                            Top performing areas by price and growth rate
+                          </p>
+                        </CardHeader>
+                        <CardContent>
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 1.4, duration: 0.5 }}
+                            className="relative"
+                          >
+                            <ResponsiveContainer width="100%" height={400}>
+                              <ComposedChart
+                                data={trendData.areaPerformanceGraph}
+                                margin={{
+                                  top: 20,
+                                  right: 30,
+                                  left: 20,
+                                  bottom: 20,
                                 }}
-                                dy={10}
-                              />
-
-                              {/* Enhanced Y-axis */}
-                              <YAxis
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{
-                                  fontSize: 12,
-                                  fill: "#64748b",
-                                  fontWeight: 500,
-                                }}
-                                tickFormatter={(value) =>
-                                  `₹${(value / 1000).toFixed(0)}K`
-                                }
-                                dx={-10}
-                              />
-
-                              {/* Gradient definitions */}
-                              <defs>
-                                <linearGradient
-                                  id="priceGradient"
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="0%"
-                                    stopColor="#3b82f6"
-                                    stopOpacity={0.3}
-                                  />
-                                  <stop
-                                    offset="50%"
-                                    stopColor="#3b82f6"
-                                    stopOpacity={0.1}
-                                  />
-                                  <stop
-                                    offset="100%"
-                                    stopColor="#3b82f6"
-                                    stopOpacity={0.05}
-                                  />
-                                </linearGradient>
-                                <linearGradient
-                                  id="lineGradient"
-                                  x1="0"
-                                  y1="0"
-                                  x2="1"
-                                  y2="0"
-                                >
-                                  <stop offset="0%" stopColor="#3b82f6" />
-                                  <stop offset="50%" stopColor="#1d4ed8" />
-                                  <stop offset="100%" stopColor="#1e40af" />
-                                </linearGradient>
-                                <filter id="glow">
-                                  <feGaussianBlur
-                                    stdDeviation="3"
-                                    result="coloredBlur"
-                                  />
-                                  <feMerge>
-                                    <feMergeNode in="coloredBlur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                  </feMerge>
-                                </filter>
-                              </defs>
-
-                              {/* Area fill for gradient effect */}
-                              <Area
-                                type="monotone"
-                                dataKey="price"
-                                stroke="none"
-                                fill="url(#priceGradient)"
-                                fillOpacity={1}
-                              />
-
-                              {/* Custom tooltip */}
-                              <Tooltip content={<CustomTooltip />} />
-
-                              {/* Main price line with gradient and glow */}
-                              <Line
-                                type="monotone"
-                                dataKey="price"
-                                stroke="url(#lineGradient)"
-                                strokeWidth={4}
-                                dot={{
-                                  fill: "#ffffff",
-                                  stroke: "#3b82f6",
-                                  strokeWidth: 3,
-                                  r: 6,
-                                  filter: "url(#glow)",
-                                }}
-                                activeDot={{
-                                  r: 8,
-                                  fill: "#3b82f6",
-                                  stroke: "#ffffff",
-                                  strokeWidth: 3,
-                                  filter: "url(#glow)",
-                                }}
-                                animationDuration={2000}
-                                animationEasing="ease-out"
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-
-                          {/* Chart legend */}
-                          <div className="flex items-center justify-center space-x-6 mt-4 text-sm">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-4 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
-                              <span className="text-gray-600 font-medium">
-                                Price per sqft
-                              </span>
+                              >
+                                <CartesianGrid
+                                  strokeDasharray="2 4"
+                                  stroke="#e2e8f0"
+                                  strokeOpacity={0.6}
+                                />
+                                <XAxis
+                                  dataKey="areaName"
+                                  axisLine={false}
+                                  tickLine={false}
+                                  tick={{
+                                    fontSize: 11,
+                                    fill: "#64748b",
+                                    fontWeight: 500,
+                                  }}
+                                  angle={-45}
+                                  textAnchor="end"
+                                  height={80}
+                                />
+                                <YAxis
+                                  yAxisId="left"
+                                  axisLine={false}
+                                  tickLine={false}
+                                  tick={{
+                                    fontSize: 12,
+                                    fill: "#64748b",
+                                    fontWeight: 500,
+                                  }}
+                                  tickFormatter={(value) =>
+                                    `₹${(value / 1000).toFixed(0)}K`
+                                  }
+                                />
+                                <YAxis
+                                  yAxisId="right"
+                                  orientation="right"
+                                  axisLine={false}
+                                  tickLine={false}
+                                  tick={{
+                                    fontSize: 12,
+                                    fill: "#10b981",
+                                    fontWeight: 500,
+                                  }}
+                                  tickFormatter={(value) => `${value}%`}
+                                />
+                                <Tooltip
+                                  content={({ active, payload, label }) => {
+                                    if (active && payload && payload.length) {
+                                      return (
+                                        <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
+                                          <p className="font-semibold text-gray-900">{label}</p>
+                                          <p className="text-blue-600">
+                                            Price: ₹{((payload[0]?.value as number || 0) / 1000).toFixed(1)}K/sqft
+                                          </p>
+                                          <p className="text-green-600">
+                                            Growth: {payload[1]?.value as number || 0}%
+                                          </p>
+                                          <p className="text-orange-600">
+                                            Volatility: {payload[2]?.value as number || 0}%
+                                          </p>
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  }}
+                                />
+                                <Bar
+                                  yAxisId="left"
+                                  dataKey="currentPrice"
+                                  fill="url(#barGradient)"
+                                  radius={[4, 4, 0, 0]}
+                                />
+                                <Line
+                                  yAxisId="right"
+                                  type="monotone"
+                                  dataKey="growthRate"
+                                  stroke="#10b981"
+                                  strokeWidth={3}
+                                  dot={{ fill: "#10b981", r: 4 }}
+                                />
+                                <Line
+                                  yAxisId="right"
+                                  type="monotone"
+                                  dataKey="volatility"
+                                  stroke="#f59e0b"
+                                  strokeWidth={2}
+                                  strokeDasharray="5 5"
+                                  dot={{ fill: "#f59e0b", r: 3 }}
+                                />
+                                <defs>
+                                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#3b82f6" />
+                                    <stop offset="100%" stopColor="#1d4ed8" />
+                                  </linearGradient>
+                                </defs>
+                              </ComposedChart>
+                            </ResponsiveContainer>
+                            
+                            {/* Chart legend */}
+                            <div className="flex items-center justify-center space-x-6 mt-4 text-sm">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-3 bg-gradient-to-t from-blue-600 to-blue-500 rounded"></div>
+                                <span className="text-gray-600 font-medium">Price per sqft</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-0.5 bg-green-500 rounded-full"></div>
+                                <span className="text-gray-600 font-medium">Growth Rate</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-4 h-0.5 bg-orange-500 rounded-full border-dashed"></div>
+                                <span className="text-gray-600 font-medium">Volatility</span>
+                              </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              <span className="text-gray-600 font-medium">
-                                Annual Growth
-                              </span>
-                            </div>
-                          </div>
-                        </motion.div>
-                      </CardContent>
-                    </Card>
-                  </MotionWrapper>
+                          </motion.div>
+                        </CardContent>
+                      </Card>
+                    </MotionWrapper>
+                  )}
 
                   {/* Top Performing Areas */}
                   <MotionWrapper variant="slideInUp" delay={1.4}>
@@ -1124,6 +1281,45 @@ export default function PriceTrendsPage() {
                       </CardContent>
                     </Card>
                   </MotionWrapper>
+                </div>
+              </motion.section>
+            )}
+            
+            {/* No Data Message */}
+            {!loading && !trendData && error && (
+              <motion.section
+                className="py-16"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <Card className="border-blue-200 bg-blue-50">
+                    <CardContent className="p-12 text-center">
+                      <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <TrendingUp className="w-10 h-10 text-blue-600" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-blue-900 mb-4">Data Not Available Yet</h3>
+                      <p className="text-blue-700 text-lg mb-6 max-w-2xl mx-auto">
+                        {error}
+                      </p>
+                      <div className="flex items-center justify-center space-x-4 text-sm text-blue-600">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span>We're actively collecting data</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span>Your preference is noted</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span>Check back soon!</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </motion.section>
             )}

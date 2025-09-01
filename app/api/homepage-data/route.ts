@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://5tcwt8cd8h.execute-api.us-east-1.amazonaws.com/dev/api';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://g82q9hlk9h.execute-api.ap-south-1.amazonaws.com/prod/api';
     
     // Fetch data in parallel for better performance
     const [featuredResponse, trendingResponse, topResponse] = await Promise.allSettled([

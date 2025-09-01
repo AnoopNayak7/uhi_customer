@@ -3,7 +3,7 @@ export const APP_CONFIG = {
   description: 'Find Your Dream Property with UrbanHouseIN',
   primaryColor: '#FE2C2D',
   api: {
-    baseUrl: 'https://5tcwt8cd8h.execute-api.us-east-1.amazonaws.com/dev/api'
+    baseUrl: 'https://g82q9hlk9h.execute-api.ap-south-1.amazonaws.com/prod/api'
   },
   features: {
     compare: {
