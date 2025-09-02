@@ -14,9 +14,10 @@ import {
   ChevronRight,
   BarChart3,
   Star,
-  Flame
+  Flame,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { usePropertyStore, useAuthStore } from "@/lib/store";
@@ -51,7 +52,9 @@ interface Property {
 
 export function ProminentProjects() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [prominentProperties, setProminentProperties] = useState<Property[]>([]);
+  const [prominentProperties, setProminentProperties] = useState<Property[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const { getLocationDisplay } = useLocationData();
   const {
@@ -67,18 +70,18 @@ export function ProminentProjects() {
       try {
         setLoading(true);
         // Use the getProperties method with filters for prominent and hot selling properties
-        const response:any = await apiClient.getProperties({
+        const response: any = await apiClient.getProperties({
           isProminent: true,
           isHotSelling: true,
-          status: 'approved',
-          limit: 20
+          status: "approved",
+          limit: 20,
         });
-        
+
         if (response.success) {
           setProminentProperties(response.data || []);
         }
       } catch (error) {
-        console.error('Error fetching prominent properties:', error);
+        console.error("Error fetching prominent properties:", error);
         // Fallback to empty array
         setProminentProperties([]);
       } finally {
@@ -99,7 +102,9 @@ export function ProminentProjects() {
   };
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % Math.ceil(prominentProperties.length / 4));
+    setCurrentSlide(
+      (prev) => (prev + 1) % Math.ceil(prominentProperties.length / 4)
+    );
   };
 
   const prevSlide = () => {
@@ -155,8 +160,9 @@ export function ProminentProjects() {
               Prominent Projects in {getLocationDisplay()}
             </h2>
             <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">
-              We're currently identifying and featuring our most prominent and hot-selling projects. 
-              Check back soon for exclusive property highlights!
+              We&apos;re currently identifying and featuring our most prominent
+              and hot-selling projects. Check back soon for exclusive property
+              highlights!
             </p>
             <div className="space-y-3">
               <Button asChild>
@@ -174,15 +180,16 @@ export function ProminentProjects() {
 
   // Show properties
   return (
-    <section className="py-12 bg-white">
-      <div className="max-w-6xl mx-auto px-4">
+    <section className="py-12 sm:px-[8%] bg-white">
+      <div className=" mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">
               Prominent Projects in {getLocationDisplay()}
             </h2>
             <p className="text-gray-500 text-sm">
-              Discover our most sought-after and hot-selling real estate projects
+              Discover our most sought-after and hot-selling real estate
+              projects
             </p>
           </div>
 
@@ -306,15 +313,17 @@ function PropertyCard({
 
   return (
     <Card
-      className="group border-0 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+      className="cursor-pointer bg-white border border-gray-200 hover:shadow-md transition-shadow duration-200 overflow-hidden rounded-lg"
       onClick={handleCardClick}
     >
       <div className="relative">
         <div className="relative h-[160px] overflow-hidden m-[4px] rounded-t-md">
-          <img
+          <Image
             src={property.images?.[0] || defaultImage}
             alt={property.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            layout="fill"
+            objectFit="cover"
+            className="group-hover:scale-105 transition-transform duration-500"
           />
         </div>
 
@@ -326,7 +335,7 @@ function PropertyCard({
         </div>
 
         {/* Prominent/Hot Selling Badge */}
-        <div className="absolute top-3 right-3">
+        {/* <div className="absolute top-3 right-3">
           {property.isProminent && (
             <Badge className="bg-blue-500 text-white text-[10px] font-normal px-2 py-1 rounded shadow-sm mr-2">
               <Star className="w-3 h-3 mr-1" />
@@ -339,7 +348,7 @@ function PropertyCard({
               HOT SELLING
             </Badge>
           )}
-        </div>
+        </div> */}
 
         {/* Action Buttons */}
         <div className="absolute top-3 right-3 flex gap-2">
@@ -361,45 +370,63 @@ function PropertyCard({
             variant="ghost"
             size="sm"
             className={`h-8 w-8 p-0 rounded-full bg-white/90 hover:bg-white transition-colors ${
-              isFavourite
-                ? "text-red-500"
-                : "text-gray-600 hover:text-red-500"
+              isFavourite ? "text-red-500" : "text-gray-600 hover:text-red-500"
             }`}
             onClick={handleFavouriteClick}
           >
-            <Heart
-              className={`w-4 h-4 ${isFavourite ? "fill-current" : ""}`}
-            />
+            <Heart className={`w-4 h-4 ${isFavourite ? "fill-current" : ""}`} />
           </Button>
         </div>
       </div>
 
       <CardContent className="p-4">
         <div className="mb-3">
-          <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">
+          <h3 className="text-base font-semibold text-gray-900 mb-2 truncate">
             {property.title}
           </h3>
-          <div className="flex items-center gap-1 mb-2">
-            <MapPin className="w-3 h-3 text-gray-400" />
-            <span className="text-xs text-gray-600">{property.city}</span>
+
+          <div className="flex items-center text-gray-500 text-xs mb-4">
+            <MapPin className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
+            <span className="truncate">
+              {property.address}, {property.city}
+            </span>
           </div>
-          <p className="text-lg font-bold text-green-600">
-            {formatPrice(property.price)}
-          </p>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <div className="flex items-center gap-1">
-            <Bed className="w-3 h-3" />
-            <span>{property.bedrooms} Beds</span>
+        <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+          <div className="flex items-center">
+            <Bed className="w-4 h-4 mr-1" />
+            <span>
+              {property.bedrooms},{property.bathrooms}
+            </span>
           </div>
-          <div className="flex items-center gap-1">
-            <Bath className="w-3 h-3" />
-            <span>{property.bathrooms} Baths</span>
+          <div className="flex items-center">
+            <Square className="w-3 h-3 mr-1" />
+            <span className="text-[13px]">
+              {property.area} {property.areaUnit}
+            </span>
           </div>
-          <div className="flex items-center gap-1">
-            <Square className="w-3 h-3" />
-            <span>{property.area} {property.areaUnit}</span>
+        </div>
+
+        <hr />
+        <div className="flex items-end justify-between pt-2">
+          <div>
+            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+              STARTING PRICE
+            </div>
+            <div className="text-lg font-medium text-gray-900">
+              {formatPrice(property.price)}
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+              POSSESSION
+            </div>
+            <div className="text-sm font-normal text-gray-900">
+              {property.constructionStatus === "ready_to_move"
+                ? "Ready to Move"
+                : "Under Construction"}
+            </div>
           </div>
         </div>
       </CardContent>

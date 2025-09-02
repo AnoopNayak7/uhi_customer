@@ -40,7 +40,7 @@ export function CTASection() {
               <Button size="lg" variant="outline" asChild>
                 <Link href="/contact">
                   <Phone className="w-4 h-4 mr-2" />
-                  Call Us: +91 90000 00000
+                  Call Us: +91 7676345978
                 </Link>
               </Button>
             </div>

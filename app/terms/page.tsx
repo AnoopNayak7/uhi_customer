@@ -1,7 +1,14 @@
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Users, Shield, AlertTriangle, Scale, Gavel } from 'lucide-react';
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  FileText,
+  Users,
+  Shield,
+  AlertTriangle,
+  Scale,
+  Gavel,
+} from "lucide-react";
 
 export default function TermsOfServicePage() {
   const sections = [
@@ -13,8 +20,8 @@ export default function TermsOfServicePage() {
         "Provide accurate and complete information during registration",
         "Maintain the security of your account credentials",
         "You are responsible for all activities under your account",
-        "Notify us immediately of any unauthorized use of your account"
-      ]
+        "Notify us immediately of any unauthorized use of your account",
+      ],
     },
     {
       icon: FileText,
@@ -24,8 +31,8 @@ export default function TermsOfServicePage() {
         "You must have legal authority to list the property",
         "Prohibited content includes false information, discriminatory language, or illegal activities",
         "We reserve the right to remove listings that violate our policies",
-        "You retain ownership of your property information and images"
-      ]
+        "You retain ownership of your property information and images",
+      ],
     },
     {
       icon: Shield,
@@ -35,8 +42,8 @@ export default function TermsOfServicePage() {
         "Do not harass, abuse, or harm other users",
         "Respect intellectual property rights",
         "Do not attempt to gain unauthorized access to our systems",
-        "Report any suspicious or inappropriate behavior"
-      ]
+        "Report any suspicious or inappropriate behavior",
+      ],
     },
     {
       icon: AlertTriangle,
@@ -46,8 +53,8 @@ export default function TermsOfServicePage() {
         "Using the platform for illegal activities",
         "Spamming or sending unsolicited communications",
         "Attempting to circumvent our security measures",
-        "Violating any applicable laws or regulations"
-      ]
+        "Violating any applicable laws or regulations",
+      ],
     },
     {
       icon: Scale,
@@ -57,8 +64,8 @@ export default function TermsOfServicePage() {
         "We are not responsible for the accuracy of user-generated content",
         "Users are responsible for verifying property information",
         "We do not guarantee successful property transactions",
-        "Our liability is limited to the maximum extent permitted by law"
-      ]
+        "Our liability is limited to the maximum extent permitted by law",
+      ],
     },
     {
       icon: Gavel,
@@ -68,15 +75,15 @@ export default function TermsOfServicePage() {
         "We may provide mediation services for certain disputes",
         "Legal disputes will be governed by Indian law",
         "Jurisdiction for legal proceedings will be in Bangalore, Karnataka",
-        "We reserve the right to suspend accounts during dispute resolution"
-      ]
-    }
+        "We reserve the right to suspend accounts during dispute resolution",
+      ],
+    },
   ];
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
+
       <main className="flex-1">
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-gray-50 to-gray-100 py-16">
@@ -88,7 +95,8 @@ export default function TermsOfServicePage() {
               Terms of Service
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Please read these terms carefully before using our platform. By using UrbanHouseIN, you agree to these terms.
+              Please read these terms carefully before using our platform. By
+              using UrbanHouseIN, you agree to these terms.
             </p>
             <p className="text-sm text-gray-500 mt-4">
               Last updated: January 15, 2024
@@ -102,16 +110,21 @@ export default function TermsOfServicePage() {
             {/* Introduction */}
             <Card className="mb-8">
               <CardContent className="p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Agreement to Terms</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Agreement to Terms
+                </h2>
                 <p className="text-gray-600 leading-relaxed mb-4">
-                  These Terms of Service ("Terms") govern your use of UrbanHouseIN's website and services. 
-                  By accessing or using our platform, you agree to be bound by these Terms. If you disagree 
-                  with any part of these terms, then you may not access the service.
+                  These Terms of Service ("Terms") govern your use of
+                  UrbanHouseIN's website and services. By accessing or using our
+                  platform, you agree to be bound by these Terms. If you
+                  disagree with any part of these terms, then you may not access
+                  the service.
                 </p>
                 <p className="text-gray-600 leading-relaxed">
-                  We reserve the right to update these Terms at any time. Changes will be effective immediately 
-                  upon posting. Your continued use of the service after changes are posted constitutes acceptance 
-                  of the new Terms.
+                  We reserve the right to update these Terms at any time.
+                  Changes will be effective immediately upon posting. Your
+                  continued use of the service after changes are posted
+                  constitutes acceptance of the new Terms.
                 </p>
               </CardContent>
             </Card>
@@ -131,7 +144,10 @@ export default function TermsOfServicePage() {
                   <CardContent>
                     <ul className="space-y-3">
                       {section.content.map((item, itemIndex) => (
-                        <li key={itemIndex} className="flex items-start space-x-3">
+                        <li
+                          key={itemIndex}
+                          className="flex items-start space-x-3"
+                        >
                           <div className="w-2 h-2 bg-gray-500 rounded-full mt-2 flex-shrink-0" />
                           <span className="text-gray-600">{item}</span>
                         </li>
@@ -150,21 +166,30 @@ export default function TermsOfServicePage() {
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Free Services</h4>
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      Free Services
+                    </h4>
                     <p className="text-gray-600">
-                      Basic property listing and browsing features are provided free of charge.
+                      Basic property listing and browsing features are provided
+                      free of charge.
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Premium Services</h4>
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      Premium Services
+                    </h4>
                     <p className="text-gray-600">
-                      Enhanced features and premium listings may require payment as specified in our pricing plans.
+                      Enhanced features and premium listings may require payment
+                      as specified in our pricing plans.
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Refund Policy</h4>
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      Refund Policy
+                    </h4>
                     <p className="text-gray-600">
-                      Refunds are handled on a case-by-case basis. Contact our support team for assistance.
+                      Refunds are handled on a case-by-case basis. Contact our
+                      support team for assistance.
                     </p>
                   </div>
                 </div>
@@ -179,12 +204,15 @@ export default function TermsOfServicePage() {
               <CardContent>
                 <div className="space-y-4">
                   <p className="text-gray-600">
-                    The UrbanHouseIN platform, including its design, functionality, and content, is protected by 
-                    intellectual property laws. You may not copy, modify, or distribute our platform without permission.
+                    The UrbanHouseIN platform, including its design,
+                    functionality, and content, is protected by intellectual
+                    property laws. You may not copy, modify, or distribute our
+                    platform without permission.
                   </p>
                   <p className="text-gray-600">
-                    User-generated content remains the property of the respective users, but you grant us a license 
-                    to use, display, and distribute such content on our platform.
+                    User-generated content remains the property of the
+                    respective users, but you grant us a license to use,
+                    display, and distribute such content on our platform.
                   </p>
                 </div>
               </CardContent>
@@ -198,12 +226,15 @@ export default function TermsOfServicePage() {
               <CardContent>
                 <div className="space-y-4">
                   <p className="text-gray-600">
-                    We may terminate or suspend your account immediately, without prior notice, for conduct that 
-                    we believe violates these Terms or is harmful to other users, us, or third parties.
+                    We may terminate or suspend your account immediately,
+                    without prior notice, for conduct that we believe violates
+                    these Terms or is harmful to other users, us, or third
+                    parties.
                   </p>
                   <p className="text-gray-600">
-                    You may terminate your account at any time by contacting our support team. Upon termination, 
-                    your right to use the service will cease immediately.
+                    You may terminate your account at any time by contacting our
+                    support team. Upon termination, your right to use the
+                    service will cease immediately.
                   </p>
                 </div>
               </CardContent>
@@ -216,19 +247,26 @@ export default function TermsOfServicePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  If you have any questions about these Terms of Service, please contact us:
+                  If you have any questions about these Terms of Service, please
+                  contact us:
                 </p>
                 <div className="space-y-2 text-sm">
-                  <p><strong>Email:</strong> legal@urbanhousein.com</p>
-                  <p><strong>Phone:</strong> +91 90000 00000</p>
-                  <p><strong>Address:</strong> Bangalore, Karnataka, India</p>
+                  <p>
+                    <strong>Email:</strong> legal@urbanhousein.com
+                  </p>
+                  <p>
+                    <strong>Phone:</strong> +91 7676345978
+                  </p>
+                  <p>
+                    <strong>Address:</strong> Bangalore, Karnataka, India
+                  </p>
                 </div>
               </CardContent>
             </Card>
           </div>
         </section>
       </main>
-      
+
       <Footer />
     </div>
   );
