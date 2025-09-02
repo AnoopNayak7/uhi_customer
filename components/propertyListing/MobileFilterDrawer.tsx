@@ -103,7 +103,7 @@ export function MobileFilterDrawer({
         </Button>
       </SheetTrigger>
 
-      <CustomSheetContent className="h-[85vh] p-0">
+      <CustomSheetContent className="h-[80vh] p-0 mt-16">
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
@@ -212,11 +212,11 @@ export function MobileFilterDrawer({
               {/* Property Category */}
               <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                 <h3 className="text-base font-semibold text-gray-900 mb-3">Property Category</h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   {PROPERTY_CATEGORIES.slice(0, 4).map((category) => (
                     <div
                       key={category.value}
-                      className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all duration-200 hover:scale-105 ${
+                      className={`relative border-2 rounded-lg p-2 cursor-pointer transition-all duration-200 hover:scale-105 ${
                         searchFilters.propertyCategory === category.value
                           ? "border-red-500 bg-red-50 shadow-md"
                           : "border-gray-200 hover:border-red-200 hover:bg-red-50/30"
@@ -226,12 +226,12 @@ export function MobileFilterDrawer({
                       )}
                     >
                       {searchFilters.propertyCategory === category.value && (
-                        <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
-                          <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
                         </div>
                       )}
                       <div className="text-center">
-                        <span className="text-sm font-medium text-gray-700">{category.label}</span>
+                        <span className="text-xs font-medium text-gray-700">{category.label}</span>
                       </div>
                     </div>
                   ))}

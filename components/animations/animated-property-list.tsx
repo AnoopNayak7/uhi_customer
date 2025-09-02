@@ -22,7 +22,7 @@ export const AnimatedPropertyList = ({
 
   if (loading) {
     return (
-      <div className={className}>
+      <div className={`${className} overflow-x-hidden`}>
         {Array.from({ length: skeletonCount }).map((_, index) => (
           <motion.div
             key={`skeleton-${index}`}
@@ -72,7 +72,7 @@ export const AnimatedPropertyGrid = ({
 
   if (loading) {
     return (
-      <div className={`grid ${gridClassName} gap-6`}>
+      <div className={`grid ${gridClassName} gap-6 overflow-x-hidden`}>
         {Array.from({ length: 9 }).map((_, index) => (
           <motion.div
             key={`skeleton-${index}`}
@@ -112,7 +112,7 @@ export const AnimatedPropertyGrid = ({
             },
           },
         }}
-        className={`grid ${gridClassName} gap-6`}
+        className={`grid ${gridClassName} gap-6 overflow-x-hidden`}
       >
         {children.map((child, index) => (
           <motion.div

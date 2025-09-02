@@ -312,13 +312,13 @@ export default function PropertiesPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col overflow-x-hidden">
       <Header />
 
-      <main className="flex-1 container mx-auto px-3 sm:px-4 md:px-6 lg:px-[3%] py-4 sm:py-6 md:py-8">
-        <PageContent>
+      <main className="flex-1 container mx-auto px-3 sm:px-4 md:px-6 lg:px-[3%] py-4 sm:py-6 md:py-8 max-w-full">
+        <PageContent className="overflow-x-hidden">
           {/* Mobile Search Interface */}
-          <div className="block lg:hidden mb-6">
+          <div className="block lg:hidden mb-6 overflow-x-hidden">
             <div className="rounded-2xl shadow-lg border border-gray-100">
               {/* Search Bar with Search Button */}
               <div className="relative">
@@ -326,7 +326,7 @@ export default function PropertiesPage() {
                 <Input
                   type="text"
                   placeholder="Search by location, landmark, project..."
-                  className="pl-12 pr-4 py-4 w-full text-base h-14 border border-gray-200 bg-white focus:bg-white focus:ring-2 focus:ring-red-200 rounded-xl transition-all duration-300"
+                  className="pl-12 pr-4 py-4 w-full text-sm h-14 border border-gray-200 bg-white focus:bg-white focus:ring-2 focus:ring-red-200 rounded-xl transition-all duration-300"
                   value={searchQuery}
                   onChange={handleSearchInputChange}
                   onFocus={() => setShowSuggestions(true)}
@@ -452,7 +452,7 @@ export default function PropertiesPage() {
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 overflow-x-hidden">
             {/* Filter Section */}
             <FilterSection
               onSearch={handleSearch}
@@ -462,9 +462,9 @@ export default function PropertiesPage() {
             />
 
             {/* Main Content */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 overflow-x-hidden">
               {/* Mobile Filter Toggle */}
-              <div className="block lg:hidden mb-4">
+              <div className="block lg:hidden mb-4 overflow-x-hidden">
                 <div className="flex items-center justify-between">
                   <div>
                     <h1 className="text-xl font-bold text-gray-900">
@@ -495,58 +495,86 @@ export default function PropertiesPage() {
                 </div>
               </div>
 
-              {viewMode === "grid" ? (
+              {/* Desktop Properties Count and View Toggle */}
+              <div className="hidden lg:block mb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900">
+                      Properties
+                    </h1>
+                    <p className="text-gray-500 text-sm">
+                      {properties.length} properties found
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="bg-gray-100 rounded-md p-1 flex">
+                      <Button
+                        variant={viewMode === "grid" ? "default" : "ghost"}
+                        size="sm"
+                        className="h-8 px-2 text-sm"
+                        onClick={() => setViewMode("grid")}
+                      >
+                        <Grid3X3 className="w-4 h-4 mr-1" />
+                        Grid
+                      </Button>
+                      <Button
+                        variant={viewMode === "map" ? "default" : "ghost"}
+                        size="sm"
+                        className="h-8 px-2 text-sm"
+                        onClick={() => setViewMode("map")}
+                      >
+                        <MapIcon className="w-4 h-4 mr-1" />
+                        Map
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile view - always show grid */}
+              <div className="block lg:hidden">
                 <PropertyList
                   properties={properties}
                   loading={loading}
-                  viewMode={viewMode}
+                  viewMode="grid"
                   setViewMode={setViewMode}
                   onFavorite={handleFavorite}
                 />
-              ) : (
-                <div className="flex-1">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
-                    <div className="flex-1">
-                      <p className="text-gray-500 text-sm">
-                        {
-                          properties.filter((p) => p.latitude && p.longitude)
-                            .length
-                        }{" "}
-                        properties on map
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-2 w-full sm:w-auto">
-                      <div className="bg-gray-100 rounded-md p-1 flex w-full sm:w-auto">
-                        <Button
-                          variant={"ghost"}
-                          size="sm"
-                          className="h-10 sm:h-8 px-3 sm:px-2 flex-1 sm:flex-none text-sm"
-                          onClick={() => setViewMode("grid")}
-                        >
-                          <Grid3X3 className="w-4 h-4 mr-1" />
-                          <span className="hidden xs:inline">Grid</span>
-                        </Button>
-                        <Button
-                          variant={viewMode === "map" ? "default" : "ghost"}
-                          size="sm"
-                          className="h-10 sm:h-8 px-3 sm:px-2 flex-1 sm:flex-none text-sm"
-                          onClick={() => setViewMode("map")}
-                        >
-                          <MapIcon className="w-4 h-4 mr-1" />
-                          <span className="hidden xs:inline">Map</span>
-                        </Button>
+              </div>
+
+              {/* Desktop view - show grid or map based on viewMode */}
+              <div className="hidden lg:block">
+                {viewMode === "grid" ? (
+                  <PropertyList
+                    properties={properties}
+                    loading={loading}
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
+                    onFavorite={handleFavorite}
+                  />
+                ) : (
+                  <div className="flex-1">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
+                      <div className="flex-1">
+                        <p className="text-gray-500 text-sm">
+                          {
+                            properties.filter((p) => p.latitude && p.longitude)
+                              .length
+                          }{" "}
+                          properties on map
+                        </p>
                       </div>
                     </div>
-                  </div>
 
-                  <MapView
-                    properties={properties}
-                    userLocation={userLocation}
-                    mapType={mapType}
-                    setMapType={setMapType}
-                  />
-                </div>
-              )}
+                    <MapView
+                      properties={properties}
+                      userLocation={userLocation}
+                      mapType={mapType}
+                      setMapType={setMapType}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -554,32 +582,25 @@ export default function PropertiesPage() {
           <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
             <SheetContent 
               side="bottom" 
-              className="h-[90vh] p-0 overflow-hidden"
+              className="h-[85vh] p-0 overflow-hidden mt-16"
             >
               <div className="flex flex-col h-full bg-gradient-to-b from-gray-50 to-white">
                 {/* Enhanced Header with smooth animations */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white shadow-sm">
+                <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white shadow-sm">
                   <div className="space-y-1">
                     <h2 className="text-xl font-bold text-gray-900">Search Filters</h2>
                     <p className="text-sm text-gray-500">
                       {Object.values(searchFilters).filter((value) => value && value !== "" && value !== 0).length + selectedLocalities.length} filters applied
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-12 w-12 p-0 rounded-full hover:bg-gray-100 transition-all duration-200"
-                    onClick={() => setMobileFilterOpen(false)}
-                  >
-                    <X className="w-6 h-6" />
-                  </Button>
+                 
                 </div>
 
                 {/* Enhanced Filter Content with smooth scrolling */}
                 <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white">
-                  <div className="px-6 space-y-6 py-6">
+                  <div className="px-4 space-y-4 py-4">
                     {/* Select Localities with enhanced styling */}
-                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
                       <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center">
                         <MapPin className="w-5 h-5 text-red-500 mr-2" />
                         Select Localities
@@ -658,7 +679,7 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Enhanced Property Type */}
-                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
                       <h3 className="text-base font-semibold text-gray-900 mb-4">Property Type</h3>
                       <div className="grid grid-cols-2 gap-3">
                         {["flat", "house", "villa", "plot"].map((type, index) => (
@@ -687,13 +708,13 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Enhanced Property Category */}
-                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-                      <h3 className="text-base font-semibold text-gray-900 mb-4">Property Category</h3>
-                      <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
+                      <h3 className="text-base font-semibold text-gray-900 mb-3">Property Category</h3>
+                      <div className="grid grid-cols-3 gap-3">
                         {PROPERTY_CATEGORIES.slice(0, 3).map((category, index) => (
                           <div
                             key={category.value}
-                            className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 hover:scale-105 ${
+                            className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all duration-300 hover:scale-105 ${
                               searchFilters.propertyCategory === category.value
                                 ? "border-red-500 bg-red-50 shadow-lg"
                                 : "border-gray-200 hover:border-red-200 hover:bg-red-50/30"
@@ -706,15 +727,15 @@ export default function PropertiesPage() {
                             }
                           >
                             {searchFilters.propertyCategory === category.value && (
-                              <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in duration-300">
-                                <div className="w-3 h-3 bg-white rounded-full"></div>
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg animate-in zoom-in duration-300">
+                                <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
                               </div>
                             )}
                             <div className="text-center">
-                              <div className="w-10 h-10 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                                <MapPin className="w-5 h-5 text-gray-600" />
+                              <div className="w-8 h-8 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
+                                <MapPin className="w-4 h-4 text-gray-600" />
                               </div>
-                              <span className="text-sm font-medium text-gray-700">
+                              <span className="text-xs font-medium text-gray-700">
                                 {category.label}
                               </span>
                             </div>
@@ -724,7 +745,7 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Enhanced Budget */}
-                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
                       <h3 className="text-base font-semibold text-gray-900 mb-4">Budget Range</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <Select
@@ -766,7 +787,7 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Enhanced Covered Area */}
-                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
                       <h3 className="text-base font-semibold text-gray-900 mb-4">Covered Area (sqft)</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <Select
@@ -805,7 +826,7 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Enhanced Bedrooms */}
-                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
                       <h3 className="text-base font-semibold text-gray-900 mb-4">Bedrooms</h3>
                       <div className="grid grid-cols-2 gap-3">
                         {BHK_OPTIONS.slice(0, 6).map((bhk, index) => (
@@ -838,7 +859,7 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Enhanced Furnishing Status */}
-                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
                       <h3 className="text-base font-semibold text-gray-900 mb-4">Furnishing Status</h3>
                       <div className="space-y-3">
                         {FURNISHING_STATUS.map((status, index) => (
@@ -871,7 +892,7 @@ export default function PropertiesPage() {
                     </div>
 
                     {/* Enhanced Possession Status */}
-                    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
                       <h3 className="text-base font-semibold text-gray-900 mb-4">Possession Status</h3>
                       <div className="space-y-3">
                         {POSSESSION_STATUS.map((status, index) => (

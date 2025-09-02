@@ -41,38 +41,10 @@ export function PropertyList({
   };
 
   return (
-    <div className="flex-1">
+    <div className="flex-1 overflow-x-hidden">
       <MotionWrapper variant="fadeInUp">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
-          <div className="flex-1">
-            {/* Heading removed to avoid duplication with main page */}
-          </div>
-          <div className="flex items-center space-x-2 w-full sm:w-auto">
-            <div className="bg-gray-100 rounded-md p-1 flex w-full sm:w-auto">
-              <Button
-                variant={viewMode === "grid" ? "default" : "ghost"}
-                size="sm"
-                className="h-10 sm:h-8 px-3 sm:px-2 flex-1 sm:flex-none text-sm"
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid3X3 className="w-4 h-4 mr-1" />
-                <span className="hidden xs:inline">Grid</span>
-              </Button>
-              <Button
-                variant={viewMode === "map" ? "default" : "ghost"}
-                size="sm"
-                className="h-10 sm:h-8 px-3 sm:px-2 flex-1 sm:flex-none text-sm"
-                onClick={() => setViewMode("map")}
-              >
-                <MapIcon className="w-4 h-4 mr-1" />
-                <span className="hidden xs:inline">Map</span>
-              </Button>
-            </div>
-          </div>
-        </div>
+        {/* Grid/Map toggle removed - now handled in main page */}
       </MotionWrapper>
-
-      <hr className="my-4" />
 
       {viewMode === "grid" ? (
         <AnimatedPropertyGrid
