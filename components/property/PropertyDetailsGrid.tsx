@@ -37,7 +37,7 @@ const PropertyDetailsGrid = ({ property }: PropertyDetailsGridProps) => {
     },
     {
       icon: LandPlot,
-      value: property?.totalArea,
+      value: `${property?.totalArea} acers`,
       label: property?.areaUnit?.toLowerCase() || "total area",
     },
   ];
