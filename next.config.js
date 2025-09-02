@@ -35,7 +35,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'urbanhousein-images-dev.s3.us-east-1.amazonaws.com',
+        hostname: 'urbanhousein-images-prod.s3.ap-south-1.amazonaws.com',
         port: '',
         pathname: '/**',
       },
