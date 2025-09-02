@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -127,10 +128,6 @@ export default function PriceTrendsPage() {
   const [trendData, setTrendData] = useState<PriceTrendData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchPriceTrends();
-  }, [selectedCity, selectedPropertyType, selectedTimeRange]);
-
   const fetchPriceTrends = async () => {
     setLoading(true);
     setError(null);
@@ -148,17 +145,14 @@ export default function PriceTrendsPage() {
       const backendPropertyType =
         propertyTypeMap[selectedPropertyType] || "all";
 
-      // Convert city name to lowercase for backend API
-      const backendCityName = selectedCity.toLowerCase();
-
       console.log("Fetching price trends with:", {
-        city: backendCityName,
+        city: selectedCity,
         propertyType: backendPropertyType,
         timeRange: selectedTimeRange,
       });
 
       const response: any = await apiClient.getToolsPriceTrends(
-        backendCityName,
+        selectedCity,
         backendPropertyType,
         selectedTimeRange
       );
@@ -182,7 +176,10 @@ export default function PriceTrendsPage() {
           );
         }
       } else {
-        setError(response.message || "Failed to fetch price trends");
+        console.error("API Error:", response.message);
+        setError(
+          response.message || "Failed to fetch price trends. Please try again."
+        );
       }
     } catch (error) {
       console.error("Error fetching price trends:", error);
