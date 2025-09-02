@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Clock, ChevronRight } from 'lucide-react';
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Clock, ChevronRight } from "lucide-react";
 
 interface TimeTravelPoint {
   year: number;
@@ -36,39 +36,58 @@ const TimeTravel = () => {
         <Clock className="w-5 h-5 mr-2 text-red-500" />
         <h2 className="text-xl font-semibold">Property Time Travel</h2>
       </div>
-      
+
       <p className="text-sm text-gray-600 mb-6">
-        See how this property's value has changed over time and projected future value
+        See how this property&apos;s value has changed over time and projected
+        future value
       </p>
-      
+
       <div className="relative">
         {/* Timeline */}
         <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-gray-200"></div>
-        
+
         {/* Time Points */}
         <div className="space-y-6">
           {timeTravelPoints.map((point, index) => (
             <div key={index} className="flex items-start">
-              <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center mr-4 ${index === timeTravelPoints.length - 1 ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
+              <div
+                className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center mr-4 ${
+                  index === timeTravelPoints.length - 1
+                    ? "bg-red-500 text-white"
+                    : "bg-gray-100 text-gray-500"
+                }`}
+              >
                 {index === timeTravelPoints.length - 1 ? (
                   <Clock className="w-4 h-4" />
                 ) : (
                   <ChevronRight className="w-4 h-4" />
                 )}
               </div>
-              
-              <Card className={`flex-1 ${index === timeTravelPoints.length - 1 ? 'border-red-200 bg-red-50' : ''}`}>
+
+              <Card
+                className={`flex-1 ${
+                  index === timeTravelPoints.length - 1
+                    ? "border-red-200 bg-red-50"
+                    : ""
+                }`}
+              >
                 <CardContent className="p-4">
                   <div className="flex justify-between items-center">
                     <div>
                       <div className="font-medium">{point.year}</div>
-                      <div className="text-lg font-bold">{formatPrice(point.price)}</div>
+                      <div className="text-lg font-bold">
+                        {formatPrice(point.price)}
+                      </div>
                     </div>
-                    
+
                     {index > 0 && (
                       <div className="text-right">
-                        <div className="text-sm text-gray-500">Appreciation</div>
-                        <div className="text-green-600 font-medium">+{point.appreciation}%</div>
+                        <div className="text-sm text-gray-500">
+                          Appreciation
+                        </div>
+                        <div className="text-green-600 font-medium">
+                          +{point.appreciation}%
+                        </div>
                       </div>
                     )}
                   </div>
@@ -78,9 +97,11 @@ const TimeTravel = () => {
           ))}
         </div>
       </div>
-      
+
       <p className="text-xs text-gray-500 mt-4">
-        Note: Historical values are based on market trends and actual transaction data. Future projections are estimates based on current growth rates and may vary.
+        Note: Historical values are based on market trends and actual
+        transaction data. Future projections are estimates based on current
+        growth rates and may vary.
       </p>
     </div>
   );

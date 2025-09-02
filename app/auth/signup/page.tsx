@@ -1,34 +1,49 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Logo } from '@/components/ui/logo';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Mail, User, Phone, ArrowLeft } from 'lucide-react';
-import { apiClient } from '@/lib/api';
-import { useAuthStore } from '@/lib/store';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Logo } from "@/components/ui/logo";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Mail, User, Phone, ArrowLeft } from "lucide-react";
+import { apiClient } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
+import { toast } from "sonner";
 
 const signupSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(1, 'Last name must be at least 1 character').or(z.literal('')),
-  email: z.string().email('Please enter a valid email address'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
-  role: z.enum(['user', 'builder'], {
-    required_error: 'Please select a role',
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z
+    .string()
+    .min(1, "Last name must be at least 1 character")
+    .or(z.literal("")),
+  email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  role: z.enum(["user", "builder"], {
+    required_error: "Please select a role",
   }),
 });
 
 const otpSchema = z.object({
-  otp: z.string().length(6, 'OTP must be 6 digits'),
+  otp: z.string().length(6, "OTP must be 6 digits"),
 });
 
 type SignupForm = z.infer<typeof signupSchema>;
@@ -37,7 +52,7 @@ type OTPForm = z.infer<typeof otpSchema>;
 export default function SignupPage() {
   const router = useRouter();
   const { login } = useAuthStore();
-  const [step, setStep] = useState<'signup' | 'otp'>('signup');
+  const [step, setStep] = useState<"signup" | "otp">("signup");
   const [signupData, setSignupData] = useState<SignupForm | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -55,10 +70,10 @@ export default function SignupPage() {
       await apiClient.signup(data);
       // await apiClient.sendOTP(data.email);
       setSignupData(data);
-      setStep('otp');
-      toast.success('Account created! OTP sent to your email');
+      setStep("otp");
+      toast.success("Account created! OTP sent to your email");
     } catch (error) {
-      toast.error('Failed to create account. Please try again.');
+      toast.error("Failed to create account. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -66,18 +81,21 @@ export default function SignupPage() {
 
   const onOTPSubmit = async (data: OTPForm) => {
     if (!signupData) return;
-    
+
     setLoading(true);
     try {
-      const response:any = await apiClient.verifyOTP(signupData.email, data.otp);
+      const response: any = await apiClient.verifyOTP(
+        signupData.email,
+        data.otp
+      );
       if (response.success) {
         const { user, token } = response.data;
         login(user, token);
-        toast.success('Account verified successfully!');
-        router.push('/dashboard');
+        toast.success("Account verified successfully!");
+        router.push("/dashboard");
       }
     } catch (error) {
-      toast.error('Invalid OTP. Please try again.');
+      toast.error("Invalid OTP. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -92,27 +110,29 @@ export default function SignupPage() {
           </div>
           <div className="text-center">
             <CardTitle className="text-2xl font-bold">
-              {step === 'signup' ? 'Create Account' : 'Verify Email'}
+              {step === "signup" ? "Create Account" : "Verify Email"}
             </CardTitle>
             <CardDescription>
-              {step === 'signup' 
-                ? 'Join UrbanHouseIN to find your perfect property' 
-                : `We've sent a verification code to ${signupData?.email}`
-              }
+              {step === "signup"
+                ? "Join UrbanHouseIN to find your perfect property"
+                : `We've sent a verification code to ${signupData?.email}`}
             </CardDescription>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {step === 'signup' ? (
-            <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
+          {step === "signup" ? (
+            <form
+              onSubmit={signupForm.handleSubmit(onSignupSubmit)}
+              className="space-y-4"
+            >
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
-                      {...signupForm.register('firstName')}
+                      {...signupForm.register("firstName")}
                       placeholder="John"
                       className="pl-10"
                     />
@@ -127,7 +147,7 @@ export default function SignupPage() {
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
-                    {...signupForm.register('lastName')}
+                    {...signupForm.register("lastName")}
                     placeholder="Doe"
                   />
                   {signupForm.formState.errors.lastName && (
@@ -143,7 +163,7 @@ export default function SignupPage() {
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    {...signupForm.register('email')}
+                    {...signupForm.register("email")}
                     type="email"
                     placeholder="john@example.com"
                     className="pl-10"
@@ -161,7 +181,7 @@ export default function SignupPage() {
                 <div className="relative">
                   <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    {...signupForm.register('phone')}
+                    {...signupForm.register("phone")}
                     placeholder="9876543210"
                     className="pl-10"
                   />
@@ -175,7 +195,11 @@ export default function SignupPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="role">I am a</Label>
-                <Select onValueChange={(value) => signupForm.setValue('role', value as 'user' | 'builder')}>
+                <Select
+                  onValueChange={(value) =>
+                    signupForm.setValue("role", value as "user" | "builder")
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
@@ -191,12 +215,12 @@ export default function SignupPage() {
                 )}
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-red-500 hover:bg-red-600"
                 disabled={loading}
               >
-                {loading ? 'Creating Account...' : 'Create Account'}
+                {loading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
           ) : (
@@ -204,18 +228,21 @@ export default function SignupPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setStep('signup')}
+                onClick={() => setStep("signup")}
                 className="mb-4"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to signup
               </Button>
 
-              <form onSubmit={otpForm.handleSubmit(onOTPSubmit)} className="space-y-4">
+              <form
+                onSubmit={otpForm.handleSubmit(onOTPSubmit)}
+                className="space-y-4"
+              >
                 <div className="space-y-2">
                   <Label htmlFor="otp">Enter Verification Code</Label>
                   <Input
-                    {...otpForm.register('otp')}
+                    {...otpForm.register("otp")}
                     type="text"
                     placeholder="000000"
                     maxLength={6}
@@ -228,31 +255,36 @@ export default function SignupPage() {
                   )}
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-red-500 hover:bg-red-600"
                   disabled={loading}
                 >
-                  {loading ? 'Verifying...' : 'Verify & Complete'}
+                  {loading ? "Verifying..." : "Verify & Complete"}
                 </Button>
               </form>
 
               <div className="text-center">
-                <Button 
-                  variant="link" 
-                  onClick={() => signupData && apiClient.sendOTP(signupData.email)}
+                <Button
+                  variant="link"
+                  onClick={() =>
+                    signupData && apiClient.sendOTP(signupData.email)
+                  }
                   disabled={loading}
                   className="text-sm"
                 >
-                  Didn't receive code? Resend
+                  Didn&apos;t receive code? Resend
                 </Button>
               </div>
             </div>
           )}
 
           <div className="text-center text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link href="/auth/login" className="text-red-500 hover:underline font-medium">
+            Already have an account?{" "}
+            <Link
+              href="/auth/login"
+              className="text-red-500 hover:underline font-medium"
+            >
               Sign in
             </Link>
           </div>

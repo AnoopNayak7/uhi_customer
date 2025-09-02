@@ -19,7 +19,7 @@ interface LoginModalProps {
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login, sendOTP }:any = useAuthStore();
+  const { login, sendOTP }: any = useAuthStore();
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +49,9 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center pb-4">
           <div className="flex items-center justify-between mb-4">
-            <CardTitle className="text-xl font-semibold">Login to Continue</CardTitle>
+            <CardTitle className="text-xl font-semibold">
+              Login to Continue
+            </CardTitle>
             <Button
               variant="ghost"
               size="sm"
@@ -59,13 +61,13 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
               <X className="w-4 h-4" />
             </Button>
           </div>
-          
+
           <div className="flex items-center justify-center mb-4">
             <div className="p-3 bg-red-50 rounded-full">
               <Heart className="w-6 h-6 text-red-500" />
             </div>
           </div>
-          
+
           <p className="text-gray-600 text-sm">
             Login to add properties to favourites and access all features
           </p>
@@ -84,7 +86,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                 required
               />
             </div>
-            
+
             <Button
               type="submit"
               className="w-full bg-red-500 hover:bg-red-600"
@@ -96,8 +98,11 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
           <div className="text-center">
             <p className="text-sm text-gray-500 mb-4">
-              Don't have an account?{" "}
-              <Link href="/auth/signup" className="text-red-500 hover:underline">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/auth/signup"
+                className="text-red-500 hover:underline"
+              >
                 Sign up here
               </Link>
             </p>

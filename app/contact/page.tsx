@@ -111,8 +111,8 @@ export default function ContactPage() {
               Get in Touch
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Have questions about our services? We're here to help you find
-              your perfect property.
+              Have questions about our services? We&apos;re here to help you
+              find your perfect property.
             </p>
           </div>
         </section>
@@ -128,8 +128,8 @@ export default function ContactPage() {
                     Contact Information
                   </h2>
                   <p className="text-gray-600">
-                    Reach out to us through any of the following channels. We're
-                    always ready to assist you.
+                    Reach out to us through any of the following channels.
+                    We&apos;re always ready to assist you.
                   </p>
                 </div>
 

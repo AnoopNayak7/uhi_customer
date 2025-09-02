@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,14 +20,8 @@ import {
   MapPin,
   Building,
   Home,
-  TreePine,
-  Briefcase,
-  Store,
   Calendar,
   BarChart3,
-  ArrowUp,
-  ArrowDown,
-  Minus,
   Star,
   Target,
   Zap,
@@ -41,11 +34,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   Area,
-  AreaChart,
-  ComposedChart,
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageContent } from "@/components/animations/layout-wrapper";
@@ -1223,7 +1212,7 @@ export default function PriceTrendsPage() {
                       <div className="flex items-center justify-center space-x-4 text-sm text-blue-600">
                         <div className="flex items-center space-x-2">
                           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          <span>We're actively collecting data</span>
+                          <span>We&apos;re actively collecting data</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,11 +70,7 @@ export default function AreaInsightsPage() {
   const [areaData, setAreaData] = useState<any>(null);
   const [areas, setAreas] = useState<any[]>([]);
 
-  useEffect(() => {
-    fetchAreasForCity();
-  }, [selectedCity]);
-
-  const fetchAreasForCity = async () => {
+  const fetchAreasForCity = useCallback(async () => {
     try {
       const response: any = await apiClient.getToolsAreasForCity(selectedCity);
 
@@ -91,7 +87,11 @@ export default function AreaInsightsPage() {
       toast.error("Failed to fetch areas for the selected city");
       setAreas([]);
     }
-  };
+  }, [selectedCity]);
+
+  useEffect(() => {
+    fetchAreasForCity();
+  }, [fetchAreasForCity]);
 
   const fetchAreaInsights = async () => {
     if (!selectedArea) {

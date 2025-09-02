@@ -1,26 +1,41 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuthStore } from '@/lib/store';
-import { apiClient } from '@/lib/api';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Eye, 
-  Heart, 
-  Users, 
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAuthStore } from "@/lib/store";
+import { apiClient } from "@/lib/api";
+import {
+  BarChart3,
+  TrendingUp,
+  Eye,
+  Heart,
+  Users,
   Building,
   ArrowLeft,
-  Calendar,
-  MapPin
-} from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+  MapPin,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
 
 export default function AnalyticsPage() {
   const { user } = useAuthStore();
@@ -28,34 +43,36 @@ export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<any>(null);
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('30');
+  const [timeRange, setTimeRange] = useState("30");
+
+  const fetchAnalytics = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response: any = await apiClient.getBuilderAnalytics({
+        days: timeRange,
+      });
+      setAnalytics(response.data || mockAnalytics);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+      setAnalytics(mockAnalytics);
+    } finally {
+      setLoading(false);
+    }
+  }, [timeRange]);
 
   useEffect(() => {
     if (user) {
       fetchAnalytics();
       fetchProperties();
     }
-  }, [user, timeRange]);
-
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      const response:any = await apiClient.getBuilderAnalytics({ days: timeRange });
-      setAnalytics(response.data || mockAnalytics);
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      setAnalytics(mockAnalytics);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [user, timeRange, fetchAnalytics]);
 
   const fetchProperties = async () => {
     try {
-      const response:any = await apiClient.getMyProperties({ limit: 10 });
+      const response: any = await apiClient.getMyProperties({ limit: 10 });
       setProperties(response.data || []);
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      console.error("Error fetching properties:", error);
     }
   };
 
@@ -70,20 +87,20 @@ export default function AnalyticsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
+
       <main className="flex-1 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <Button 
-              variant="ghost" 
-              onClick={() => router.push('/dashboard')}
+            <Button
+              variant="ghost"
+              onClick={() => router.push("/dashboard")}
               className="mb-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Button>
-            
+
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
@@ -93,7 +110,7 @@ export default function AnalyticsPage() {
                   Track your property performance and insights
                 </p>
               </div>
-              
+
               <Select value={timeRange} onValueChange={setTimeRange}>
                 <SelectTrigger className="w-48">
                   <SelectValue />
@@ -224,7 +241,12 @@ export default function AnalyticsPage() {
                         <XAxis dataKey="date" />
                         <YAxis />
                         <Tooltip />
-                        <Line type="monotone" dataKey="views" stroke="#ef4444" strokeWidth={2} />
+                        <Line
+                          type="monotone"
+                          dataKey="views"
+                          stroke="#ef4444"
+                          strokeWidth={2}
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -260,13 +282,18 @@ export default function AnalyticsPage() {
                 <CardContent>
                   <div className="space-y-4">
                     {properties.slice(0, 5).map((property, index) => (
-                      <div key={property.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div
+                        key={property.id}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                      >
                         <div className="flex items-center space-x-4">
                           <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white font-bold">
                             {index + 1}
                           </div>
                           <div>
-                            <h4 className="font-medium text-gray-900">{property.title}</h4>
+                            <h4 className="font-medium text-gray-900">
+                              {property.title}
+                            </h4>
                             <div className="flex items-center text-sm text-gray-600">
                               <MapPin className="w-3 h-3 mr-1" />
                               {property.city}
@@ -298,7 +325,7 @@ export default function AnalyticsPage() {
           )}
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
@@ -315,18 +342,18 @@ const mockAnalytics = {
   newLeads: 12,
   favouritesGrowth: 8,
   viewsChart: [
-    { date: '2024-01-01', views: 120 },
-    { date: '2024-01-02', views: 150 },
-    { date: '2024-01-03', views: 180 },
-    { date: '2024-01-04', views: 200 },
-    { date: '2024-01-05', views: 170 },
-    { date: '2024-01-06', views: 220 },
-    { date: '2024-01-07', views: 250 },
+    { date: "2024-01-01", views: 120 },
+    { date: "2024-01-02", views: 150 },
+    { date: "2024-01-03", views: 180 },
+    { date: "2024-01-04", views: 200 },
+    { date: "2024-01-05", views: 170 },
+    { date: "2024-01-06", views: 220 },
+    { date: "2024-01-07", views: 250 },
   ],
   leadsChart: [
-    { type: 'Apartment', leads: 45 },
-    { type: 'House', leads: 32 },
-    { type: 'Villa', leads: 28 },
-    { type: 'Plot', leads: 15 },
-  ]
+    { type: "Apartment", leads: 45 },
+    { type: "House", leads: 32 },
+    { type: "Villa", leads: 28 },
+    { type: "Plot", leads: 15 },
+  ],
 };

@@ -114,11 +114,11 @@ export default function TermsOfServicePage() {
                   Agreement to Terms
                 </h2>
                 <p className="text-gray-600 leading-relaxed mb-4">
-                  These Terms of Service ("Terms") govern your use of
-                  UrbanHouseIN's website and services. By accessing or using our
-                  platform, you agree to be bound by these Terms. If you
-                  disagree with any part of these terms, then you may not access
-                  the service.
+                  These Terms of Service (&quot;Terms&quot;) govern your use of
+                  UrbanHouseIN&apos;s website and services. By accessing or
+                  using our platform, you agree to be bound by these Terms. If
+                  you disagree with any part of these terms, then you may not
+                  access the service.
                 </p>
                 <p className="text-gray-600 leading-relaxed">
                   We reserve the right to update these Terms at any time.
