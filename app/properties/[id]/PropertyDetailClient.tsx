@@ -526,7 +526,7 @@ export default function PropertyDetailClient({
                           Property Agent
                         </div>
                         <div className="text-gray-600 text-sm">
-                          UrbanHouseIN
+                          Urbanhousein
                         </div>
                         <div className="flex items-center gap-1 mt-1">
                           <Star className="w-4 h-4 text-yellow-400 fill-current" />

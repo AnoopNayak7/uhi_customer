@@ -101,7 +101,7 @@ class ApiClient {
   async signup(data: {
     email: string;
     firstName: string;
-    lastName: string;
+    lastName?: string;
     phone: string;
     role: string;
   }) {

@@ -137,15 +137,15 @@ export const PropertyCard = ({
   return (
     <CardHover>
       <Card
-        className="group overflow-hidden cursor-pointer bg-white touch-manipulation"
+        className="group overflow-hidden cursor-pointer bg-white touch-manipulation h-full flex flex-col"
         onClick={handleCardClick}
         onMouseEnter={handleMouseEnter}
       >
-        <div className="flex flex-col">
-          <div className="relative">
+        <div className="flex flex-col h-full">
+          <div className="relative flex-shrink-0">
             <div
               className={`relative ${
-                compact ? "h-[200px] sm:h-[160px]" : "h-48 sm:h-52"
+                compact ? "h-[200px] sm:h-[180px]" : "h-48 sm:h-56"
               } overflow-hidden`}
             >
               <Image
@@ -203,16 +203,16 @@ export const PropertyCard = ({
             </div>
           </div>
 
-          <CardContent className="p-4 sm:p-3">
-            <div className="mb-4 sm:mb-5">
+          <CardContent className="p-4 sm:p-3 flex-1 flex flex-col">
+            <div className="mb-3 sm:mb-4 flex-shrink-0">
               <h3
-                className={`font-semibold text-gray-900 line-clamp-2 mb-1 ${
+                className={`font-semibold text-gray-900 line-clamp-2 mb-2 ${
                   compact ? "text-lg sm:text-base" : "text-lg sm:text-[18px]"
                 }`}
               >
                 {property.title}
               </h3>
-              <div className="flex items-center text-gray-500 text-sm sm:text-xs mt-2">
+              <div className="flex items-center text-gray-500 text-sm sm:text-xs">
                 <MapPin className="w-4 h-4 sm:w-3 sm:h-3 mr-1 flex-shrink-0" />
                 <span className="line-clamp-1">
                   {property.address}, {property.city}
@@ -220,7 +220,7 @@ export const PropertyCard = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-sm sm:text-xs text-gray-600 mb-4 mt-3 gap-2">
+            <div className="flex items-center justify-between text-sm sm:text-xs text-gray-600 mb-3 gap-2 flex-shrink-0">
               <div className="flex items-center min-w-0">
                 <Bed className="w-4 h-4 mr-1 flex-shrink-0" />
                 <span className="truncate">{property.bedrooms} Bed</span>
@@ -237,9 +237,9 @@ export const PropertyCard = ({
               </div>
             </div>
 
-            <hr className="mb-2" />
+            <hr className="mb-3 flex-shrink-0" />
 
-            <div className="flex items-end justify-between gap-4">
+            <div className="flex items-end justify-between gap-4 mt-auto flex-shrink-0">
               <div className="flex-1 min-w-0">
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
                   STARTING PRICE

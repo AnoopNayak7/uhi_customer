@@ -637,7 +637,7 @@ export function RealEstateTools() {
                             <Label htmlFor="partner-message" className="text-sm">Why Partner With Us?</Label>
                             <Textarea
                               id="partner-message"
-                              placeholder="Tell us about your business goals, target audience, and why you want to partner with UrbanHouseIN..."
+                              placeholder="Tell us about your business goals, target audience, and why you want to partner with Urbanhousein..."
                               value={partnerForm.message}
                               onChange={(e) =>
                                 setPartnerForm((prev) => ({

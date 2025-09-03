@@ -5,7 +5,7 @@ export function HomepageSEOContent() {
   return (
     <div className="sr-only">
       {/* SEO Content - Hidden from users but visible to search engines */}
-      <h1>UrbanHouseIN - Premium Real Estate Properties in India | Buy, Sell, Rent Properties</h1>
+      <h1>Urbanhousein - Premium Real Estate Properties in India | Buy, Sell, Rent Properties</h1>
       
       <h2>Featured Properties in India</h2>
       <p>Discover handpicked premium properties for discerning buyers across India. Our featured properties include luxury apartments, modern villas, and premium commercial spaces in prime locations like Bengaluru, Mumbai, Delhi, Pune, Hyderabad, Chennai, and Kolkata.</p>
@@ -22,7 +22,7 @@ export function HomepageSEOContent() {
       <h2>Property Listings Across India</h2>
       <p>Comprehensive property listings including apartments, villas, commercial spaces, and plots in prime locations across India. Find your dream property with detailed information, high-quality images, virtual tours, and verified listings.</p>
       
-      <h2>Why Choose UrbanHouseIN for Real Estate</h2>
+      <h2>Why Choose Urbanhousein for Real Estate</h2>
       <ul>
         <li>Premium Property Selection with Verified Listings</li>
         <li>Expert Real Estate Guidance and Market Insights</li>
@@ -60,8 +60,8 @@ export function HomepageSEOContent() {
       <h2>Market Insights and Price Trends</h2>
       <p>Stay updated with the latest real estate market trends, price movements, and investment opportunities across India. Our comprehensive market analysis helps you understand property values, appreciation rates, and market conditions.</p>
       
-      <h2>Contact UrbanHouseIN</h2>
-      <p>UrbanHouseIN - Your trusted partner in real estate across India. Contact us for premium properties, expert guidance, professional real estate services, property investment advice, and comprehensive market insights. We're here to help you find your dream property and make informed real estate decisions.</p>
+      <h2>Contact Urbanhousein</h2>
+      <p>Urbanhousein - Your trusted partner in real estate across India. Contact us for premium properties, expert guidance, professional real estate services, property investment advice, and comprehensive market insights. We're here to help you find your dream property and make informed real estate decisions.</p>
     </div>
   );
 }

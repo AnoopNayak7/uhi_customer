@@ -6,8 +6,8 @@ import { HomepageSEOContent } from "@/components/home/homepage-seo-content";
 
 // Enhanced SEO metadata for the homepage
 export const metadata: Metadata = {
-  title: "UrbanHouseIN - Premium Real Estate Properties in India | Buy, Sell, Rent Properties",
-  description: "Discover premium real estate properties across India with UrbanHouseIN. Find luxury apartments, modern villas, commercial spaces, and investment properties. Expert guidance, verified listings, and comprehensive market insights for your property journey.",
+  title: "Urbanhousein - Premium Real Estate Properties in India | Buy, Sell, Rent Properties",
+  description: "Discover premium real estate properties across India with Urbanhousein. Find luxury apartments, modern villas, commercial spaces, and investment properties. Expert guidance, verified listings, and comprehensive market insights for your property journey.",
   keywords: [
     "real estate India",
     "property for sale",
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
     "real estate tools",
     "property market analysis"
   ].join(", "),
-  authors: [{ name: "UrbanHouseIN Team" }],
-  creator: "UrbanHouseIN",
-  publisher: "UrbanHouseIN",
+  authors: [{ name: "Urbanhousein Team" }],
+  creator: "Urbanhousein",
+  publisher: "Urbanhousein",
   formatDetection: {
     email: false,
     address: false,
@@ -57,16 +57,16 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "UrbanHouseIN - Premium Real Estate Properties in India",
-    description: "Discover premium real estate properties across India with UrbanHouseIN. Find luxury apartments, modern villas, commercial spaces, and investment properties with expert guidance.",
+    title: "Urbanhousein - Premium Real Estate Properties in India",
+    description: "Discover premium real estate properties across India with Urbanhousein. Find luxury apartments, modern villas, commercial spaces, and investment properties with expert guidance.",
     url: "https://urbanhousein.com",
-    siteName: "UrbanHouseIN",
+    siteName: "Urbanhousein",
     images: [
       {
         url: "https://urbanhousein.com/og-image-home.jpg",
         width: 1200,
         height: 630,
-        alt: "UrbanHouseIN - Premium Real Estate Properties in India",
+        alt: "Urbanhousein - Premium Real Estate Properties in India",
       },
     ],
     locale: "en_IN",
@@ -74,8 +74,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "UrbanHouseIN - Premium Real Estate Properties in India",
-    description: "Discover premium real estate properties across India with UrbanHouseIN. Find luxury apartments, modern villas, commercial spaces, and investment properties.",
+    title: "Urbanhousein - Premium Real Estate Properties in India",
+    description: "Discover premium real estate properties across India with Urbanhousein. Find luxury apartments, modern villas, commercial spaces, and investment properties.",
     images: ["https://urbanhousein.com/og-image-home.jpg"],
     creator: "@urbanhousein",
     site: "@urbanhousein",
@@ -107,7 +107,7 @@ const structuredData = {
       "@type": "WebSite",
       "@id": "https://urbanhousein.com/#website",
       "url": "https://urbanhousein.com/",
-      "name": "UrbanHouseIN",
+      "name": "Urbanhousein",
       "description": "Premium real estate platform in India",
       "potentialAction": [
         {
@@ -124,7 +124,7 @@ const structuredData = {
     {
       "@type": "Organization",
       "@id": "https://urbanhousein.com/#organization",
-      "name": "UrbanHouseIN",
+      "name": "Urbanhousein",
       "url": "https://urbanhousein.com/",
       "logo": {
         "@type": "ImageObject",
@@ -134,13 +134,13 @@ const structuredData = {
         "contentUrl": "https://urbanhousein.com/logo.png",
         "width": 200,
         "height": 60,
-        "caption": "UrbanHouseIN"
+        "caption": "Urbanhousein"
       },
       "image": {
         "@id": "https://urbanhousein.com/#/schema/logo/image/"
       },
-      "description": "UrbanHouseIN is India's leading real estate platform, helping you find premium properties across the country with expert guidance and comprehensive market insights.",
-      "foundingDate": "2024",
+      "description": "Urbanhousein is India's leading real estate platform, helping you find premium properties across the country with expert guidance and comprehensive market insights.",
+      "foundingDate": "2025",
       "sameAs": [
         "https://www.facebook.com/urbanhousein",
         "https://www.twitter.com/urbanhousein",
@@ -149,10 +149,10 @@ const structuredData = {
       ],
       "contactPoint": {
         "@type": "ContactPoint",
-        "telephone": "+91-XXXXXXXXXX",
+        "telephone": "+91-9663024571",
         "contactType": "customer service",
         "areaServed": "IN",
-        "availableLanguage": ["English", "Hindi"]
+        "availableLanguage": ["English", "Hindi", "Kannada"]
       },
       "address": {
         "@type": "PostalAddress",
@@ -163,14 +163,14 @@ const structuredData = {
       "@type": "WebPage",
       "@id": "https://urbanhousein.com/#webpage",
       "url": "https://urbanhousein.com/",
-      "name": "UrbanHouseIN - Premium Real Estate Properties in India",
+      "name": "Urbanhousein - Premium Real Estate Properties in India",
       "isPartOf": {
         "@id": "https://urbanhousein.com/#website"
       },
       "about": {
         "@id": "https://urbanhousein.com/#organization"
       },
-      "description": "Discover premium real estate properties across India with UrbanHouseIN. Find luxury apartments, modern villas, commercial spaces, and investment properties.",
+      "description": "Discover premium real estate properties across India with Urbanhousein. Find luxury apartments, modern villas, commercial spaces, and investment properties.",
       "breadcrumb": {
         "@id": "https://urbanhousein.com/#breadcrumb"
       },
@@ -191,7 +191,7 @@ const structuredData = {
     {
       "@type": "RealEstateAgent",
       "@id": "https://urbanhousein.com/#realestateagent",
-      "name": "UrbanHouseIN",
+      "name": "Urbanhousein",
       "description": "Leading real estate platform in India",
       "url": "https://urbanhousein.com/",
       "logo": "https://urbanhousein.com/logo.png",
@@ -220,7 +220,7 @@ const structuredData = {
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "How do I find properties on UrbanHouseIN?",
+          "name": "How do I find properties on Urbanhousein?",
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "You can search properties by location, type, price range, and other filters. Use our advanced search tools to find your perfect property across India."
@@ -228,7 +228,7 @@ const structuredData = {
         },
         {
           "@type": "Question", 
-          "name": "Are the properties verified on UrbanHouseIN?",
+          "name": "Are the properties verified on Urbanhousein?",
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Yes, we verify all properties listed on our platform. We work with trusted developers and agents to ensure quality listings and authentic property information."

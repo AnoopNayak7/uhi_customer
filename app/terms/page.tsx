@@ -96,7 +96,7 @@ export default function TermsOfServicePage() {
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Please read these terms carefully before using our platform. By
-              using UrbanHouseIN, you agree to these terms.
+              using Urbanhousein, you agree to these terms.
             </p>
             <p className="text-sm text-gray-500 mt-4">
               Last updated: January 15, 2024
@@ -115,7 +115,7 @@ export default function TermsOfServicePage() {
                 </h2>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   These Terms of Service (&quot;Terms&quot;) govern your use of
-                  UrbanHouseIN&apos;s website and services. By accessing or
+                  Urbanhousein&apos;s website and services. By accessing or
                   using our platform, you agree to be bound by these Terms. If
                   you disagree with any part of these terms, then you may not
                   access the service.
@@ -204,7 +204,7 @@ export default function TermsOfServicePage() {
               <CardContent>
                 <div className="space-y-4">
                   <p className="text-gray-600">
-                    The UrbanHouseIN platform, including its design,
+                    The Urbanhousein platform, including its design,
                     functionality, and content, is protected by intellectual
                     property laws. You may not copy, modify, or distribute our
                     platform without permission.

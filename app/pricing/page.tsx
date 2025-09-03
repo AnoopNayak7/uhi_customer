@@ -360,7 +360,7 @@ export default function PricingPage() {
               Ready to Get Started?
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              Join thousands of property owners and real estate professionals using UrbanHouseIN
+              Join thousands of property owners and real estate professionals using Urbanhousein
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100" asChild>

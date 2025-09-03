@@ -96,7 +96,7 @@ export default function PrivacyPolicyPage() {
                   Introduction
                 </h2>
                 <p className="text-gray-600 leading-relaxed">
-                  UrbanHouseIN (&quot;we,&quot; &quot;our,&quot; or
+                  Urbanhousein (&quot;we,&quot; &quot;our,&quot; or
                   &quot;us&quot;) is committed to protecting your privacy. This
                   Privacy Policy explains how we collect, use, disclose, and
                   safeguard your information when you visit our website and use

@@ -13,13 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Logo } from "@/components/ui/logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,15 +25,10 @@ import { toast } from "sonner";
 
 const signupSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z
-    .string()
-    .min(1, "Last name must be at least 1 character")
-    .or(z.literal("")),
+  lastName: z.string().optional(),
   email: z.string().email("Please enter a valid email address"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  role: z.enum(["user", "builder"], {
-    required_error: "Please select a role",
-  }),
+  role: z.enum(["user", "builder"]).default("user"),
 });
 
 const otpSchema = z.object({
@@ -114,7 +103,7 @@ export default function SignupPage() {
             </CardTitle>
             <CardDescription>
               {step === "signup"
-                ? "Join UrbanHouseIN to find your perfect property"
+                ? "Join Urbanhousein to find your perfect property"
                 : `We've sent a verification code to ${signupData?.email}`}
             </CardDescription>
           </div>
@@ -145,7 +134,7 @@ export default function SignupPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName">Last Name (Optional)</Label>
                   <Input
                     {...signupForm.register("lastName")}
                     placeholder="Doe"
@@ -193,27 +182,7 @@ export default function SignupPage() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="role">I am a</Label>
-                <Select
-                  onValueChange={(value) =>
-                    signupForm.setValue("role", value as "user" | "builder")
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">Property Buyer/Renter</SelectItem>
-                    <SelectItem value="builder">Builder/Developer</SelectItem>
-                  </SelectContent>
-                </Select>
-                {signupForm.formState.errors.role && (
-                  <p className="text-sm text-red-500">
-                    {signupForm.formState.errors.role.message}
-                  </p>
-                )}
-              </div>
+
 
               <Button
                 type="submit"

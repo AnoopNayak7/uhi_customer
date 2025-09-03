@@ -3,8 +3,8 @@
 import Head from 'next/head';
 
 export const HomePageSEO = () => {
-  const metaTitle = "UrbanHouseIN - Find Your Dream Property in India | Real Estate Platform";
-  const metaDescription = "Discover the best properties across India on UrbanHouseIN. Find apartments, villas, commercial properties with detailed insights, price trends, and expert guidance. Your trusted real estate partner.";
+  const metaTitle = "Urbanhousein - Find Your Dream Property in India | Real Estate Platform";
+  const metaDescription = "Discover the best properties across India on Urbanhousein. Find apartments, villas, commercial properties with detailed insights, price trends, and expert guidance. Your trusted real estate partner.";
   const canonicalUrl = "https://urbanhousein.com";
   const ogImage = "https://urbanhousein.com/og-image-home.jpg";
 
@@ -12,10 +12,10 @@ export const HomePageSEO = () => {
   const generateOrganizationData = () => ({
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "UrbanHouseIN",
+    "name": "Urbanhousein",
     "url": canonicalUrl,
     "logo": "https://urbanhousein.com/logo.png",
-    "description": "UrbanHouseIN is a leading real estate platform helping you find the perfect property across India. Discover apartments, villas, and commercial properties with detailed insights and expert guidance.",
+    "description": "Urbanhousein is a leading real estate platform helping you find the perfect property across India. Discover apartments, villas, and commercial properties with detailed insights and expert guidance.",
     "foundingDate": "2024",
     "sameAs": [
       "https://facebook.com/urbanhousein",
@@ -25,10 +25,10 @@ export const HomePageSEO = () => {
     ],
     "contactPoint": {
       "@type": "ContactPoint",
-      "telephone": "+91-XXXXXXXXXX",
+      "telephone": "+91-9663024571",
       "contactType": "customer service",
       "areaServed": "IN",
-      "availableLanguage": ["English", "Hindi"]
+      "availableLanguage": ["English", "Hindi", "Kannada"]
     },
     "address": {
       "@type": "PostalAddress",
@@ -70,7 +70,7 @@ export const HomePageSEO = () => {
   const generateWebsiteData = () => ({
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "UrbanHouseIN",
+    "name": "Urbanhousein",
     "url": canonicalUrl,
     "description": "Leading real estate platform in India",
     "potentialAction": {
@@ -83,7 +83,7 @@ export const HomePageSEO = () => {
     },
     "publisher": {
       "@type": "Organization",
-      "name": "UrbanHouseIN"
+      "name": "Urbanhousein"
     }
   });
 
@@ -91,7 +91,7 @@ export const HomePageSEO = () => {
   const generateLocalBusinessData = () => ({
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": "UrbanHouseIN",
+    "name": "Urbanhousein",
     "description": "Real estate platform serving India",
     "url": canonicalUrl,
     "telephone": "+91-XXXXXXXXXX",
@@ -125,7 +125,7 @@ export const HomePageSEO = () => {
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "How do I find properties on UrbanHouseIN?",
+        "name": "How do I find properties on Urbanhousein?",
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "You can search properties by location, type, price range, and other filters. Use our advanced search tools to find your perfect property."
@@ -133,7 +133,7 @@ export const HomePageSEO = () => {
       },
       {
         "@type": "Question",
-        "name": "Are the properties verified on UrbanHouseIN?",
+        "name": "Are the properties verified on Urbanhousein?",
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Yes, we verify all properties listed on our platform. We work with trusted developers and agents to ensure quality listings."
@@ -163,8 +163,8 @@ export const HomePageSEO = () => {
       {/* Basic Meta Tags */}
       <title>{metaTitle}</title>
       <meta name="description" content={metaDescription} />
-      <meta name="keywords" content="real estate, property, apartments, villas, commercial properties, India, real estate platform, property search, price trends, area insights, UrbanHouseIN" />
-      <meta name="author" content="UrbanHouseIN" />
+      <meta name="keywords" content="real estate, property, apartments, villas, commercial properties, India, real estate platform, property search, price trends, area insights, Urbanhousein" />
+      <meta name="author" content="Urbanhousein" />
       <meta name="robots" content="index, follow" />
       <link rel="canonical" href={canonicalUrl} />
 
@@ -176,7 +176,7 @@ export const HomePageSEO = () => {
       <meta property="og:image" content={ogImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:site_name" content="UrbanHouseIN" />
+      <meta property="og:site_name" content="Urbanhousein" />
       <meta property="og:locale" content="en_US" />
 
       {/* Twitter Card Meta Tags */}

@@ -1,6 +1,6 @@
 export const APP_CONFIG = {
-  name: 'UrbanHouseIN',
-  description: 'Find Your Dream Property with UrbanHouseIN',
+  name: 'Urbanhousein',
+  description: 'Find Your Dream Property with Urbanhousein',
   primaryColor: '#FE2C2D',
   api: {
     baseUrl: 'https://g82q9hlk9h.execute-api.ap-south-1.amazonaws.com/prod/api'
