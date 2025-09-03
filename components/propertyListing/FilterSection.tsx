@@ -29,6 +29,7 @@ interface FilterSectionProps {
   handleFilterChange: (key: string, value: string) => void;
   showFilters: boolean;
   setShowFilters: (show: boolean) => void;
+  propertiesCount?: number;
 }
 
 export function FilterSection({
@@ -36,12 +37,25 @@ export function FilterSection({
   handleFilterChange,
   showFilters,
   setShowFilters,
+  propertiesCount = 0,
 }: FilterSectionProps) {
   const { searchFilters, updateSearchFilters }: any = useSearchStore();
 
   return (
     <>
-      {/* Mobile filter drawer - removed to avoid duplication */}
+      {/* Mobile filter drawer */}
+      <div className="block sm:hidden mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Properties</h1>
+            <p className="text-gray-500 text-sm">{propertiesCount} properties found</p>
+          </div>
+          <MobileFilterDrawer
+            onSearch={onSearch}
+            handleFilterChange={handleFilterChange}
+          />
+        </div>
+      </div>
       
       {/* Tablet filter toggle */}
       <div className="hidden sm:block lg:hidden mb-4">
@@ -61,7 +75,7 @@ export function FilterSection({
           showFilters ? "block" : "hidden"
         } lg:block lg:w-72 flex-shrink-0`}
       >
-        <Card className="p-4 sm:p-6 h-full overflow-y-auto sticky top-20 mx-0 lg:mx-0 rounded-lg lg:rounded-lg border-0 lg:border shadow-lg lg:shadow-sm">
+        <Card className="p-4 sm:p-6 h-full overflow-y-auto mx-0 lg:mx-0 rounded-lg lg:rounded-lg border-0 lg:border shadow-lg lg:shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl sm:text-lg font-semibold">
               Filter Properties

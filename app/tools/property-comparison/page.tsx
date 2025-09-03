@@ -326,110 +326,7 @@ export default function PropertyComparisonPage() {
             </p>
           </motion.div> */}
 
-          {/* Search Section */}
-          <motion.div
-            className="mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <Input
-                      placeholder="Search properties to add to comparison..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 h-12 text-lg border-2 border-gray-200 focus:border-blue-500 transition-colors"
-                    />
-                  </div>
-                  <Button
-                    size="lg"
-                    className="bg-blue-600 hover:bg-blue-700 px-8"
-                    disabled={loading}
-                  >
-                    {loading ? "Searching..." : "Search"}
-                  </Button>
-                </div>
-
-                {/* Search Results */}
-                <AnimatePresence>
-                  {searchResults.length > 0 && (
-                    <motion.div
-                      className="mt-6 space-y-3"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                    >
-                      <h3 className="font-semibold text-gray-900 mb-3">
-                        Search Results:
-                      </h3>
-                      {searchResults.map((property) => (
-                        <motion.div
-                          key={property.id}
-                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                          whileHover={{ scale: 1.02 }}
-                        >
-                          <div className="flex items-center space-x-4">
-                            <div className="w-16 h-12 bg-gray-200 rounded-lg overflow-hidden">
-                              <Image
-                                src={
-                                  property.images?.[0] ||
-                                  "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop&crop=center"
-                                }
-                                alt={property.title}
-                                width={64}
-                                height={48}
-                                className="object-cover w-full h-full"
-                              />
-                            </div>
-                            <div>
-                              <h4 className="font-medium text-gray-900">
-                                {property.title}
-                              </h4>
-                              <p className="text-sm text-gray-600">
-                                {formatPrice(property.price)} •{" "}
-                                {property.bedrooms} BHK
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              if (compareList.length >= 3) {
-                                toast.error(
-                                  "You can compare maximum 3 properties"
-                                );
-                                return;
-                              }
-                              if (
-                                compareList.some((p) => p.id === property.id)
-                              ) {
-                                toast.error("Property already in comparison");
-                                return;
-                              }
-                              addToCompare(property);
-                              toast.success("Property added to comparison");
-                            }}
-                            disabled={
-                              compareList.some((p) => p.id === property.id) ||
-                              compareList.length >= 3
-                            }
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <Plus className="w-4 h-4 mr-1" />
-                            Add
-                          </Button>
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </CardContent>
-            </Card>
-          </motion.div>
+          
 
           {/* Location Prompt */}
           {isHydrated && compareList.length > 0 && !userLocation && (
@@ -500,7 +397,7 @@ export default function PropertyComparisonPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <div className="h-80 w-full">
+                  <div className="h-80 w-full relative overflow-hidden rounded-b-lg">
                     <ComparisonMap
                       center={getMapData().center}
                       zoom={12}
@@ -558,7 +455,7 @@ export default function PropertyComparisonPage() {
                     <div className="mb-8">
                       <Button
                         size="lg"
-                        className="bg-blue-600 hover:bg-blue-700 px-8 py-3 text-lg"
+                        className="bg-red-600 hover:bg-red-700 px-8 py-3 text-lg"
                         asChild
                       >
                         <Link href="/properties">
@@ -602,7 +499,7 @@ export default function PropertyComparisonPage() {
                             Compare
                           </h3>
                           <p className="text-sm text-gray-600">
-                            Analyze features side by side
+                            Compare features side by side
                           </p>
                         </div>
                       </div>

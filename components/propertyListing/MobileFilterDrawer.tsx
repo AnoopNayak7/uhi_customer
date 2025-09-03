@@ -81,22 +81,33 @@ export function MobileFilterDrawer({
     setIsOpen(false);
   };
 
-  // Count active filters
-  const activeFiltersCount = Object.values(searchFilters).filter(
-    (value) => value && value !== "" && value !== 0
-  ).length;
+  // Count active filters (including transaction types)
+  const activeFiltersCount = Object.entries(searchFilters).filter(([key, value]) => {
+    // Always count transaction types (buy, sell, commercial)
+    if (key === 'type' && (value === 'sell' || value === 'buy' || value === 'commercial')) return true;
+    
+    // Exclude other default values from count
+    if (key === 'city' && value === 'Bengaluru') return false;
+    if (key === 'maxPrice' && value === 100000000) return false;
+    if (key === 'minPrice' && value === 0) return false;
+    if (key === 'minArea' && value === 0) return false;
+    if (key === 'maxArea' && value === 0) return false;
+    
+    // Count only non-empty, non-zero values
+    return value && value !== "" && value !== 0;
+  }).length;
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          className="flex items-center gap-3 h-12 px-5 text-sm font-medium w-full relative bg-white border-gray-200 hover:border-red-300 hover:bg-red-50 rounded-xl transition-all duration-300 shadow-sm"
+          className="flex items-center gap-2 h-10 px-3 text-sm font-medium bg-white border-gray-200 hover:border-red-300 hover:bg-red-50 rounded-lg transition-all duration-300 shadow-sm"
         >
-          <Filter className="w-5 h-5 text-gray-600" />
+          <Filter className="w-4 h-4 text-gray-600" />
           <span className="text-gray-700">Filters</span>
           {activeFiltersCount > 0 && (
-            <div className="bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold ml-auto">
+            <div className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
               {activeFiltersCount}
             </div>
           )}

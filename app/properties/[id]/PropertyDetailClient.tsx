@@ -366,21 +366,25 @@ export default function PropertyDetailClient({
                 </div>
 
                 {/* Enhanced Key Features */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300">
-                    <Bed className="w-8 h-8 mx-auto mb-3 text-blue-600" />
-                    <div className="text-2xl font-bold text-gray-900">
-                      {property.bedrooms}
-                    </div>
-                    <div className="text-sm text-gray-600">Bedrooms</div>
-                  </div>
-                  <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:from-purple-100 hover:to-purple-200 transition-all duration-300">
-                    <Bath className="w-8 h-8 mx-auto mb-3 text-purple-600" />
-                    <div className="text-2xl font-bold text-gray-900">
-                      {property.bathrooms}
-                    </div>
-                    <div className="text-sm text-gray-600">Bathrooms</div>
-                  </div>
+                <div className={`grid gap-4 ${property.category?.toLowerCase() === 'plot' ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'}`}>
+                  {property.category?.toLowerCase() !== 'plot' && (
+                    <>
+                      <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300">
+                        <Bed className="w-8 h-8 mx-auto mb-3 text-blue-600" />
+                        <div className="text-2xl font-bold text-gray-900">
+                          {property.bedrooms}
+                        </div>
+                        <div className="text-sm text-gray-600">Bedrooms</div>
+                      </div>
+                      <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:from-purple-100 hover:to-purple-200 transition-all duration-300">
+                        <Bath className="w-8 h-8 mx-auto mb-3 text-purple-600" />
+                        <div className="text-2xl font-bold text-gray-900">
+                          {property.bathrooms}
+                        </div>
+                        <div className="text-sm text-gray-600">Bathrooms</div>
+                      </div>
+                    </>
+                  )}
                   <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl hover:from-emerald-100 hover:to-emerald-200 transition-all duration-300">
                     <Square className="w-8 h-8 mx-auto mb-3 text-emerald-600" />
                     <div className="text-2xl font-bold text-gray-900">

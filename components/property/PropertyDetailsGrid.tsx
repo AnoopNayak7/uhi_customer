@@ -10,35 +10,40 @@ interface PropertyDetailsGridProps {
     parkingSpot?: number;
     totalArea?: string;
     areaUnit?: string;
+    category?: string;
   };
 }
 
 const PropertyDetailsGrid = ({ property }: PropertyDetailsGridProps) => {
+  const isPlot = property.category?.toLowerCase() === 'plot';
+  
   const details = [
-    {
-      icon: Bed,
-      value: property.bedrooms,
-      label: "bedrooms",
-    },
-    {
-      icon: Bath,
-      value: property.bathrooms,
-      label: "bathrooms",
-    },
+    ...(isPlot ? [] : [
+      {
+        icon: Bed,
+        value: property.bedrooms,
+        label: "bedrooms",
+      },
+      {
+        icon: Bath,
+        value: property.bathrooms,
+        label: "bathrooms",
+      },
+      {
+        icon: Car,
+        value: property.parkingSpot || 1,
+        label: "parking",
+      },
+    ]),
     {
       icon: Square,
       value: property.area,
-      label: "built-up area",
-    },
-    {
-      icon: Car,
-      value: property.parkingSpot || 1,
-      label: "parking",
+      label: isPlot ? "plot area" : "built-up area",
     },
     {
       icon: LandPlot,
-      value: `${property?.totalArea} acers`,
-      label: property?.areaUnit?.toLowerCase() || "total area",
+      value: `${property?.totalArea}`,
+      label: "acers",
     },
   ];
 

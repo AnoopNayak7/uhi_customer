@@ -1,209 +1,134 @@
-import { NextResponse } from 'next/server';
+import { MetadataRoute } from 'next'
 
-export async function GET() {
-  const baseUrl = 'https://urbanhousein.com'; // Replace with your actual domain
-  
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+export async function GET(): Promise<Response> {
+  const sitemap: MetadataRoute.Sitemap = [
+    {
+      url: 'https://urbanhousein.com',
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 1,
+    },
+    {
+      url: 'https://urbanhousein.com/properties',
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: 'https://urbanhousein.com/tools/area-insights',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: 'https://urbanhousein.com/tools/price-trends',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: 'https://urbanhousein.com/tools/mortgage-calculator',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: 'https://urbanhousein.com/tools/investment-calculator',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: 'https://urbanhousein.com/tools/property-value',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: 'https://urbanhousein.com/tools/property-comparison',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: 'https://urbanhousein.com/tools/market-predictor',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: 'https://urbanhousein.com/tools/home-affordability',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: 'https://urbanhousein.com/tools/investment-guide',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: 'https://urbanhousein.com/tools/real-estate',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: 'https://urbanhousein.com/auth/login',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: 'https://urbanhousein.com/auth/signup',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: 'https://urbanhousein.com/contact',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: 'https://urbanhousein.com/pricing',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: 'https://urbanhousein.com/privacy',
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: 'https://urbanhousein.com/terms',
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+  ]
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Main Pages -->
-  <url>
-    <loc>${baseUrl}/</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/sitemap</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <!-- Property Categories -->
-  <url>
-    <loc>${baseUrl}/properties?category=apartment&amp;type=sell</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?category=house&amp;type=sell</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?category=plot&amp;type=sell</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?type=commercial</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?type=rent</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <!-- Popular Areas in Bengaluru -->
-  <url>
-    <loc>${baseUrl}/properties?city=Bengaluru&amp;area=Whitefield</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Bengaluru&amp;area=Electronic%20City</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Bengaluru&amp;area=Sarjapur%20Road</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Bengaluru&amp;area=Koramangala</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Bengaluru&amp;area=Indiranagar</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Bengaluru&amp;area=HSR%20Layout</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Bengaluru&amp;area=JP%20Nagar</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Bengaluru&amp;area=Bannerghatta%20Road</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Bengaluru&amp;area=Marathahalli</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Bengaluru&amp;area=Bellandur</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <!-- Cities -->
-  <url>
-    <loc>${baseUrl}/properties?city=Bengaluru</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Mumbai</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Delhi</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Chennai</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Hyderabad</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/properties?city=Pune</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <!-- Legal Pages -->
-  <url>
-    <loc>${baseUrl}/privacy</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/terms</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>${baseUrl}/help</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-</urlset>`;
+${sitemap
+  .map(
+    (item) => `  <url>
+    <loc>${item.url}</loc>
+    <lastmod>${item.lastModified instanceof Date ? item.lastModified.toISOString() : new Date().toISOString()}</lastmod>
+    <changefreq>${item.changeFrequency}</changefreq>
+    <priority>${item.priority}</priority>
+  </url>`
+  )
+  .join('\n')}
+</urlset>`
 
-  return new NextResponse(sitemap, {
+  return new Response(xml, {
     headers: {
       'Content-Type': 'application/xml',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
     },
-  });
+  })
 }

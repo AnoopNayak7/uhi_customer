@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -109,8 +109,10 @@ const ComparisonMap = ({
 }: ComparisonMapProps) => {
   const mapRef = useRef<L.Map | null>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     fixLeafletIcon();
   }, []);
 
@@ -192,6 +194,18 @@ const ComparisonMap = ({
     );
   };
 
+  // Don't render map on server side to prevent hydration issues
+  if (!isClient) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-gray-100 rounded-lg">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-sm text-gray-600">Loading map...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <style jsx global>{`
@@ -248,9 +262,10 @@ const ComparisonMap = ({
       <MapContainer
         center={center}
         zoom={zoom}
-        style={{ height: "100%", width: "100%" }}
+        style={{ height: "100%", width: "100%", position: "relative" }}
         scrollWheelZoom={false}
-        className="z-0"
+        className="z-0 rounded-lg overflow-hidden"
+        key={`map-${center[0]}-${center[1]}-${markers.length}`}
       >
         <MapController mapRef={mapRef} />
         <TileLayer

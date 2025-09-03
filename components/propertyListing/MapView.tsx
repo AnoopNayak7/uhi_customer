@@ -47,7 +47,7 @@ export function MapView({
   const defaultCenter: [number, number] = [12.9716, 77.5946];
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px]">
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-full">
       {/* Map */}
       <div className="flex-1 bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100">
         <div className="relative h-full">
@@ -91,17 +91,14 @@ export function MapView({
       </div>
 
       {/* Property list */}
-      <div className="w-full lg:w-96 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 sm:p-4 border-b">
+      <div className="w-full lg:w-96 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+        <div className="p-4 sm:p-4 border-b flex-shrink-0">
           <h3 className="font-medium text-base sm:text-base">Properties</h3>
           <p className="text-sm text-gray-500">
             {propertiesWithCoordinates.length} properties found
           </p>
         </div>
-        <div
-          className="overflow-y-auto"
-          style={{ maxHeight: "calc(100% - 70px)" }}
-        >
+        <div className="flex-1 overflow-y-auto">
           {propertiesWithCoordinates.length > 0 ? (
             propertiesWithCoordinates.map((property) => (
               <div
