@@ -27,7 +27,7 @@ const signupSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().optional(),
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  phone: z.string().regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number"),
   role: z.enum(["user", "builder"]).default("user"),
 });
 
@@ -57,12 +57,15 @@ export default function SignupPage() {
     setLoading(true);
     try {
       await apiClient.signup(data);
-      // await apiClient.sendOTP(data.email);
       setSignupData(data);
       setStep("otp");
-      toast.success("Account created! OTP sent to your email");
-    } catch (error) {
-      toast.error("Failed to create account. Please try again.");
+      toast.success("Account created! OTP sent to your phone number");
+    } catch (error: any) {
+      if (error.response?.data?.message?.includes("Phone number is already registered")) {
+        toast.error("Phone number is already registered. Please login instead.");
+      } else {
+        toast.error("Failed to create account. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -74,7 +77,7 @@ export default function SignupPage() {
     setLoading(true);
     try {
       const response: any = await apiClient.verifyOTP(
-        signupData.email,
+        signupData.phone,
         data.otp
       );
       if (response.success) {
@@ -99,12 +102,12 @@ export default function SignupPage() {
           </div>
           <div className="text-center">
             <CardTitle className="text-2xl font-bold">
-              {step === "signup" ? "Create Account" : "Verify Email"}
+              {step === "signup" ? "Create Account" : "Verify Phone"}
             </CardTitle>
             <CardDescription>
               {step === "signup"
                 ? "Join Urbanhousein to find your perfect property"
-                : `We've sent a verification code to ${signupData?.email}`}
+                : `We've sent a verification code to ${signupData?.phone}`}
             </CardDescription>
           </div>
         </CardHeader>
@@ -237,7 +240,7 @@ export default function SignupPage() {
                 <Button
                   variant="link"
                   onClick={() =>
-                    signupData && apiClient.sendOTP(signupData.email)
+                    signupData && apiClient.sendOTP(signupData.phone)
                   }
                   disabled={loading}
                   className="text-sm"

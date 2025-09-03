@@ -17,13 +17,13 @@ import { Logo } from "@/components/ui/logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Mail, ArrowLeft } from "lucide-react";
+import { Mail, Phone, ArrowLeft } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  identifier: z.string().min(1, "Please enter your email or phone number"),
 });
 
 const otpSchema = z.object({
@@ -36,11 +36,12 @@ type OTPForm = z.infer<typeof otpSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuthStore();
-  const [step, setStep] = useState<"email" | "otp">("email");
-  const [email, setEmail] = useState("");
+  const [step, setStep] = useState<"identifier" | "otp">("identifier");
+  const [identifier, setIdentifier] = useState("");
+  const [otpType, setOtpType] = useState<"email" | "sms">("email");
   const [loading, setLoading] = useState(false);
 
-  const emailForm = useForm<LoginForm>({
+  const identifierForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -48,14 +49,15 @@ export default function LoginPage() {
     resolver: zodResolver(otpSchema),
   });
 
-  const onEmailSubmit = async (data: LoginForm) => {
+  const onIdentifierSubmit = async (data: LoginForm) => {
     setLoading(true);
     try {
-      const response: any = await apiClient.login(data.email);
+      const response: any = await apiClient.login(data.identifier);
       if (response.success) {
-        setEmail(data.email);
+        setIdentifier(data.identifier);
+        setOtpType(response.data.type);
         setStep("otp");
-        toast.success("OTP sent to your email");
+        toast.success(response.data.message);
       }
     } catch (error: any) {
       console.error("Login error:", error);
@@ -80,7 +82,7 @@ export default function LoginPage() {
   const onOTPSubmit = async (data: OTPForm) => {
     setLoading(true);
     try {
-      const response: any = await apiClient.verifyOTP(email, data.otp);
+      const response: any = await apiClient.verifyOTP(identifier, data.otp);
       if (response.success) {
         const { user, token } = response.data;
         login(user, token);
@@ -103,36 +105,40 @@ export default function LoginPage() {
           </div>
           <div className="text-center">
             <CardTitle className="text-2xl font-bold">
-              {step === "email" ? "Welcome Back" : "Verify OTP"}
+              {step === "identifier" ? "Welcome Back" : "Verify OTP"}
             </CardTitle>
             <CardDescription>
-              {step === "email"
-                ? "Enter your email to sign in to your account"
-                : `We've sent a 6-digit code to ${email}`}
+              {step === "identifier"
+                ? "Enter your email or phone number to sign in"
+                : `We've sent a 6-digit code to ${identifier}`}
             </CardDescription>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {step === "email" ? (
+          {step === "identifier" ? (
             <form
-              onSubmit={emailForm.handleSubmit(onEmailSubmit)}
+              onSubmit={identifierForm.handleSubmit(onIdentifierSubmit)}
               className="space-y-4"
             >
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="identifier">Email or Phone Number</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  {identifier.includes('@') ? (
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  )}
                   <Input
-                    {...emailForm.register("email")}
-                    type="email"
-                    placeholder="Enter your email"
+                    {...identifierForm.register("identifier")}
+                    type="text"
+                    placeholder="Enter your email or phone number"
                     className="pl-10"
                   />
                 </div>
-                {emailForm.formState.errors.email && (
+                {identifierForm.formState.errors.identifier && (
                   <p className="text-sm text-red-500">
-                    {emailForm.formState.errors.email.message}
+                    {identifierForm.formState.errors.identifier.message}
                   </p>
                 )}
               </div>
@@ -150,11 +156,11 @@ export default function LoginPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setStep("email")}
+                onClick={() => setStep("identifier")}
                 className="mb-4"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to email
+                Back to login
               </Button>
 
               <form
@@ -189,7 +195,7 @@ export default function LoginPage() {
               <div className="text-center">
                 <Button
                   variant="link"
-                  onClick={() => onEmailSubmit({ email })}
+                  onClick={() => onIdentifierSubmit({ identifier })}
                   disabled={loading}
                   className="text-sm"
                 >

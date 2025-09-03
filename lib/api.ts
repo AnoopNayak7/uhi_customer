@@ -111,24 +111,24 @@ class ApiClient {
     });
   }
 
-  async sendOTP(email: string) {
+  async sendOTP(identifier: string) {
     return this.request('/auth/send-otp', {
       method: 'POST',
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email: identifier }),
     });
   }
 
-  async verifyOTP(email: string, otp: string) {
+  async verifyOTP(identifier: string, otp: string) {
     return this.request('/auth/verify-otp', {
       method: 'POST',
-      body: JSON.stringify({ email, otp }),
+      body: JSON.stringify({ identifier, otp }),
     });
   }
 
-  async login(email: string) {
+  async login(identifier: string) {
     return this.request('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ identifier }),
     });
   }
 
