@@ -51,12 +51,27 @@ export default function LoginPage() {
   const onEmailSubmit = async (data: LoginForm) => {
     setLoading(true);
     try {
-      await apiClient.sendOTP(data.email);
-      setEmail(data.email);
-      setStep("otp");
-      toast.success("OTP sent to your email");
-    } catch (error) {
-      toast.error("Failed to send OTP. Please try again.");
+      const response: any = await apiClient.login(data.email);
+      if (response.success) {
+        setEmail(data.email);
+        setStep("otp");
+        toast.success("OTP sent to your email");
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      
+      // Check if it's a user not found error
+      if (error.message && (error.message.includes("User not found") || error.message.includes("404"))) {
+        toast.error("Account not found. Redirecting to signup...", {
+          duration: 3000,
+        });
+        // Redirect to signup page after a short delay
+        setTimeout(() => {
+          router.push("/auth/signup");
+        }, 2000);
+      } else {
+        toast.error("Failed to send OTP. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

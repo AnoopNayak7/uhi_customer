@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import { PropertiesPageClient } from "@/components/propertyListing/PropertiesPageClient";
 import { PropertiesSEOContent } from "@/components/propertyListing/PropertiesSEOContent";
+import { PropertiesPageClient } from "@/components/propertyListing/PropertiesPageClient";
 
 // Enhanced SEO metadata for the properties page
 export const metadata: Metadata = {

@@ -83,6 +83,8 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+        <meta name="fast2sms" content="hXJm1SOZmniVyY6DGucUOlUtilaN9xuF" />
+
         
         {/* Force favicon refresh and prevent caching */}
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
