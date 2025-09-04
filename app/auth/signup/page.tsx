@@ -27,7 +27,7 @@ const signupSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().optional(),
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number"),
+  phone: z.string().regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian WhatsApp number"),
   role: z.enum(["user", "builder"]).default("user"),
 });
 
@@ -44,6 +44,7 @@ export default function SignupPage() {
   const [step, setStep] = useState<"signup" | "otp">("signup");
   const [signupData, setSignupData] = useState<SignupForm | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const signupForm = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
@@ -53,19 +54,63 @@ export default function SignupPage() {
     resolver: zodResolver(otpSchema),
   });
 
+  // Reset login prompt when user starts typing
+  const handlePhoneChange = () => {
+    if (showLoginPrompt) {
+      setShowLoginPrompt(false);
+    }
+  };
+
   const onSignupSubmit = async (data: SignupForm) => {
     setLoading(true);
     try {
-      await apiClient.signup(data);
+      const res: any = await apiClient.signup(data);
+      
+      // Check if the response indicates success
+      if (res.success === false) {
+        toast.error(res.message || "Failed to create account. Please try again.");
+        return;
+      }
+      
       setSignupData(data);
       setStep("otp");
-      toast.success("Account created! OTP sent to your phone number");
+      toast.success("Account created! OTP sent to your WhatsApp number");
     } catch (error: any) {
-      if (error.response?.data?.message?.includes("Phone number is already registered")) {
-        toast.error("Phone number is already registered. Please login instead.");
-      } else {
-        toast.error("Failed to create account. Please try again.");
+      console.log("Signup error:", error);
+      console.log("Error response:", error.response);
+      console.log("Error message:", error.message);
+
+      // Extract error message from the error response
+      let errorMessage = "Failed to create account. Please try again.";
+
+      // Check for specific error patterns
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data) {
+        // Handle case where data is the error message directly
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.message) {
+        // Check if it's a meaningful error message
+        if (error.message.includes("WhatsApp number is already registered") || 
+            error.message.includes("Phone number is already registered")) {
+          errorMessage = "WhatsApp number is already registered. Please login instead.";
+        } else if (!error.message.includes("API Error") && !error.message.includes("Failed to fetch")) {
+          errorMessage = error.message;
+        }
       }
+
+      // Special handling for 409 status (conflict)
+      if (error.response?.status === 409) {
+        errorMessage = "WhatsApp number is already registered. Please login instead.";
+        setShowLoginPrompt(true);
+      }
+
+      console.log("Final error message:", errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -86,8 +131,10 @@ export default function SignupPage() {
         toast.success("Account verified successfully!");
         router.push("/dashboard");
       }
-    } catch (error) {
-      toast.error("Invalid OTP. Please try again.");
+    } catch (error: any) {
+      console.error("OTP verification error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Invalid OTP. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -102,12 +149,12 @@ export default function SignupPage() {
           </div>
           <div className="text-center">
             <CardTitle className="text-2xl font-bold">
-              {step === "signup" ? "Create Account" : "Verify Phone"}
+              {step === "signup" ? "Create Account" : "Verify WhatsApp"}
             </CardTitle>
             <CardDescription>
               {step === "signup"
                 ? "Join Urbanhousein to find your perfect property"
-                : `We've sent a verification code to ${signupData?.phone}`}
+                : `We've sent a verification code to your WhatsApp number ${signupData?.phone}`}
             </CardDescription>
           </div>
         </CardHeader>
@@ -169,23 +216,28 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">WhatsApp Number</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     {...signupForm.register("phone")}
                     placeholder="9876543210"
                     className="pl-10"
+                    onChange={(e) => {
+                      signupForm.setValue("phone", e.target.value);
+                      handlePhoneChange();
+                    }}
                   />
                 </div>
+                <p className="text-xs text-gray-500">
+                  Enter your WhatsApp number to receive OTP
+                </p>
                 {signupForm.formState.errors.phone && (
                   <p className="text-sm text-red-500">
                     {signupForm.formState.errors.phone.message}
                   </p>
                 )}
               </div>
-
-
 
               <Button
                 type="submit"
@@ -194,6 +246,28 @@ export default function SignupPage() {
               >
                 {loading ? "Creating Account..." : "Create Account"}
               </Button>
+
+              {showLoginPrompt && (
+                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-yellow-800 font-medium">
+                        WhatsApp number already registered
+                      </p>
+                      <p className="text-xs text-yellow-600 mt-1">
+                        This number is already associated with an account
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => router.push("/auth/login")}
+                      size="sm"
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                    >
+                      Login Instead
+                    </Button>
+                  </div>
+                </div>
+              )}
             </form>
           ) : (
             <div className="space-y-4">

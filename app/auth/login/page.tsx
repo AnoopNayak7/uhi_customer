@@ -23,7 +23,7 @@ import { useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
 
 const loginSchema = z.object({
-  identifier: z.string().min(1, "Please enter your email or phone number"),
+  identifier: z.string().min(1, "Please enter your email or WhatsApp number"),
 });
 
 const otpSchema = z.object({
@@ -61,9 +61,10 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error("Login error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to send OTP. Please try again.";
       
       // Check if it's a user not found error
-      if (error.message && (error.message.includes("User not found") || error.message.includes("404"))) {
+      if (errorMessage.includes("User not found") || errorMessage.includes("404") || error.response?.status === 404) {
         toast.error("Account not found. Redirecting to signup...", {
           duration: 3000,
         });
@@ -72,7 +73,7 @@ export default function LoginPage() {
           router.push("/auth/signup");
         }, 2000);
       } else {
-        toast.error("Failed to send OTP. Please try again.");
+        toast.error(errorMessage);
       }
     } finally {
       setLoading(false);
@@ -89,8 +90,10 @@ export default function LoginPage() {
         toast.success("Login successful!");
         router.push("/dashboard");
       }
-    } catch (error) {
-      toast.error("Invalid OTP. Please try again.");
+    } catch (error: any) {
+      console.error("OTP verification error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Invalid OTP. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -109,7 +112,7 @@ export default function LoginPage() {
             </CardTitle>
             <CardDescription>
               {step === "identifier"
-                ? "Enter your email or phone number to sign in"
+                ? "Enter your email or WhatsApp number to sign in"
                 : `We've sent a 6-digit code to ${identifier}`}
             </CardDescription>
           </div>
@@ -122,7 +125,7 @@ export default function LoginPage() {
               className="space-y-4"
             >
               <div className="space-y-2">
-                <Label htmlFor="identifier">Email or Phone Number</Label>
+                <Label htmlFor="identifier">Email or WhatsApp Number</Label>
                 <div className="relative">
                   {identifier.includes('@') ? (
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -132,10 +135,13 @@ export default function LoginPage() {
                   <Input
                     {...identifierForm.register("identifier")}
                     type="text"
-                    placeholder="Enter your email or phone number"
+                    placeholder="Enter your email or WhatsApp number"
                     className="pl-10"
                   />
                 </div>
+                <p className="text-xs text-gray-500">
+                  For WhatsApp: Enter 10-digit number. For email: Enter your email address.
+                </p>
                 {identifierForm.formState.errors.identifier && (
                   <p className="text-sm text-red-500">
                     {identifierForm.formState.errors.identifier.message}

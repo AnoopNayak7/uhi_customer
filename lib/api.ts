@@ -92,7 +92,19 @@ class ApiClient {
         useAuthStore.getState().logout();
         throw new Error('Session expired. Please login again.');
       }
-      throw new Error(`API Error: ${response.status}`);
+      
+      // Try to get the error response body
+      try {
+        const errorData = await response.json();
+        const error = new Error(errorData.message || `API Error: ${response.status}`);
+        (error as any).response = { data: errorData, status: response.status };
+        throw error;
+      } catch (parseError) {
+        // If we can't parse the error response, throw a generic error
+        const error = new Error(`API Error: ${response.status}`);
+        (error as any).response = { status: response.status };
+        throw error;
+      }
     }
 
     return response.json();
