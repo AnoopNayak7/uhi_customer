@@ -69,10 +69,9 @@ export function ProminentProjects() {
     const fetchProminentProperties = async () => {
       try {
         setLoading(true);
-        // Use the getProperties method with filters for prominent and hot selling properties
+        // Use the getProperties method with filters for prominent properties only
         const response: any = await apiClient.getProperties({
           isProminent: true,
-          isHotSelling: true,
           status: "approved",
           limit: 20,
         });

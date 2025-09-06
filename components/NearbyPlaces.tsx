@@ -939,7 +939,7 @@ const NearbyPlaces = ({
                               >
                                 <div className="flex items-start gap-2 md:gap-2.5">
                                   <div
-                                    className="w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-content flex-shrink-0 hidden md:flex"
+                                    className="w-6 h-6 md:w-8 md:h-8 rounded-full items-center justify-content flex-shrink-0 hidden md:flex"
                                     style={{
                                       backgroundColor:
                                         markerColors[

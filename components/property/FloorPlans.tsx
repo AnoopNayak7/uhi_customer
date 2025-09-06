@@ -22,7 +22,7 @@ interface FloorPlan {
   builtUpArea: number;
   carpetArea: number;
   balconyCount: number;
-  image: string;
+  image: string | string[];
 }
 
 interface FloorPlansProps {
@@ -273,9 +273,9 @@ export const FloorPlans = ({ floorPlans }: FloorPlansProps) => {
             onClick={() => setSelectedPlan(plan)}
           >
             <div className="relative h-32 md:h-48 w-full bg-gray-100">
-              {plan.image ? (
+              {plan.image && (Array.isArray(plan.image) ? plan.image[0] : plan.image) ? (
                 <Image
-                  src={plan.image}
+                  src={Array.isArray(plan.image) ? plan.image[0] : plan.image}
                   alt={plan.label}
                   fill
                   className="object-contain"
@@ -341,7 +341,7 @@ export const FloorPlans = ({ floorPlans }: FloorPlansProps) => {
       {/* Zoom Modal */}
       {selectedPlan && (
         <FloorPlanZoomModal
-          imageUrl={selectedPlan.image}
+          imageUrl={Array.isArray(selectedPlan.image) ? selectedPlan.image[0] : selectedPlan.image}
           title={selectedPlan.label}
           isOpen={!!selectedPlan}
           onClose={() => setSelectedPlan(null)}
