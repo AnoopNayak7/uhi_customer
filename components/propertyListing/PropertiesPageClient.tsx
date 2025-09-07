@@ -42,6 +42,9 @@ export function PropertiesPageClient() {
 
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedLocalities, setSelectedLocalities] = useState<string[]>([]);
   const [showLocalitySearch, setShowLocalitySearch] = useState(false);
   const [localitySearchQuery, setLocalitySearchQuery] = useState("");
@@ -49,6 +52,8 @@ export function PropertiesPageClient() {
   const [isSearchingLocalities, setIsSearchingLocalities] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const [mapType, setMapType] = useState<"map" | "satellite">("map");
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // Cleanup search timeout
   useEffect(() => {
@@ -59,8 +64,13 @@ export function PropertiesPageClient() {
     };
   }, []);
 
-  const fetchProperties = useCallback(async () => {
-    setLoading(true);
+  const fetchProperties = useCallback(async (page = 1, append = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
       const params: any = {};
 
@@ -71,8 +81,8 @@ export function PropertiesPageClient() {
         }
       }
 
-      if (!params.limit) params.limit = 20;
-      if (!params.page) params.page = 1;
+      params.limit = 9; // Load 9 properties at a time
+      params.page = page;
 
       const response: any = await apiClient.getProperties(params);
 
@@ -97,18 +107,33 @@ export function PropertiesPageClient() {
           return property;
         });
         
-        setProperties(propertiesWithImages);
+        if (append) {
+          setProperties(prev => [...prev, ...propertiesWithImages]);
+        } else {
+          setProperties(propertiesWithImages);
+        }
+        
+        // Check if there are more pages
+        const totalPages = response.pagination?.totalPages || 1;
+        setHasMore(page < totalPages);
+        setCurrentPage(page);
       } else {
         throw new Error("Failed to fetch properties");
       }
     } catch (error) {
       console.error("Error fetching properties:", error);
-      setProperties([]);
+      if (!append) {
+        setProperties([]);
+      }
       toast.error("Failed to load properties");
     } finally {
-      setLoading(false);
+      if (append) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
     }
-  }, [searchParams, setLoading]); // Added setLoading to dependency array
+  }, [searchParams]);
 
   useEffect(() => {
     // Update search filters from URL params
@@ -116,8 +141,43 @@ export function PropertiesPageClient() {
     if (Object.keys(params).length > 0) {
       updateSearchFilters(params);
     }
-    fetchProperties();
+    // Reset pagination when search params change
+    setCurrentPage(1);
+    setHasMore(true);
+    fetchProperties(1, false);
   }, [searchParams, updateSearchFilters, fetchProperties]);
+
+  // Infinite scroll effect
+  useEffect(() => {
+    const loadMore = () => {
+      if (hasMore && !loadingMore && !loading) {
+        fetchProperties(currentPage + 1, true);
+      }
+    };
+
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, loadingMore, loading, currentPage, fetchProperties]);
 
   const handleFilterChange = (key: string, value: string) => {
     // Handle special "all" values by converting them to empty strings
@@ -505,6 +565,15 @@ export function PropertiesPageClient() {
                   setViewMode={setViewMode}
                   onFavorite={handleFavorite}
                 />
+                {/* Infinite scroll trigger for mobile */}
+                <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
+                  {loadingMore && (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <span className="text-sm text-gray-600">Loading more properties...</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Desktop view - show grid or map based on viewMode */}
@@ -518,6 +587,15 @@ export function PropertiesPageClient() {
                       setViewMode={setViewMode}
                       onFavorite={handleFavorite}
                     />
+                    {/* Infinite scroll trigger for desktop */}
+                    <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
+                      {loadingMore && (
+                        <div className="flex items-center space-x-2">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                          <span className="text-sm text-gray-600">Loading more properties...</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="h-full">

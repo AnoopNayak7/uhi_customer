@@ -283,14 +283,14 @@ export default function PropertyValuePage() {
               type="number"
               value={builtUpArea}
               onChange={(e) => {
-                const value = parseInt(e.target.value);
+                const value = parseFloat(e.target.value);
                 if (value >= 300 && value <= 10000) {
                   setBuiltUpArea(value);
                 }
               }}
               min={300}
               max={10000}
-              step={50}
+              step={0.1}
               className="text-center"
               placeholder="Enter exact area"
             />

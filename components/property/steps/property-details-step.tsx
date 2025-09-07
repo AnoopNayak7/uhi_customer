@@ -15,7 +15,8 @@ interface PropertyDetailsStepProps {
 const constructionStatuses = [
   { value: 'new', label: 'New' },
   { value: 'resale', label: 'Resale' },
-  { value: 'under_construction', label: 'Under Construction' }
+  { value: 'under_construction', label: 'Under Construction' },
+  { value: 'ready_to_move', label: 'Ready to Move' }
 ];
 
 const furnishingStatuses = [
@@ -108,9 +109,10 @@ export function PropertyDetailsStep({ formData, updateFormData }: PropertyDetail
           <Input
             id="area"
             type="number"
-            placeholder="e.g., 1200"
+            step="0.1"
+            placeholder="e.g., 1200.5"
             value={formData.area || ''}
-            onChange={(e) => updateFormData({ area: parseInt(e.target.value) || 0 })}
+            onChange={(e) => updateFormData({ area: parseFloat(e.target.value) || 0 })}
             className="mt-1"
           />
         </div>

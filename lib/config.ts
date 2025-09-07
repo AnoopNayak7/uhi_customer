@@ -76,7 +76,8 @@ export const FURNISHING_STATUS = [
 ];
 
 export const POSSESSION_STATUS = [
-  { value: 'ready_to_move', label: 'Ready To Move' },
+  { value: 'new', label: 'New' },
+  { value: 'resale', label: 'Resale' },
   { value: 'under_construction', label: 'Under Construction' },
-  { value: 'new_launch', label: 'New Launch' }
+  { value: 'ready_to_move', label: 'Ready To Move' }
 ];
