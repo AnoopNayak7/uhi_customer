@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { apiClient } from "@/lib/api";
 import { usePropertyStore } from "@/lib/store";
+import { trackPropertyView, trackUserInteraction } from "@/components/analytics/GoogleAnalytics";
 import {
   Heart,
   Share2,
@@ -85,10 +86,16 @@ export default function PropertyDetailClient({
       const propertyData = response.data || mockProperty;
       setProperty(propertyData);
       addToViewed(propertyData);
+      
+      // Track property view
+      trackPropertyView(propertyData.id, propertyData.title);
     } catch (error) {
       console.error("Error fetching property:", error);
       setProperty(mockProperty);
       addToViewed(mockProperty);
+      
+      // Track property view even for mock data
+      trackPropertyView(mockProperty.id, mockProperty.title);
     } finally {
       setLoading(false);
     }
@@ -100,8 +107,10 @@ export default function PropertyDetailClient({
     const isFavorite = favourites.some((p) => p.id === property.id);
     if (isFavorite) {
       removeFromFavourites(property.id);
+      trackUserInteraction("remove_favorite", "property");
     } else {
       addToFavourites(property);
+      trackUserInteraction("add_favorite", "property");
     }
   };
 
@@ -111,12 +120,14 @@ export default function PropertyDetailClient({
     const isInCompare = compareList.some((p) => p.id === property.id);
     if (isInCompare) {
       removeFromCompare(property.id);
+      trackUserInteraction("remove_compare", "property");
     } else {
       if (compareList.length >= 3) {
         alert("You can compare maximum 3 properties");
         return;
       }
       addToCompare(property);
+      trackUserInteraction("add_compare", "property");
     }
   };
 

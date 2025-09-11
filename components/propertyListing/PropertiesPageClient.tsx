@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useSearchStore } from "@/lib/store";
+import { trackPropertySearch, trackUserInteraction } from "@/components/analytics/GoogleAnalytics";
 import { Search, Navigation, Loader2, Grid3X3, MapIcon, Filter, X, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { FilterSection } from "@/components/propertyListing/FilterSection";
@@ -252,6 +253,9 @@ export function PropertiesPageClient() {
         params.append(key, value.toString());
       }
     });
+
+    // Track search event
+    trackPropertySearch(searchQuery || "property_search", searchFilters);
 
     router.push(`/properties?${params.toString()}`);
   };

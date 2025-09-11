@@ -10,6 +10,7 @@ import {
   WebVitals,
   PerformanceBudget,
 } from "@/components/performance/web-vitals";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 
 // Manrope - Primary font (closest to Airbnb Cereal)
 // Optimized with font-display: swap for better performance
@@ -155,6 +156,9 @@ export default function RootLayout({
         <Toaster />
         <WebVitals />
         <PerformanceBudget />
+        {(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-80WS6JHGEK') && (
+          <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-80WS6JHGEK'} />
+        )}
       </body>
     </html>
   );
