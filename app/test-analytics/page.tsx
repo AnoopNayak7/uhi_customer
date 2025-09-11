@@ -79,8 +79,8 @@ export default function TestAnalyticsPage() {
               <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
                 <li>Open Google Analytics Real-time reports</li>
                 <li>Click the test buttons above</li>
-                <li>Check if events appear in Real-time > Events</li>
-                <li>Verify page views in Real-time > Overview</li>
+                <li>Check if events appear in Real-time &gt; Events</li>
+                <li>Verify page views in Real-time &gt; Overview</li>
                 <li>Wait 24-48 hours for data to appear in standard reports</li>
               </ol>
             </div>
