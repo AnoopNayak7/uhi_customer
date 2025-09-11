@@ -1,38 +1,52 @@
-import { MetadataRoute } from 'next'
+import { NextResponse } from 'next/server';
 
-export function GET(): Response {
-  const robotsTxt = `User-agent: *
+export async function GET() {
+  const robots = `User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://urbanhousein.com/sitemap.xml
+# Tool pages - high priority for SEO
+Allow: /tools/price-trends
+Allow: /tools/area-insights
+Allow: /tools/home-affordability
+Allow: /tools/investment-calculator
+Allow: /tools/mortgage-calculator
+Allow: /tools/property-value
+Allow: /tools/property-comparison
+Allow: /tools/market-predictor
+Allow: /tools/investment-guide
 
-# Crawl-delay
-Crawl-delay: 1
-
-# Disallow admin and private areas
-Disallow: /admin/
-Disallow: /dashboard/
-Disallow: /api/
-Disallow: /_next/
-Disallow: /auth/
-Disallow: /favourites/
-Disallow: /viewed-properties/
-
-# Allow important pages
+# Main pages
+Allow: /
 Allow: /properties
-Allow: /tools/
+Allow: /about
 Allow: /contact
 Allow: /pricing
 Allow: /privacy
 Allow: /terms
 
-# Host
-Host: https://urbanhousein.com`
+# API endpoints - disallow crawling
+Disallow: /api/
 
-  return new Response(robotsTxt, {
+# Admin pages - disallow crawling
+Disallow: /admin/
+Disallow: /dashboard/
+
+# User-specific pages - disallow crawling
+Disallow: /profile/
+Disallow: /favourites/
+Disallow: /viewed-properties/
+
+# Sitemaps
+Sitemap: https://urbanhousein.com/sitemap.xml
+Sitemap: https://urbanhousein.com/sitemap-tools.xml
+
+# Crawl delay for better server performance
+Crawl-delay: 1`;
+
+  return new NextResponse(robots, {
     headers: {
       'Content-Type': 'text/plain',
+      'Cache-Control': 'public, max-age=86400, s-maxage=86400',
     },
-  })
+  });
 }

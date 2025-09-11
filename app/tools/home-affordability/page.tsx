@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Head from "next/head";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -262,6 +263,91 @@ export default function HomeAffordabilityPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Head>
+        <title>Home Affordability Calculator | Mortgage Calculator | Property Budget Tool | Urbanhousein</title>
+        <meta 
+          name="description" 
+          content="Calculate your home affordability with our advanced mortgage calculator. Get personalized budget recommendations, EMI calculations, and property investment insights for smart home buying decisions." 
+        />
+        <meta 
+          name="keywords" 
+          content="home affordability calculator, mortgage calculator, property budget calculator, EMI calculator, home loan calculator, property investment calculator, real estate calculator, home buying calculator, budget planning tool, property affordability, loan eligibility calculator, down payment calculator, home purchase calculator, real estate investment tool, property finance calculator, home loan EMI, mortgage planning, property budget planning, home buying guide, real estate investment planning" 
+        />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href="https://urbanhousein.com/tools/home-affordability" />
+        
+        {/* Open Graph Meta Tags */}
+        <meta property="og:title" content="Home Affordability Calculator | Mortgage Calculator | Property Budget Tool | Urbanhousein" />
+        <meta property="og:description" content="Calculate your home affordability with our advanced mortgage calculator. Get personalized budget recommendations, EMI calculations, and property investment insights for smart home buying decisions." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://urbanhousein.com/tools/home-affordability" />
+        <meta property="og:image" content="https://urbanhousein.com/images/og-home-affordability.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Urbanhousein" />
+        <meta property="og:locale" content="en_IN" />
+        
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Home Affordability Calculator | Mortgage Calculator | Property Budget Tool | Urbanhousein" />
+        <meta name="twitter:description" content="Calculate your home affordability with our advanced mortgage calculator. Get personalized budget recommendations, EMI calculations, and property investment insights for smart home buying decisions." />
+        <meta name="twitter:image" content="https://urbanhousein.com/images/og-home-affordability.jpg" />
+        <meta name="twitter:site" content="@urbanhousein" />
+        <meta name="twitter:creator" content="@urbanhousein" />
+        
+        {/* Additional Meta Tags */}
+        <meta name="author" content="Urbanhousein Team" />
+        <meta name="language" content="English" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="distribution" content="global" />
+        <meta name="rating" content="general" />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "Home Affordability Calculator",
+              "description": "Calculate your home affordability with our advanced mortgage calculator. Get personalized budget recommendations, EMI calculations, and property investment insights for smart home buying decisions.",
+              "url": "https://urbanhousein.com/tools/home-affordability",
+              "applicationCategory": "FinanceApplication",
+              "operatingSystem": "Web Browser",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "INR"
+              },
+              "provider": {
+                "@type": "Organization",
+                "name": "Urbanhousein",
+                "url": "https://urbanhousein.com",
+                "logo": "https://urbanhousein.com/logo/urbanhousein-logo.png"
+              },
+              "featureList": [
+                "Advanced EMI calculations",
+                "Personalized budget recommendations",
+                "Down payment analysis",
+                "Debt-to-income ratio assessment",
+                "Property budget ranges",
+                "Financial health scoring",
+                "Income allocation breakdown",
+                "Property type recommendations",
+                "Interest rate optimization",
+                "Loan tenure planning",
+                "Affordability score calculation",
+                "Smart financial tips"
+              ],
+              "screenshot": "https://urbanhousein.com/images/home-affordability-screenshot.jpg",
+              "browserRequirements": "Requires JavaScript. Requires HTML5.",
+              "softwareVersion": "1.0",
+              "datePublished": "2024-01-01",
+              "dateModified": new Date().toISOString().split('T')[0]
+            })
+          }}
+        />
+      </Head>
       <Header />
 
       <main className="flex-1">
