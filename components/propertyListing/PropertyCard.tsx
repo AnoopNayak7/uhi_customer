@@ -221,10 +221,17 @@ export const PropertyCard = ({
             </div>
 
             <div className="flex items-center justify-between text-sm sm:text-xs text-gray-600 mb-3 gap-2 flex-shrink-0">
-              <div className="flex items-center min-w-0">
-                <Bed className="w-4 h-4 mr-1 flex-shrink-0" />
-                <span className="truncate">{property.bedrooms} Bed</span>
-              </div>
+              {property.bhkVariants && property.bhkVariants.length > 0 ? (
+                <div className="flex items-center min-w-0">
+                  <Bed className="w-4 h-4 mr-1 flex-shrink-0" />
+                  <span className="truncate">{property.bhkVariants.join(', ')}</span>
+                </div>
+              ) : (
+                <div className="flex items-center min-w-0">
+                  <Bed className="w-4 h-4 mr-1 flex-shrink-0" />
+                  <span className="truncate">{property.bedrooms} Bed</span>
+                </div>
+              )}
               <div className="flex items-center min-w-0">
                 <Bath className="w-4 h-4 mr-1 flex-shrink-0" />
                 <span className="truncate">{property.bathrooms} Bath</span>

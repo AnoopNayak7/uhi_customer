@@ -48,6 +48,7 @@ interface Property {
   isTrending?: boolean;
   isProminent?: boolean;
   isHotSelling?: boolean;
+  bhkVariants?: string[];
 }
 
 export function ProminentProjects() {
@@ -397,7 +398,10 @@ function PropertyCard({
             <div className="flex items-center">
               <Bed className="w-4 h-4 mr-1" />
               <span>
-                {property.bedrooms},{property.bathrooms}
+                {property.bhkVariants && property.bhkVariants.length > 0 
+                  ? property.bhkVariants.join(', ')
+                  : `${property.bedrooms},${property.bathrooms}`
+                }
               </span>
             </div>
           )}

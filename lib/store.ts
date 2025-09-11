@@ -38,6 +38,7 @@ interface Property {
   isHotSelling?: boolean;
   isFastSelling?: boolean;
   isNewlyAdded?: boolean;
+  bhkVariants?: string[];
 }
 
 interface AuthState {
