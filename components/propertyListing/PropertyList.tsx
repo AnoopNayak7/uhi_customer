@@ -42,7 +42,7 @@ export function PropertyList({
 
   return (
     <div className="flex-1 overflow-x-hidden">
-      <MotionWrapper variant="fadeInUp">
+      <MotionWrapper variant="fadeInUp" children={undefined}>
         {/* Grid/Map toggle removed - now handled in main page */}
       </MotionWrapper>
 
