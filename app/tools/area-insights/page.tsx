@@ -306,6 +306,7 @@ export default function AreaInsightsPage() {
                       <Select
                         value={selectedCity}
                         onValueChange={setSelectedCity}
+                        disabled
                       >
                         <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-purple-300 focus:border-purple-500 transition-all duration-200 bg-white/80">
                           <SelectValue />

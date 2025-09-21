@@ -45,14 +45,7 @@ export const normalizePropertyCategory = (category: string): string => {
 };
 
 export const CITIES = [
-  'Bengaluru',
-  'Mumbai',
-  'Delhi',
-  'Chennai',
-  'Hyderabad',
-  'Pune',
-  'Kolkata',
-  'Ahmedabad'
+  'Bengaluru'
 ];
 
 export const BHK_OPTIONS = [

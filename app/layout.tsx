@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   keywords:
     "real estate, property, buy property, rent property, apartments, houses, villas, commercial property, India, Bangalore, Mumbai, Delhi",
   authors: [{ name: "Urbanhousein Team" }],
-  viewport: "width=device-width, initial-scale=1",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   robots: "index, follow",
   icons: {
     icon: [

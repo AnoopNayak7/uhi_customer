@@ -45,14 +45,14 @@ export function RealEstateTools() {
   const [consultationForm, setConsultationForm] = useState({
     name: "",
     phone: "",
-    city: "",
+    city: "Bengaluru",
   });
   const [partnerForm, setPartnerForm] = useState({
     name: "",
     email: "",
     phone: "",
     company: "",
-    city: "",
+    city: "Bengaluru",
     propertyTypes: "",
     experience: "",
     message: "",
@@ -323,6 +323,7 @@ export function RealEstateTools() {
                                 city: value,
                               }))
                             }
+                            disabled
                           >
                             <SelectTrigger className="mt-1">
                               <SelectValue placeholder="Select your city" />
@@ -487,6 +488,7 @@ export function RealEstateTools() {
                                     city: value,
                                   }))
                                 }
+                                disabled
                               >
                                 <SelectTrigger className="mt-1 h-10 sm:h-11">
                                   <SelectValue placeholder="Select your city" />

@@ -202,7 +202,7 @@ export default function MarketPredictorPage() {
                   <CardContent className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-                      <Select value={selectedCity} onValueChange={setSelectedCity}>
+                      <Select value={selectedCity} onValueChange={setSelectedCity} disabled>
                         <SelectTrigger>
                           <SelectValue placeholder="Select city" />
                         </SelectTrigger>

@@ -185,6 +185,7 @@ export function HeroSection() {
                     <Select
                       value={searchForm.city}
                       onValueChange={handleCityChange}
+                      disabled
                     >
                       <SelectTrigger className="h-14 pl-12 pr-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl text-left focus:ring-0 focus:border focus:border-gray-300 search-trigger">
                         <SelectValue placeholder="Select City" />
