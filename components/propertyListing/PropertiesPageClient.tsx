@@ -377,29 +377,30 @@ export function PropertiesPageClient() {
       <main className="flex-1 container mx-auto px-3 sm:px-4 md:px-6 lg:px-[3%] py-4 sm:py-6 md:py-8 max-w-full">
         <PageContent className="overflow-x-hidden">
           {/* Mobile Search Interface */}
-          <div className="block lg:hidden mb-6 overflow-x-hidden">
-            <div className="rounded-2xl shadow-lg border border-gray-100">
+          <div className="block lg:hidden mb-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
               {/* Search Bar with Search Button */}
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   type="text"
                   placeholder="Search by location, landmark, project..."
-                  className="pl-12 pr-4 py-4 w-full text-sm h-14 border border-gray-200 bg-white focus:bg-white focus:ring-2 focus:ring-red-200 rounded-xl transition-all duration-300"
+                  className="pl-10 pr-20 py-3 w-full text-sm h-12 border border-gray-200 bg-white focus:bg-white focus:ring-2 focus:ring-red-200 rounded-lg transition-all duration-300"
                   value={searchQuery}
                   onChange={handleSearchInputChange}
                   onFocus={() => setShowSuggestions(true)}
                   onBlur={() =>
                     setTimeout(() => setShowSuggestions(false), 200)
                   }
+                  style={{ fontSize: '16px' }} // Prevent zoom on mobile
                 />
 
                 {/* Search Button beside search bar */}
                 <Button
                   onClick={handleSearch}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 p-0 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 bg-red-500 hover:bg-red-600 text-white rounded-md transition-all duration-300"
                 >
-                  <Search className="w-5 h-5" />
+                  <Search className="w-4 h-4" />
                 </Button>
 
                 {showSuggestions && suggestions.length > 0 && (
@@ -446,21 +447,22 @@ export function PropertiesPageClient() {
           </div>
 
           {/* Desktop Search bar */}
-          <div className="hidden lg:block mb-4 sm:mb-6">
-            <div className="relative">
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
-                <div className="relative flex-1 order-1 sm:order-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+          <div className="hidden lg:block mb-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
                     type="text"
                     placeholder="Search by location, landmark, project..."
-                    className="pl-10 pr-4 py-3 sm:py-2 w-full text-base sm:text-sm h-12 sm:h-auto"
+                    className="pl-10 pr-4 py-3 w-full text-sm h-12 border border-gray-200 focus:ring-2 focus:ring-red-200 rounded-lg"
                     value={searchQuery}
                     onChange={handleSearchInputChange}
                     onFocus={() => setShowSuggestions(true)}
                     onBlur={() =>
                       setTimeout(() => setShowSuggestions(false), 200)
                     }
+                    style={{ fontSize: '16px' }} // Prevent zoom on mobile
                   />
 
                   {showSuggestions && suggestions.length > 0 && (
@@ -484,29 +486,26 @@ export function PropertiesPageClient() {
                   )}
                 </div>
 
-                <div className="flex gap-2 order-2 sm:order-2">
-                  <Button
-                    variant="outline"
-                    className="flex items-center gap-1 h-12 sm:h-auto px-3 sm:px-4 text-sm sm:text-sm flex-1 sm:flex-none"
-                    onClick={getUserLocation}
-                    disabled={isGettingLocation}
-                  >
-                    {isGettingLocation ? (
-                      <Loader2 className="animate-spin h-4 w-4" />
-                    ) : (
-                      <Navigation className="h-4 w-4" />
-                    )}
-                    <span className="hidden xs:inline">Near Me</span>
-                    <span className="xs:hidden">Near</span>
-                  </Button>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 h-12 px-4 text-sm border-gray-200 hover:border-red-300 hover:bg-red-50"
+                  onClick={getUserLocation}
+                  disabled={isGettingLocation}
+                >
+                  {isGettingLocation ? (
+                    <Loader2 className="animate-spin h-4 w-4" />
+                  ) : (
+                    <Navigation className="h-4 w-4" />
+                  )}
+                  Near Me
+                </Button>
 
-                  <Button
-                    onClick={handleSearch}
-                    className="h-12 sm:h-auto px-4 sm:px-6 text-sm sm:text-sm flex-1 sm:flex-none"
-                  >
+                <Button
+                  onClick={handleSearch}
+                  className="h-12 px-6 text-sm bg-red-500 hover:bg-red-600 text-white"
+                >
                     Search
                   </Button>
-                </div>
               </div>
             </div>
           </div>

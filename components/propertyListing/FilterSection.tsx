@@ -108,7 +108,6 @@ export function FilterSection({
                         handleFilterChange("type", "");
                       }
                     }}
-                    className="h-5 w-5 sm:h-4 sm:w-4"
                   />
                   <label
                     htmlFor={`type-${type.value}`}
@@ -240,7 +239,6 @@ export function FilterSection({
                         handleFilterChange("bedrooms", "");
                       }
                     }}
-                    className="h-5 w-5 sm:h-4 sm:w-4"
                   />
                   <label
                     htmlFor={`bedroom-${bhk.value}`}
