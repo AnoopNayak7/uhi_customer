@@ -104,13 +104,60 @@
     border: 1px solid #d1d5db !important; /* slim grey border */
   }
   
-  /* Remove default focus ring from all form elements */
+  /* Remove default focus ring from all form elements - except slider elements */
   input:focus,
   select:focus,
   button:focus,
   textarea:focus {
     outline: none !important;
   }
+  
+  /* Remove any potential CSS conflicts for sliders */
+  
+  /* Enhanced slider styling for better interaction - DISABLED FOR TESTING
+  [data-radix-slider-root] {
+    position: relative;
+    display: flex;
+    align-items: center;
+    user-select: none;
+    touch-action: none;
+  }
+  
+  [data-radix-slider-track] {
+    background-color: hsl(var(--secondary));
+    position: relative;
+    flex-grow: 1;
+    border-radius: 9999px;
+    height: 8px;
+  }
+  
+  [data-radix-slider-range] {
+    position: absolute;
+    background-color: hsl(var(--primary));
+    border-radius: 9999px;
+    height: 100%;
+  }
+  
+  [data-radix-slider-thumb] {
+    display: block;
+    width: 20px;
+    height: 20px;
+    background-color: hsl(var(--background));
+    border: 2px solid hsl(var(--primary));
+    border-radius: 50%;
+    cursor: grab;
+    transition: all 0.2s ease;
+  }
+  
+  [data-radix-slider-thumb]:hover {
+    transform: scale(1.1);
+  }
+  
+  [data-radix-slider-thumb]:active {
+    cursor: grabbing;
+    transform: scale(0.95);
+  }
+  */
   
   /* Custom focus styles for our search bar */
   .hero-search input:focus,
@@ -121,7 +168,7 @@
     border: 1px solid #d1d5db !important;
   }
   
-  /* Optimize background gradients for performance */
+  /* Optimize background gradients for performance - DISABLED FOR SLIDER DEBUG
   .bg-gradient-to-r,
   .bg-gradient-to-l,
   .bg-gradient-to-t,
@@ -130,10 +177,10 @@
   .bg-gradient-to-bl,
   .bg-gradient-to-tr,
   .bg-gradient-to-tl {
-    /* Use GPU acceleration for gradients */
     transform: translateZ(0);
     will-change: background;
   }
+  */
   
   /* Optimize backdrop blur for better performance */
   .backdrop-blur-sm,

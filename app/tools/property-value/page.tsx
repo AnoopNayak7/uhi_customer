@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,7 +96,7 @@ export default function PropertyValuePage() {
   const [selectedCity, setSelectedCity] = useState("Bangalore");
   const [selectedPropertyType, setSelectedPropertyType] = useState("flat");
   const [selectedArea, setSelectedArea] = useState("");
-  const [builtUpArea, setBuiltUpArea] = useState(1200);
+  const [builtUpArea, setBuiltUpArea] = useState([1200]);
   const [bedrooms, setBedrooms] = useState(2);
   const [bathrooms, setBathrooms] = useState(2);
   const [propertyAge, setPropertyAge] = useState("recent");
@@ -109,36 +109,38 @@ export default function PropertyValuePage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [areasLoading, setAreasLoading] = useState(false);
 
-  useEffect(() => {
-    fetchAreasForCity();
-  }, [selectedCity]);
-
-  const fetchAreasForCity = async () => {
+  const fetchAreasForCity = useCallback(async () => {
     setAreasLoading(true);
     try {
       // Include prices for property value calculator
-      const response: any = await apiClient.getToolsAreasForCity(selectedCity, { includePrices: true });
-      
+      const response: any = await apiClient.getToolsAreasForCity(selectedCity, {
+        includePrices: true,
+      });
+
       if (response.success) {
         setAreas(response.data.areas || []);
         setSelectedArea("");
         setValuation(null);
       } else {
-        toast.error(response.message || 'Failed to fetch areas');
+        toast.error(response.message || "Failed to fetch areas");
         setAreas([]);
       }
     } catch (error) {
       console.error("Error fetching areas:", error);
-      toast.error('Failed to fetch areas for the selected city');
+      toast.error("Failed to fetch areas for the selected city");
       setAreas([]);
     } finally {
       setAreasLoading(false);
     }
-  };
+  }, [selectedCity]);
+
+  useEffect(() => {
+    fetchAreasForCity();
+  }, [selectedCity, fetchAreasForCity]);
 
   const calculatePropertyValue = async () => {
     if (!selectedArea) {
-      toast.error('Please select an area first');
+      toast.error("Please select an area first");
       return;
     }
 
@@ -148,25 +150,25 @@ export default function PropertyValuePage() {
         cityName: selectedCity,
         areaName: selectedArea,
         propertyType: selectedPropertyType,
-        builtUpArea,
+        builtUpArea: builtUpArea[0],
         bedrooms,
         bathrooms,
         propertyAge,
         furnishing,
         floor,
-        totalFloors
+        totalFloors,
       });
 
       if (response.success) {
         setValuation(response.data);
-        toast.success('Property value calculated successfully!');
+        toast.success("Property value calculated successfully!");
       } else {
-        toast.error(response.message || 'Failed to calculate property value');
+        toast.error(response.message || "Failed to calculate property value");
         setValuation(null);
       }
     } catch (error) {
       console.error("Error calculating property value:", error);
-      toast.error('Failed to calculate property value. Please try again.');
+      toast.error("Failed to calculate property value. Please try again.");
       setValuation(null);
     } finally {
       setLoading(false);
@@ -210,13 +212,15 @@ export default function PropertyValuePage() {
 
         <div>
           <Label>Area/Locality *</Label>
-          <Select 
-            value={selectedArea} 
+          <Select
+            value={selectedArea}
             onValueChange={setSelectedArea}
             disabled={areasLoading}
           >
             <SelectTrigger className="mt-1">
-              <SelectValue placeholder={areasLoading ? "Loading areas..." : "Select area"} />
+              <SelectValue
+                placeholder={areasLoading ? "Loading areas..." : "Select area"}
+              />
             </SelectTrigger>
             <SelectContent>
               {areas.map((area) => (
@@ -252,7 +256,7 @@ export default function PropertyValuePage() {
                 <div className="flex items-center">
                   <type.icon className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">{type.label}</span>
-                  <span className="sm:hidden">{type.label.split('/')[0]}</span>
+                  <span className="sm:hidden">{type.label.split("/")[0]}</span>
                 </div>
               </SelectItem>
             ))}
@@ -264,35 +268,67 @@ export default function PropertyValuePage() {
       <div>
         <Label>Built-up Area (sqft) *</Label>
         <div className="mt-2">
-          <Slider
-            value={[builtUpArea]}
-            onValueChange={(value) => setBuiltUpArea(value[0])}
-            max={10000}
-            min={300}
-            step={50}
-            className="mb-2"
-          />
+          <div className="mb-4">
+            <Slider
+              value={builtUpArea}
+              onValueChange={setBuiltUpArea}
+              max={10000}
+              min={300}
+              step={10}
+              className="py-2"
+            />
+          </div>
           <div className="flex justify-between text-sm text-gray-600">
             <span>300 sqft</span>
-            <span className="font-medium">{builtUpArea.toLocaleString()} sqft</span>
+            <span className="font-medium">
+              {builtUpArea[0].toLocaleString()} sqft
+            </span>
             <span>10,000 sqft</span>
           </div>
           {/* Manual input for precise control */}
           <div className="mt-3">
             <Input
-              type="number"
-              value={builtUpArea}
+              type="text"
+              defaultValue={builtUpArea[0]}
+              key={builtUpArea[0]} // Force re-render when slider changes
               onChange={(e) => {
-                const value = parseInt(e.target.value);
-                if (value >= 300 && value <= 10000) {
-                  setBuiltUpArea(value);
+                // Allow any typing without validation
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const value = parseInt(e.currentTarget.value);
+                  if (!isNaN(value)) {
+                    const clampedValue = Math.max(300, Math.min(10000, value));
+                    setBuiltUpArea([clampedValue]);
+                    e.currentTarget.value = clampedValue.toString();
+                  } else {
+                    e.currentTarget.value = builtUpArea[0].toString();
+                  }
                 }
               }}
-              min={300}
-              max={10000}
-              step={50}
+              onBlur={(e) => {
+                const value = e.target.value;
+                if (value.trim() === "") {
+                  // If completely empty, reset to minimum
+                  setBuiltUpArea([300]);
+                  e.target.value = "300";
+                } else {
+                  const numValue = parseInt(value);
+                  if (!isNaN(numValue)) {
+                    const clampedValue = Math.max(
+                      300,
+                      Math.min(10000, numValue)
+                    );
+                    setBuiltUpArea([clampedValue]);
+                    e.target.value = clampedValue.toString();
+                  } else {
+                    // Invalid input, revert to current value
+                    e.target.value = builtUpArea[0].toString();
+                  }
+                }
+              }}
               className="text-center"
-              placeholder="Enter exact area"
+              placeholder="Enter area (300-10000)"
             />
           </div>
         </div>
@@ -783,7 +819,10 @@ export default function PropertyValuePage() {
                                             {comp.title}
                                           </h4>
                                           {comp.microlocation && (
-                                            <Badge variant="secondary" className="text-xs">
+                                            <Badge
+                                              variant="secondary"
+                                              className="text-xs"
+                                            >
                                               {comp.microlocation}
                                             </Badge>
                                           )}
@@ -827,7 +866,9 @@ export default function PropertyValuePage() {
                                         {comp.originalPrice && (
                                           <div className="mt-2 pt-2 border-t border-gray-100">
                                             <span className="text-xs text-gray-500">
-                                              Base Price: ₹{comp.originalPrice.toLocaleString()}/sqft
+                                              Base Price: ₹
+                                              {comp.originalPrice.toLocaleString()}
+                                              /sqft
                                             </span>
                                           </div>
                                         )}
@@ -942,51 +983,63 @@ export default function PropertyValuePage() {
                         </MotionWrapper>
 
                         {/* Dynamic Market Insights from API */}
-                        {valuation.marketInsights && valuation.marketInsights.length > 0 && (
-                          <motion.div
-                            className="mt-6 pt-6 border-t border-gray-200"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 2.6 }}
-                          >
-                            <h4 className="font-medium text-gray-900 mb-4">AI-Generated Insights</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {valuation.marketInsights.map((insight: any, index: number) => (
-                                <motion.div
-                                  key={index}
-                                  className={`p-4 rounded-lg border ${
-                                    insight.impact === 'high' 
-                                      ? 'border-green-200 bg-green-50' 
-                                      : insight.impact === 'positive'
-                                      ? 'border-blue-200 bg-blue-50'
-                                      : 'border-gray-200 bg-gray-50'
-                                  }`}
-                                  initial={{ opacity: 0, scale: 0.95 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  transition={{ delay: 2.7 + index * 0.1 }}
-                                >
-                                  <h5 className="font-medium text-gray-900 mb-2">{insight.title}</h5>
-                                  <p className="text-sm text-gray-600">{insight.description}</p>
-                                  <div className="mt-2">
-                                    <Badge 
-                                      variant="outline" 
-                                      className={`${
-                                        insight.impact === 'high' 
-                                          ? 'border-green-300 text-green-700' 
-                                          : insight.impact === 'positive'
-                                          ? 'border-blue-300 text-blue-700'
-                                          : 'border-gray-300 text-gray-700'
+                        {valuation.marketInsights &&
+                          valuation.marketInsights.length > 0 && (
+                            <motion.div
+                              className="mt-6 pt-6 border-t border-gray-200"
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 2.6 }}
+                            >
+                              <h4 className="font-medium text-gray-900 mb-4">
+                                AI-Generated Insights
+                              </h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {valuation.marketInsights.map(
+                                  (insight: any, index: number) => (
+                                    <motion.div
+                                      key={index}
+                                      className={`p-4 rounded-lg border ${
+                                        insight.impact === "high"
+                                          ? "border-green-200 bg-green-50"
+                                          : insight.impact === "positive"
+                                          ? "border-blue-200 bg-blue-50"
+                                          : "border-gray-200 bg-gray-50"
                                       }`}
+                                      initial={{ opacity: 0, scale: 0.95 }}
+                                      animate={{ opacity: 1, scale: 1 }}
+                                      transition={{ delay: 2.7 + index * 0.1 }}
                                     >
-                                      {insight.impact === 'high' ? 'High Impact' : 
-                                       insight.impact === 'positive' ? 'Positive' : 'Neutral'}
-                                    </Badge>
-                                  </div>
-                                </motion.div>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
+                                      <h5 className="font-medium text-gray-900 mb-2">
+                                        {insight.title}
+                                      </h5>
+                                      <p className="text-sm text-gray-600">
+                                        {insight.description}
+                                      </p>
+                                      <div className="mt-2">
+                                        <Badge
+                                          variant="outline"
+                                          className={`${
+                                            insight.impact === "high"
+                                              ? "border-green-300 text-green-700"
+                                              : insight.impact === "positive"
+                                              ? "border-blue-300 text-blue-700"
+                                              : "border-gray-300 text-gray-700"
+                                          }`}
+                                        >
+                                          {insight.impact === "high"
+                                            ? "High Impact"
+                                            : insight.impact === "positive"
+                                            ? "Positive"
+                                            : "Neutral"}
+                                        </Badge>
+                                      </div>
+                                    </motion.div>
+                                  )
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
                       </motion.div>
                     ) : (
                       <MotionWrapper variant="fadeInUp">

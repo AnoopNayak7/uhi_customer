@@ -685,6 +685,53 @@ export default function InvestmentGuidePage() {
               </span>
               <span>₹5Cr</span>
             </div>
+            {/* Manual budget input */}
+            <div className="mt-3">
+              <Input
+                type="text"
+                defaultValue={budget[0]}
+                key={budget[0]}
+                onChange={() => {
+                  // Allow any typing without validation
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const value = parseInt(e.currentTarget.value);
+                    if (!isNaN(value)) {
+                      const clampedValue = Math.max(
+                        1000000,
+                        Math.min(50000000, value)
+                      );
+                      setBudget([clampedValue]);
+                      e.currentTarget.value = clampedValue.toString();
+                    } else {
+                      e.currentTarget.value = budget[0].toString();
+                    }
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = e.target.value;
+                  if (value.trim() === "") {
+                    setBudget([1000000]);
+                    e.target.value = "1000000";
+                  } else {
+                    const numValue = parseInt(value);
+                    if (!isNaN(numValue)) {
+                      const clampedValue = Math.max(
+                        1000000,
+                        Math.min(50000000, numValue)
+                      );
+                      setBudget([clampedValue]);
+                      e.target.value = clampedValue.toString();
+                    } else {
+                      e.target.value = budget[0].toString();
+                    }
+                  }
+                }}
+                className="text-center"
+                placeholder="Enter budget (₹10L - ₹5Cr)"
+              />
+            </div>
           </div>
         </motion.div>
 
@@ -712,6 +759,47 @@ export default function InvestmentGuidePage() {
                 {timeHorizon[0]} years
               </span>
               <span>20 years</span>
+            </div>
+            {/* Manual time horizon input */}
+            <div className="mt-3">
+              <Input
+                type="text"
+                defaultValue={timeHorizon[0]}
+                key={timeHorizon[0]}
+                onChange={() => {
+                  // Allow any typing without validation
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const value = parseInt(e.currentTarget.value);
+                    if (!isNaN(value)) {
+                      const clampedValue = Math.max(1, Math.min(20, value));
+                      setTimeHorizon([clampedValue]);
+                      e.currentTarget.value = clampedValue.toString();
+                    } else {
+                      e.currentTarget.value = timeHorizon[0].toString();
+                    }
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = e.target.value;
+                  if (value.trim() === "") {
+                    setTimeHorizon([1]);
+                    e.target.value = "1";
+                  } else {
+                    const numValue = parseInt(value);
+                    if (!isNaN(numValue)) {
+                      const clampedValue = Math.max(1, Math.min(20, numValue));
+                      setTimeHorizon([clampedValue]);
+                      e.target.value = clampedValue.toString();
+                    } else {
+                      e.target.value = timeHorizon[0].toString();
+                    }
+                  }
+                }}
+                className="text-center"
+                placeholder="Enter years (1-20)"
+              />
             </div>
           </div>
         </motion.div>
