@@ -42,14 +42,11 @@ export function PropertyList({
 
   return (
     <div className="flex-1 overflow-x-hidden">
-      <MotionWrapper variant="fadeInUp">
-        {/* Grid/Map toggle removed - now handled in main page */}
-      </MotionWrapper>
 
       {viewMode === "grid" ? (
         <AnimatedPropertyGrid
           loading={loading}
-          className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-3 2xl:grid-cols-3 gap-4 sm:gap-6"
+          className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-4 sm:gap-6"
         >
           {properties.length > 0
             ? properties.map((property) => (

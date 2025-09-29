@@ -20,7 +20,7 @@ export function Footer() {
   const { getDefaultCity, getDefaultArea } = useLocationData();
 
   const popularCities = [
-    "Bangalore",
+    "Bengaluru",
     "Mumbai",
     "Delhi",
     "Chennai",

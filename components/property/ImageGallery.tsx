@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Heart, Share2, ImageIcon, Maximize2 } from "lucide-react";
+import { Heart, Share2, ImageIcon, Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   PropertyGalleryImage,
   HeroImage,
@@ -26,6 +26,7 @@ export const ImageGallery = ({
 }: ImageGalleryProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
+  const [thumbnailPage, setThumbnailPage] = useState(0);
 
   // Use actual property images or fallback to placeholders
   const propertyImages =
@@ -38,6 +39,20 @@ export const ImageGallery = ({
           "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2080&q=80",
           "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
         ];
+
+  // Calculate thumbnail pagination
+  const thumbnailsPerPage = 7;
+  const totalPages = Math.ceil(propertyImages.length / thumbnailsPerPage);
+  const currentPage = Math.floor(currentImageIndex / thumbnailsPerPage);
+  const startIndex = currentPage * thumbnailsPerPage;
+  const endIndex = Math.min(startIndex + thumbnailsPerPage, propertyImages.length);
+  const visibleThumbnails = propertyImages.slice(startIndex, endIndex);
+
+  // Update thumbnail page when current image changes
+  useEffect(() => {
+    const newPage = Math.floor(currentImageIndex / thumbnailsPerPage);
+    setThumbnailPage(newPage);
+  }, [currentImageIndex, thumbnailsPerPage]);
 
   const handleImageError = (index: number) => {
     setImageErrors((prev) => ({ ...prev, [index]: true }));
@@ -145,11 +160,83 @@ export const ImageGallery = ({
                       {propertyImages.length} photos
                     </div>
                   </div>
+                  
+                  {/* Thumbnail Navigation */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center space-x-2 mb-4 w-full">
+                      <button
+                        onClick={() => {
+                          const newPage = Math.max(0, thumbnailPage - 1);
+                          setThumbnailPage(newPage);
+                          // Set current image to first image of new page
+                          setCurrentImageIndex(newPage * thumbnailsPerPage);
+                        }}
+                        disabled={thumbnailPage === 0}
+                        className={`flex-shrink-0 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-all duration-200 z-10 ${
+                          thumbnailPage === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      
+                      <div className="flex space-x-2 flex-1 justify-center">
+                        {visibleThumbnails.map((image: any, index: any) => {
+                          const actualIndex = startIndex + index;
+                          return (
+                            <button
+                              key={actualIndex}
+                              onClick={() => setCurrentImageIndex(actualIndex)}
+                              className={`relative flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                                currentImageIndex === actualIndex
+                                  ? "border-red-500 scale-105"
+                                  : "border-gray-300 hover:border-gray-400"
+                              }`}
+                            >
+                              <PropertyGalleryImage
+                                src={image}
+                                alt={`${property.title} - Thumbnail ${actualIndex + 1}`}
+                                index={actualIndex}
+                                fill
+                                className="object-cover"
+                                blurDataURL={BLUR_DATA_URLS.property}
+                                fallbackSrc={propertyImages[0]}
+                                onError={() => handleImageError(actualIndex)}
+                              />
+                            </button>
+                          );
+                        })}
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          const newPage = Math.min(totalPages - 1, thumbnailPage + 1);
+                          setThumbnailPage(newPage);
+                          // Set current image to first image of new page
+                          setCurrentImageIndex(newPage * thumbnailsPerPage);
+                        }}
+                        disabled={thumbnailPage === totalPages - 1}
+                        className={`flex-shrink-0 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-all duration-200 z-10 ${
+                          thumbnailPage === totalPages - 1 ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Image Counter */}
+                  <div className="text-center mb-4">
+                    <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                      {currentImageIndex + 1} of {propertyImages.length}
+                    </span>
+                  </div>
+                  
                   <div className="grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
                     {propertyImages.map((image: any, index: any) => (
                       <div
                         key={index}
-                        className="relative h-48 w-full rounded-lg overflow-hidden"
+                        className="relative h-48 w-full rounded-lg overflow-hidden cursor-pointer"
+                        onClick={() => setCurrentImageIndex(index)}
                       >
                         <PropertyGalleryImage
                           src={image}
@@ -161,6 +248,9 @@ export const ImageGallery = ({
                           fallbackSrc={propertyImages[0]}
                           onError={() => handleImageError(index)}
                         />
+                        {currentImageIndex === index && (
+                          <div className="absolute inset-0 bg-red-500/20 border-2 border-red-500 rounded-lg" />
+                        )}
                       </div>
                     ))}
                   </div>

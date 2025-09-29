@@ -193,7 +193,7 @@ export default function PropertyValuePage() {
       <div className="space-y-4">
         <div>
           <Label>City *</Label>
-          <Select value={selectedCity} onValueChange={setSelectedCity}>
+          <Select value={selectedCity} onValueChange={setSelectedCity} disabled>
             <SelectTrigger className="mt-1">
               <SelectValue />
             </SelectTrigger>

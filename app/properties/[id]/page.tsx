@@ -74,6 +74,7 @@ const ImageGallery = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState<any>({});
   const [showMobileGallery, setShowMobileGallery] = useState(false);
+  const [thumbnailPage, setThumbnailPage] = useState(0);
 
   // Use actual property images or fallback to placeholders
   const propertyImages =
@@ -86,6 +87,20 @@ const ImageGallery = ({
           "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
           "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop&crop=center&auto=format&q=85",
         ];
+
+  // Calculate thumbnail pagination
+  const thumbnailsPerPage = 7;
+  const totalPages = Math.ceil(propertyImages.length / thumbnailsPerPage);
+  const currentPage = Math.floor(currentImageIndex / thumbnailsPerPage);
+  const startIndex = currentPage * thumbnailsPerPage;
+  const endIndex = Math.min(startIndex + thumbnailsPerPage, propertyImages.length);
+  const visibleThumbnails = propertyImages.slice(startIndex, endIndex);
+
+  // Update thumbnail page when current image changes
+  useEffect(() => {
+    const newPage = Math.floor(currentImageIndex / thumbnailsPerPage);
+    setThumbnailPage(newPage);
+  }, [currentImageIndex, thumbnailsPerPage]);
 
   // Preload property images for better performance
   usePropertyImagePreloader(propertyImages);
@@ -227,30 +242,76 @@ const ImageGallery = ({
 
                     {/* Thumbnail Navigation */}
                     <div className="p-4 bg-transparent backdrop-blur-sm">
-                      <div className="flex justify-center">
-                        <div className="flex space-x-2 overflow-x-auto scrollbar-hide max-w-full justify-center">
-                          {propertyImages.map((image: any, index: any) => (
-                            <button
-                              key={index}
-                              onClick={() => setCurrentImageIndex(index)}
-                              className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                                currentImageIndex === index
-                                  ? "border-red-500 scale-105"
-                                  : "border-white/30 hover:border-white/50"
-                              }`}
-                            >
-                              <ImageWithFallback
-                                src={image}
-                                alt={`${property.title} - Thumbnail ${
-                                  index + 1
+                      <div className="flex items-center space-x-2 w-full">
+                        {/* Left Arrow */}
+                        {totalPages > 1 && (
+                          <button
+                            onClick={() => {
+                              const newPage = Math.max(0, thumbnailPage - 1);
+                              setThumbnailPage(newPage);
+                              // Set current image to first image of new page
+                              setCurrentImageIndex(newPage * thumbnailsPerPage);
+                            }}
+                            disabled={thumbnailPage === 0}
+                            className={`flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg transition-all duration-200 hover:bg-white active:scale-95 z-10 ${
+                              thumbnailPage === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            <ChevronRight className="w-4 h-4 rotate-180" />
+                          </button>
+                        )}
+                        
+                        <div className="flex space-x-2 flex-1 justify-center">
+                          {visibleThumbnails.map((image: any, index: any) => {
+                            const actualIndex = startIndex + index;
+                            return (
+                              <button
+                                key={actualIndex}
+                                onClick={() => setCurrentImageIndex(actualIndex)}
+                                className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                                  currentImageIndex === actualIndex
+                                    ? "border-red-500 scale-105"
+                                    : "border-white/30 hover:border-white/50"
                                 }`}
-                                index={index}
-                                fill={true}
-                                className="object-cover"
-                              />
-                            </button>
-                          ))}
+                              >
+                                <ImageWithFallback
+                                  src={image}
+                                  alt={`${property.title} - Thumbnail ${
+                                    actualIndex + 1
+                                  }`}
+                                  index={actualIndex}
+                                  fill={true}
+                                  className="object-cover"
+                                />
+                              </button>
+                            );
+                          })}
                         </div>
+                        
+                        {/* Right Arrow */}
+                        {totalPages > 1 && (
+                          <button
+                            onClick={() => {
+                              const newPage = Math.min(totalPages - 1, thumbnailPage + 1);
+                              setThumbnailPage(newPage);
+                              // Set current image to first image of new page
+                              setCurrentImageIndex(newPage * thumbnailsPerPage);
+                            }}
+                            disabled={thumbnailPage === totalPages - 1}
+                            className={`flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg transition-all duration-200 hover:bg-white active:scale-95 z-10 ${
+                              thumbnailPage === totalPages - 1 ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* Image Counter */}
+                      <div className="text-center mt-2">
+                        <span className="text-xs text-white/80 bg-black/50 px-2 py-1 rounded-full">
+                          {currentImageIndex + 1} of {propertyImages.length}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -470,28 +531,76 @@ const ImageGallery = ({
 
                       {/* Thumbnail Navigation */}
                       <div className="p-4 bg-transparent backdrop-blur-sm">
-                        <div className="flex space-x-2 overflow-x-auto scrollbar-hide justify-center">
-                          {propertyImages.map((image: any, index: any) => (
+                        <div className="flex items-center space-x-2 w-full">
+                          {/* Left Arrow */}
+                          {totalPages > 1 && (
                             <button
-                              key={index}
-                              onClick={() => setCurrentImageIndex(index)}
-                              className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                                currentImageIndex === index
-                                  ? "border-red-500 scale-105"
-                                  : "border-white/30 hover:border-white/50"
+                              onClick={() => {
+                                const newPage = Math.max(0, thumbnailPage - 1);
+                                setThumbnailPage(newPage);
+                                // Set current image to first image of new page
+                                setCurrentImageIndex(newPage * thumbnailsPerPage);
+                              }}
+                              disabled={thumbnailPage === 0}
+                              className={`flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg transition-all duration-200 hover:bg-white active:scale-95 z-10 ${
+                                thumbnailPage === 0 ? 'opacity-50 cursor-not-allowed' : ''
                               }`}
                             >
-                              <ImageWithFallback
-                                src={image}
-                                alt={`${property.title} - Thumbnail ${
-                                  index + 1
-                                }`}
-                                index={index}
-                                fill={true}
-                                className="object-cover"
-                              />
+                              <ChevronRight className="w-4 h-4 rotate-180" />
                             </button>
-                          ))}
+                          )}
+                          
+                          <div className="flex space-x-2 flex-1 justify-center">
+                            {visibleThumbnails.map((image: any, index: any) => {
+                              const actualIndex = startIndex + index;
+                              return (
+                                <button
+                                  key={actualIndex}
+                                  onClick={() => setCurrentImageIndex(actualIndex)}
+                                  className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                                    currentImageIndex === actualIndex
+                                      ? "border-red-500 scale-105"
+                                      : "border-white/30 hover:border-white/50"
+                                  }`}
+                                >
+                                  <ImageWithFallback
+                                    src={image}
+                                    alt={`${property.title} - Thumbnail ${
+                                      actualIndex + 1
+                                    }`}
+                                    index={actualIndex}
+                                    fill={true}
+                                    className="object-cover"
+                                  />
+                                </button>
+                              );
+                            })}
+                          </div>
+                          
+                          {/* Right Arrow */}
+                          {totalPages > 1 && (
+                            <button
+                              onClick={() => {
+                                const newPage = Math.min(totalPages - 1, thumbnailPage + 1);
+                                setThumbnailPage(newPage);
+                                // Set current image to first image of new page
+                                setCurrentImageIndex(newPage * thumbnailsPerPage);
+                              }}
+                              disabled={thumbnailPage === totalPages - 1}
+                              className={`flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg transition-all duration-200 hover:bg-white active:scale-95 z-10 ${
+                                thumbnailPage === totalPages - 1 ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                        
+                        {/* Image Counter */}
+                        <div className="text-center mt-2">
+                          <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                            {currentImageIndex + 1} of {propertyImages.length}
+                          </span>
                         </div>
                       </div>
                     </div>

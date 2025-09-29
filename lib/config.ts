@@ -1,6 +1,6 @@
 export const APP_CONFIG = {
-  name: 'UrbanHouseIN',
-  description: 'Find Your Dream Property with UrbanHouseIN',
+  name: 'Urbanhousein',
+  description: 'Find Your Dream Property with Urbanhousein',
   primaryColor: '#FE2C2D',
   api: {
     baseUrl: 'https://g82q9hlk9h.execute-api.ap-south-1.amazonaws.com/prod/api'
@@ -45,14 +45,7 @@ export const normalizePropertyCategory = (category: string): string => {
 };
 
 export const CITIES = [
-  'Bengaluru',
-  'Mumbai',
-  'Delhi',
-  'Chennai',
-  'Hyderabad',
-  'Pune',
-  'Kolkata',
-  'Ahmedabad'
+  'Bengaluru'
 ];
 
 export const BHK_OPTIONS = [
@@ -76,7 +69,8 @@ export const FURNISHING_STATUS = [
 ];
 
 export const POSSESSION_STATUS = [
-  { value: 'ready_to_move', label: 'Ready To Move' },
+  { value: 'new', label: 'New' },
+  { value: 'resale', label: 'Resale' },
   { value: 'under_construction', label: 'Under Construction' },
-  { value: 'new_launch', label: 'New Launch' }
+  { value: 'ready_to_move', label: 'Ready To Move' }
 ];

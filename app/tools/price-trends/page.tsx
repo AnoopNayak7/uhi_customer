@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Head from "next/head";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -286,6 +287,87 @@ export default function PriceTrendsPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Head>
+        <title>Property Price Trends Analysis | Real Estate Market Insights | Urbanhousein</title>
+        <meta 
+          name="description" 
+          content="Track real estate price trends across major Indian cities. Get comprehensive market analysis, price growth data, and property insights for informed investment decisions." 
+        />
+        <meta 
+          name="keywords" 
+          content="property price trends, real estate market analysis, property price growth, Bangalore property prices, Mumbai property prices, Delhi property prices, Chennai property prices, Hyderabad property prices, Pune property prices, Kolkata property prices, Ahmedabad property prices, apartment price trends, villa price trends, house price trends, real estate investment, property market insights, price per sqft, property valuation, market trends, real estate data" 
+        />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href="https://urbanhousein.com/tools/price-trends" />
+        
+        {/* Open Graph Meta Tags */}
+        <meta property="og:title" content="Property Price Trends Analysis | Real Estate Market Insights | Urbanhousein" />
+        <meta property="og:description" content="Track real estate price trends across major Indian cities. Get comprehensive market analysis, price growth data, and property insights for informed investment decisions." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://urbanhousein.com/tools/price-trends" />
+        <meta property="og:image" content="https://urbanhousein.com/images/og-price-trends.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Urbanhousein" />
+        <meta property="og:locale" content="en_IN" />
+        
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Property Price Trends Analysis | Real Estate Market Insights | Urbanhousein" />
+        <meta name="twitter:description" content="Track real estate price trends across major Indian cities. Get comprehensive market analysis, price growth data, and property insights for informed investment decisions." />
+        <meta name="twitter:image" content="https://urbanhousein.com/images/og-price-trends.jpg" />
+        <meta name="twitter:site" content="@urbanhousein" />
+        <meta name="twitter:creator" content="@urbanhousein" />
+        
+        {/* Additional Meta Tags */}
+        <meta name="author" content="Urbanhousein Team" />
+        <meta name="language" content="English" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="distribution" content="global" />
+        <meta name="rating" content="general" />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "Property Price Trends Analysis Tool",
+              "description": "Track real estate price trends across major Indian cities. Get comprehensive market analysis, price growth data, and property insights for informed investment decisions.",
+              "url": "https://urbanhousein.com/tools/price-trends",
+              "applicationCategory": "RealEstateApplication",
+              "operatingSystem": "Web Browser",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "INR"
+              },
+              "provider": {
+                "@type": "Organization",
+                "name": "Urbanhousein",
+                "url": "https://urbanhousein.com",
+                "logo": "https://urbanhousein.com/logo/urbanhousein-logo.png"
+              },
+              "featureList": [
+                "Real-time property price tracking",
+                "Market trend analysis",
+                "Price growth calculations",
+                "Top performing areas insights",
+                "Market status indicators",
+                "Interactive price charts",
+                "Multi-city comparison",
+                "Property type filtering"
+              ],
+              "screenshot": "https://urbanhousein.com/images/price-trends-screenshot.jpg",
+              "browserRequirements": "Requires JavaScript. Requires HTML5.",
+              "softwareVersion": "1.0",
+              "datePublished": "2024-01-01",
+              "dateModified": new Date().toISOString().split('T')[0]
+            })
+          }}
+        />
+      </Head>
       <Header />
 
       <main className="flex-1">
@@ -329,6 +411,7 @@ export default function PriceTrendsPage() {
                         <Select
                           value={selectedCity}
                           onValueChange={setSelectedCity}
+                          disabled
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -680,193 +763,7 @@ export default function PriceTrendsPage() {
                     </motion.div>
                   </motion.div>
 
-                  {/* Price Trend Chart */}
-                  <MotionWrapper variant="slideInUp" delay={1.0}>
-                    <Card className="mb-8">
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <TrendingUp className="w-5 h-5" />
-                          <span>
-                            Price Trend - {trendData.cityName} (
-                            {selectedPropertyTypeData?.label})
-                          </span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {trendData.priceTrendGraph &&
-                        trendData.priceTrendGraph.length > 0 ? (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 1.2, duration: 0.5 }}
-                            className="relative"
-                          >
-                            {/* Chart background with subtle gradient */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-indigo-50/30 rounded-lg -m-2"></div>
-
-                            <ResponsiveContainer width="100%" height={400}>
-                              <LineChart
-                                data={trendData.priceTrendGraph}
-                                margin={{
-                                  top: 20,
-                                  right: 30,
-                                  left: 20,
-                                  bottom: 20,
-                                }}
-                              >
-                                {/* Modern grid with subtle styling */}
-                                <CartesianGrid
-                                  strokeDasharray="2 4"
-                                  stroke="#e2e8f0"
-                                  strokeOpacity={0.6}
-                                  horizontal={true}
-                                  vertical={false}
-                                />
-
-                                {/* Enhanced X-axis */}
-                                <XAxis
-                                  dataKey="year"
-                                  axisLine={false}
-                                  tickLine={false}
-                                  tick={{
-                                    fontSize: 12,
-                                    fill: "#64748b",
-                                    fontWeight: 500,
-                                  }}
-                                  dy={10}
-                                />
-
-                                {/* Enhanced Y-axis */}
-                                <YAxis
-                                  axisLine={false}
-                                  tickLine={false}
-                                  tick={{
-                                    fontSize: 12,
-                                    fill: "#64748b",
-                                    fontWeight: 500,
-                                  }}
-                                  tickFormatter={(value) =>
-                                    `₹${(value / 1000).toFixed(0)}K`
-                                  }
-                                  dx={-10}
-                                />
-
-                                {/* Gradient definitions */}
-                                <defs>
-                                  <linearGradient
-                                    id="priceGradient"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                  >
-                                    <stop
-                                      offset="0%"
-                                      stopColor="#3b82f6"
-                                      stopOpacity={0.3}
-                                    />
-                                    <stop
-                                      offset="50%"
-                                      stopColor="#3b82f6"
-                                      stopOpacity={0.1}
-                                    />
-                                    <stop
-                                      offset="100%"
-                                      stopColor="#3b82f6"
-                                      stopOpacity={0.05}
-                                    />
-                                  </linearGradient>
-                                  <linearGradient
-                                    id="lineGradient"
-                                    x1="0"
-                                    y1="0"
-                                    x2="1"
-                                    y2="0"
-                                  >
-                                    <stop offset="0%" stopColor="#3b82f6" />
-                                    <stop offset="50%" stopColor="#1d4ed8" />
-                                    <stop offset="100%" stopColor="#1e40af" />
-                                  </linearGradient>
-                                  <filter id="glow">
-                                    <feGaussianBlur
-                                      stdDeviation="3"
-                                      result="coloredBlur"
-                                    />
-                                    <feMerge>
-                                      <feMergeNode in="coloredBlur" />
-                                      <feMergeNode in="SourceGraphic" />
-                                    </feMerge>
-                                  </filter>
-                                </defs>
-
-                                {/* Area fill for gradient effect */}
-                                <Area
-                                  type="monotone"
-                                  dataKey="price"
-                                  stroke="none"
-                                  fill="url(#priceGradient)"
-                                  fillOpacity={1}
-                                />
-
-                                {/* Custom tooltip */}
-                                <Tooltip content={<CustomTooltip />} />
-
-                                {/* Main price line with gradient and glow */}
-                                <Line
-                                  type="monotone"
-                                  dataKey="price"
-                                  stroke="url(#lineGradient)"
-                                  strokeWidth={4}
-                                  dot={{
-                                    fill: "#ffffff",
-                                    stroke: "#3b82f6",
-                                    strokeWidth: 3,
-                                    r: 6,
-                                    filter: "url(#glow)",
-                                  }}
-                                  activeDot={{
-                                    r: 8,
-                                    fill: "#3b82f6",
-                                    stroke: "#ffffff",
-                                    strokeWidth: 3,
-                                    filter: "url(#glow)",
-                                  }}
-                                  animationDuration={2000}
-                                  animationEasing="ease-out"
-                                />
-                              </LineChart>
-                            </ResponsiveContainer>
-
-                            {/* Chart legend */}
-                            <div className="flex items-center justify-center space-x-6 mt-4 text-sm">
-                              <div className="flex items-center space-x-2">
-                                <div className="w-4 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
-                                <span className="text-gray-600 font-medium">
-                                  Price per sqft
-                                </span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                <span className="text-gray-600 font-medium">
-                                  Annual Growth
-                                </span>
-                              </div>
-                            </div>
-                          </motion.div>
-                        ) : (
-                          <div className="text-center py-16 text-gray-500">
-                            <TrendingUp className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                            <p className="text-lg font-medium">
-                              No chart data available
-                            </p>
-                            <p className="text-sm">
-                              Please try different filters or check back later
-                            </p>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </MotionWrapper>
+                  
 
                   {/* Top Performing Areas */}
                   <MotionWrapper variant="slideInUp" delay={1.4}>

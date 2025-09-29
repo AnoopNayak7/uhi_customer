@@ -76,24 +76,6 @@ export default function RealEstateToolsPage() {
       ],
     },
     {
-      id: "investment-guide",
-      title: "Investment Guide",
-      description: "Smart investment recommendations and basic market insights",
-      icon: BookOpen,
-      href: "/tools/investment-guide",
-      color: "text-orange-500",
-      bgColor: "bg-orange-50",
-      features: [
-        "Investment basics",
-        "Market recommendations",
-        "Risk assessment guide",
-        "Property type analysis",
-      ],
-    },
-  ];
-
-  const loginRequiredTools = [
-    {
       id: "mortgage-calculator",
       title: "Advanced Mortgage Calculator",
       description:
@@ -108,6 +90,26 @@ export default function RealEstateToolsPage() {
         "Loan eligibility assessment",
         "Amortization schedule",
         "Tax benefit calculations",
+      ],
+    },
+  ];
+
+  const loginRequiredTools = [
+    {
+      id: "investment-guide",
+      title: "Investment Guide",
+      description: "Smart investment recommendations and advanced market insights",
+      icon: BookOpen,
+      href: "/tools/investment-guide",
+      color: "text-orange-500",
+      bgColor: "bg-orange-50",
+      features: [
+        "Advanced investment strategies",
+        "Market trend analysis",
+        "Risk assessment tools",
+        "Property type recommendations",
+        "ROI calculations",
+        "Portfolio optimization",
       ],
     },
     {

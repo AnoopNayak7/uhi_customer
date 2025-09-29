@@ -552,7 +552,7 @@ export default function InvestmentGuidePage() {
           <Label className="text-sm font-semibold text-gray-700">
             Preferred City *
           </Label>
-          <Select value={selectedCity} onValueChange={setSelectedCity}>
+          <Select value={selectedCity} onValueChange={setSelectedCity} disabled>
             <SelectTrigger className="mt-2 h-12 border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
               <SelectValue />
             </SelectTrigger>

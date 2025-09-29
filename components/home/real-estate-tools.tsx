@@ -45,14 +45,14 @@ export function RealEstateTools() {
   const [consultationForm, setConsultationForm] = useState({
     name: "",
     phone: "",
-    city: "",
+    city: "Bengaluru",
   });
   const [partnerForm, setPartnerForm] = useState({
     name: "",
     email: "",
     phone: "",
     company: "",
-    city: "",
+    city: "Bengaluru",
     propertyTypes: "",
     experience: "",
     message: "",
@@ -88,10 +88,10 @@ export function RealEstateTools() {
       bgColor: "bg-purple-50",
     },
     {
-      icon: BookOpen,
-      title: "Investment Guide",
-      description: "Smart investment recommendations",
-      href: "/tools/investment-guide",
+      icon: Calculator,
+      title: "Home Affordability",
+      description: "Calculate how much house you can afford",
+      href: "/tools/home-affordability",
       color: "text-orange-500",
       bgColor: "bg-orange-50",
     },
@@ -323,6 +323,7 @@ export function RealEstateTools() {
                                 city: value,
                               }))
                             }
+                            disabled
                           >
                             <SelectTrigger className="mt-1">
                               <SelectValue placeholder="Select your city" />
@@ -487,6 +488,7 @@ export function RealEstateTools() {
                                     city: value,
                                   }))
                                 }
+                                disabled
                               >
                                 <SelectTrigger className="mt-1 h-10 sm:h-11">
                                   <SelectValue placeholder="Select your city" />
@@ -637,7 +639,7 @@ export function RealEstateTools() {
                             <Label htmlFor="partner-message" className="text-sm">Why Partner With Us?</Label>
                             <Textarea
                               id="partner-message"
-                              placeholder="Tell us about your business goals, target audience, and why you want to partner with UrbanHouseIN..."
+                              placeholder="Tell us about your business goals, target audience, and why you want to partner with Urbanhousein..."
                               value={partnerForm.message}
                               onChange={(e) =>
                                 setPartnerForm((prev) => ({

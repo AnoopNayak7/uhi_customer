@@ -48,6 +48,7 @@ interface Property {
   isHotSelling?: boolean;
   isFastSelling?: boolean;
   isNewlyAdded?: boolean;
+  bhkVariants?: string[];
 }
 
 export function FeaturedProperties() {
@@ -367,12 +368,17 @@ function PropertyCard({
           </div>
 
           <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-            <div className="flex items-center">
-              <Bed className="w-4 h-4 mr-1" />
-              <span>
-                {property.bedrooms},{property.bathrooms}
-              </span>
-            </div>
+            {property.category?.toLowerCase() !== 'plot' && (
+              <div className="flex items-center">
+                <Bed className="w-4 h-4 mr-1" />
+                <span>
+                  {property.bhkVariants && property.bhkVariants.length > 0 
+                    ? property.bhkVariants.join(', ')
+                    : `${property.bedrooms},${property.bathrooms}`
+                  }
+                </span>
+              </div>
+            )}
             <div className="flex items-center">
               <Square className="w-3 h-3 mr-1" />
               <span className="text-[13px]">

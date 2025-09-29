@@ -17,6 +17,25 @@ function fixLeafletIcons() {
   });
 }
 
+// Create custom red circle marker
+function createRedCircleMarker() {
+  return L.divIcon({
+    className: 'custom-red-marker',
+    html: `
+      <div style="
+        width: 20px;
+        height: 20px;
+        background-color: #dc2626;
+        border-radius: 50%;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        border: 2px solid white;
+      "></div>
+    `,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+}
+
 // Component to update map view when center changes
 function ChangeView({ center, zoom }: { center: [number, number], zoom: number }) {
   const map = useMap();
@@ -50,6 +69,28 @@ function ScrollWheelControl() {
   return null;
 }
 
+// Component to auto-fit map to show all markers
+function AutoFitBounds({ properties }: { properties: any[] }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (properties.length > 0) {
+      // Create bounds from all property locations
+      const bounds = L.latLngBounds(
+        properties.map(property => [property.latitude, property.longitude])
+      );
+      
+      // Fit map to bounds with padding
+      map.fitBounds(bounds, {
+        padding: [20, 20],
+        maxZoom: 15 // Limit max zoom to prevent too close view
+      });
+    }
+  }, [map, properties]);
+  
+  return null;
+}
+
 interface MapProps {
   center: [number, number];
   zoom?: number;
@@ -68,6 +109,11 @@ export default function Map({ center, zoom = 13, properties = [], mapType = 'map
     ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
     : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
   
+  // Filter properties with valid coordinates
+  const propertiesWithCoordinates = properties.filter(
+    (p) => p.latitude && p.longitude
+  );
+  
   return (
     <MapContainer 
       center={center} 
@@ -83,11 +129,17 @@ export default function Map({ center, zoom = 13, properties = [], mapType = 'map
       <ChangeView center={center} zoom={zoom} />
       <ScrollWheelControl />
       
-      {properties.length > 0 ? (
-        properties.map((property) => (
+      {/* Auto-fit bounds to show all markers */}
+      {propertiesWithCoordinates.length > 0 && (
+        <AutoFitBounds properties={propertiesWithCoordinates} />
+      )}
+      
+      {propertiesWithCoordinates.length > 0 ? (
+        propertiesWithCoordinates.map((property) => (
           <Marker 
             key={property.id} 
             position={[property.latitude, property.longitude]}
+            icon={createRedCircleMarker()}
           >
             <Popup>
               <div className="text-sm">
@@ -99,7 +151,7 @@ export default function Map({ center, zoom = 13, properties = [], mapType = 'map
           </Marker>
         ))
       ) : (
-        <Marker position={center}>
+        <Marker position={center} icon={createRedCircleMarker()}>
           <Popup>You are here</Popup>
         </Marker>
       )}

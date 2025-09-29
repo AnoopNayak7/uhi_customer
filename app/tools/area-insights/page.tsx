@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Head from "next/head";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -133,6 +134,91 @@ export default function AreaInsightsPage() {
 
   return (
     <>
+      <Head>
+        <title>Area Insights & Neighborhood Analysis | Property Location Intelligence | Urbanhousein</title>
+        <meta 
+          name="description" 
+          content="Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions." 
+        />
+        <meta 
+          name="keywords" 
+          content="area insights, neighborhood analysis, property location intelligence, area demographics, neighborhood amenities, infrastructure analysis, safety ratings, livability scores, area statistics, property location data, neighborhood insights, area analysis tool, location intelligence, property research, area comparison, neighborhood comparison, Bangalore areas, Mumbai areas, Delhi areas, Chennai areas, Hyderabad areas, Pune areas, Kolkata areas, Ahmedabad areas" 
+        />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href="https://urbanhousein.com/tools/area-insights" />
+        
+        {/* Open Graph Meta Tags */}
+        <meta property="og:title" content="Area Insights & Neighborhood Analysis | Property Location Intelligence | Urbanhousein" />
+        <meta property="og:description" content="Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://urbanhousein.com/tools/area-insights" />
+        <meta property="og:image" content="https://urbanhousein.com/images/og-area-insights.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Urbanhousein" />
+        <meta property="og:locale" content="en_IN" />
+        
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Area Insights & Neighborhood Analysis | Property Location Intelligence | Urbanhousein" />
+        <meta name="twitter:description" content="Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions." />
+        <meta name="twitter:image" content="https://urbanhousein.com/images/og-area-insights.jpg" />
+        <meta name="twitter:site" content="@urbanhousein" />
+        <meta name="twitter:creator" content="@urbanhousein" />
+        
+        {/* Additional Meta Tags */}
+        <meta name="author" content="Urbanhousein Team" />
+        <meta name="language" content="English" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="distribution" content="global" />
+        <meta name="rating" content="general" />
+        
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "Area Insights & Neighborhood Analysis Tool",
+              "description": "Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions.",
+              "url": "https://urbanhousein.com/tools/area-insights",
+              "applicationCategory": "RealEstateApplication",
+              "operatingSystem": "Web Browser",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "INR"
+              },
+              "provider": {
+                "@type": "Organization",
+                "name": "Urbanhousein",
+                "url": "https://urbanhousein.com",
+                "logo": "https://urbanhousein.com/logo/urbanhousein-logo.png"
+              },
+              "featureList": [
+                "Comprehensive area demographics",
+                "Neighborhood amenities analysis",
+                "Infrastructure quality assessment",
+                "Safety ratings and crime data",
+                "Livability score calculation",
+                "Price trend analysis",
+                "Population statistics",
+                "Educational institutions mapping",
+                "Healthcare facilities overview",
+                "Shopping and recreation options",
+                "Transportation connectivity",
+                "Area comparison tools"
+              ],
+              "screenshot": "https://urbanhousein.com/images/area-insights-screenshot.jpg",
+              "browserRequirements": "Requires JavaScript. Requires HTML5.",
+              "softwareVersion": "1.0",
+              "datePublished": "2024-01-01",
+              "dateModified": new Date().toISOString().split('T')[0]
+            })
+          }}
+        />
+      </Head>
       <style jsx>{`
         @keyframes fade-in-up {
           from {
@@ -220,6 +306,7 @@ export default function AreaInsightsPage() {
                       <Select
                         value={selectedCity}
                         onValueChange={setSelectedCity}
+                        disabled
                       >
                         <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-purple-300 focus:border-purple-500 transition-all duration-200 bg-white/80">
                           <SelectValue />

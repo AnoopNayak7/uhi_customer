@@ -48,6 +48,7 @@ interface Property {
   isTrending?: boolean;
   isProminent?: boolean;
   isHotSelling?: boolean;
+  bhkVariants?: string[];
 }
 
 export function ProminentProjects() {
@@ -69,10 +70,9 @@ export function ProminentProjects() {
     const fetchProminentProperties = async () => {
       try {
         setLoading(true);
-        // Use the getProperties method with filters for prominent and hot selling properties
+        // Use the getProperties method with filters for prominent properties only
         const response: any = await apiClient.getProperties({
           isProminent: true,
-          isHotSelling: true,
           status: "approved",
           limit: 20,
         });
@@ -394,12 +394,17 @@ function PropertyCard({
         </div>
 
         <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-          <div className="flex items-center">
-            <Bed className="w-4 h-4 mr-1" />
-            <span>
-              {property.bedrooms},{property.bathrooms}
-            </span>
-          </div>
+          {property.category?.toLowerCase() !== 'plot' && (
+            <div className="flex items-center">
+              <Bed className="w-4 h-4 mr-1" />
+              <span>
+                {property.bhkVariants && property.bhkVariants.length > 0 
+                  ? property.bhkVariants.join(', ')
+                  : `${property.bedrooms},${property.bathrooms}`
+                }
+              </span>
+            </div>
+          )}
           <div className="flex items-center">
             <Square className="w-3 h-3 mr-1" />
             <span className="text-[13px]">

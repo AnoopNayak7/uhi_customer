@@ -145,19 +145,19 @@ export function Header() {
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64 p-2" align="end">
+                  <DropdownMenuContent className="w-64 max-w-[calc(100vw-2rem)] sm:max-w-none p-2" align="end" sideOffset={8} alignOffset={-8}>
                     <div className="flex items-center justify-start gap-3 p-3 bg-gray-50 rounded-lg mb-2">
-                      <Avatar className="h-12 w-12 border-2 border-gray-200">
+                      <Avatar className="h-12 w-12 border-2 border-gray-200 flex-shrink-0">
                         <AvatarFallback className="bg-gray-900 text-white font-semibold text-lg">
                           {user.firstName?.[0]}
                           {user.lastName?.[0]}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex flex-col space-y-1 leading-none">
-                        <p className="font-semibold text-gray-900">
+                      <div className="flex flex-col space-y-1 leading-none min-w-0 flex-1">
+                        <p className="font-semibold text-gray-900 truncate">
                           {user.firstName} {user.lastName}
                         </p>
-                        <p className="w-[200px] truncate text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 truncate">
                           {user.email}
                         </p>
                       </div>

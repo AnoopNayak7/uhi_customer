@@ -12,8 +12,10 @@ import {
   ZoomOut,
   RotateCcw,
   X,
+  Lock,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface FloorPlan {
   label: string;
@@ -22,7 +24,9 @@ interface FloorPlan {
   builtUpArea: number;
   carpetArea: number;
   balconyCount: number;
-  image: string;
+  image: string | string[];
+  isPlaceholder?: boolean;
+  requiresLogin?: boolean;
 }
 
 interface FloorPlansProps {
@@ -269,13 +273,17 @@ export const FloorPlans = ({ floorPlans }: FloorPlansProps) => {
         {visiblePlans.map((plan, index) => (
           <Card
             key={index}
-            className="border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => setSelectedPlan(plan)}
+            className={`border border-gray-200 overflow-hidden transition-shadow ${
+              plan.isPlaceholder 
+                ? 'cursor-default' 
+                : 'cursor-pointer hover:shadow-md'
+            }`}
+            onClick={() => !plan.isPlaceholder && setSelectedPlan(plan)}
           >
             <div className="relative h-32 md:h-48 w-full bg-gray-100">
-              {plan.image ? (
+              {plan.image && (Array.isArray(plan.image) ? plan.image[0] : plan.image) ? (
                 <Image
-                  src={plan.image}
+                  src={Array.isArray(plan.image) ? plan.image[0] : plan.image}
                   alt={plan.label}
                   fill
                   className="object-contain"
@@ -285,31 +293,43 @@ export const FloorPlans = ({ floorPlans }: FloorPlansProps) => {
                   <Square className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
                 </div>
               )}
+              {plan.isPlaceholder && (
+                <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+                  <div className="text-center text-white p-4">
+                    <Lock className="w-8 h-8 md:w-10 md:h-10 mx-auto mb-3 opacity-80" />
+                    <p className="text-sm md:text-base font-semibold leading-tight">
+                      You must login to view all floor plans
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
             <CardContent className="p-2 md:p-3">
               <h3 className="font-medium text-xs md:text-sm mb-2">
                 {plan.label}
               </h3>
-              <div className="grid grid-cols-3 gap-1 md:gap-2 text-xs">
-                <div className="flex flex-col items-center p-1 md:p-2 bg-gray-50 rounded">
-                  <Bed className="w-2 h-2 md:w-3 md:h-3 mb-1" />
-                  <span className="text-[8px] md:text-[10px] whitespace-nowrap">
-                    {plan.bedrooms} BHK
-                  </span>
+              {!plan.isPlaceholder && (
+                <div className="grid grid-cols-3 gap-1 md:gap-2 text-xs">
+                  <div className="flex flex-col items-center p-1 md:p-2 bg-gray-50 rounded">
+                    <Bed className="w-2 h-2 md:w-3 md:h-3 mb-1" />
+                    <span className="text-[8px] md:text-[10px] whitespace-nowrap">
+                      {plan.bedrooms} BHK
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center p-1 md:p-2 bg-gray-50 rounded">
+                    <Bath className="w-2 h-2 md:w-3 md:h-3 mb-1" />
+                    <span className="text-[8px] md:text-[10px] whitespace-nowrap">
+                      {plan.bathrooms} Bath
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center p-1 md:p-2 bg-gray-50 rounded">
+                    <Square className="w-2 h-2 md:w-3 md:h-3 mb-1" />
+                    <span className="text-[8px] md:text-[10px] whitespace-nowrap">
+                      {plan.builtUpArea} sqft
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col items-center p-1 md:p-2 bg-gray-50 rounded">
-                  <Bath className="w-2 h-2 md:w-3 md:h-3 mb-1" />
-                  <span className="text-[8px] md:text-[10px] whitespace-nowrap">
-                    {plan.bathrooms} Bath
-                  </span>
-                </div>
-                <div className="flex flex-col items-center p-1 md:p-2 bg-gray-50 rounded">
-                  <Square className="w-2 h-2 md:w-3 md:h-3 mb-1" />
-                  <span className="text-[8px] md:text-[10px] whitespace-nowrap">
-                    {plan.builtUpArea} sqft
-                  </span>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -339,9 +359,9 @@ export const FloorPlans = ({ floorPlans }: FloorPlansProps) => {
       )}
 
       {/* Zoom Modal */}
-      {selectedPlan && (
+      {selectedPlan && !selectedPlan.isPlaceholder && (
         <FloorPlanZoomModal
-          imageUrl={selectedPlan.image}
+          imageUrl={Array.isArray(selectedPlan.image) ? selectedPlan.image[0] : selectedPlan.image}
           title={selectedPlan.label}
           isOpen={!!selectedPlan}
           onClose={() => setSelectedPlan(null)}

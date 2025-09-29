@@ -10,6 +10,7 @@ import {
   WebVitals,
   PerformanceBudget,
 } from "@/components/performance/web-vitals";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 
 // Manrope - Primary font (closest to Airbnb Cereal)
 // Optimized with font-display: swap for better performance
@@ -31,13 +32,13 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "UrbanHouseIN - Find Your Dream Property | Real Estate Platform",
+  title: "Urbanhousein - Find Your Dream Property | Real Estate Platform",
   description:
-    "Discover your perfect property with UrbanHouseIN. Browse apartments, houses, villas, and commercial properties across India. Expert guidance, trusted platform.",
+    "Discover your perfect property with Urbanhousein. Browse apartments, houses, villas, and commercial properties across India. Expert guidance, trusted platform.",
   keywords:
     "real estate, property, buy property, rent property, apartments, houses, villas, commercial property, India, Bangalore, Mumbai, Delhi",
-  authors: [{ name: "UrbanHouseIN Team" }],
-  viewport: "width=device-width, initial-scale=1",
+  authors: [{ name: "Urbanhousein Team" }],
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   robots: "index, follow",
   icons: {
     icon: [
@@ -51,18 +52,18 @@ export const metadata: Metadata = {
     shortcut: '/favicon.ico',
   },
   openGraph: {
-    title: "UrbanHouseIN - Find Your Dream Property",
+    title: "Urbanhousein - Find Your Dream Property",
     description:
-      "Discover your perfect property with UrbanHouseIN. Browse apartments, houses, villas, and commercial properties across India.",
+      "Discover your perfect property with Urbanhousein. Browse apartments, houses, villas, and commercial properties across India.",
     type: "website",
     locale: "en_IN",
-    siteName: "UrbanHouseIN",
+    siteName: "Urbanhousein",
   },
   twitter: {
     card: "summary_large_image",
-    title: "UrbanHouseIN - Find Your Dream Property",
+    title: "Urbanhousein - Find Your Dream Property",
     description:
-      "Discover your perfect property with UrbanHouseIN. Browse apartments, houses, villas, and commercial properties across India.",
+      "Discover your perfect property with Urbanhousein. Browse apartments, houses, villas, and commercial properties across India.",
   },
 };
 
@@ -83,6 +84,8 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+        <meta name="fast2sms" content="hXJm1SOZmniVyY6DGucUOlUtilaN9xuF" />
+
         
         {/* Force favicon refresh and prevent caching */}
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -153,6 +156,9 @@ export default function RootLayout({
         <Toaster />
         <WebVitals />
         <PerformanceBudget />
+        {(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-80WS6JHGEK') && (
+          <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-80WS6JHGEK'} />
+        )}
       </body>
     </html>
   );

@@ -199,7 +199,7 @@ export function PropertyListings() {
         </div>
 
         {/* SEO Content Section */}
-        <div className="mt-20 bg-white rounded-3xl p-12 shadow-xl border border-gray-100">
+        <div className="mt-20 bg-white rounded-3xl sm:p-12 p-4 shadow-xl border border-gray-100">
           <div className="max-w-6xl mx-auto">
             <h3 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-10 text-center tracking-tight">
               Find Your Dream Property in
@@ -361,7 +361,7 @@ export function PropertyListings() {
               </div>
             </div>
 
-            <div className="mt-12 p-8 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 rounded-2xl border border-red-100 shadow-lg">
+            <div className="mt-12 p-3 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 rounded-2xl border border-red-100 shadow-lg">
               <h4 className="text-2xl font-bold text-gray-900 mb-8 text-center">
                 Why Choose UrbanHousein for Bengaluru Properties?
               </h4>
