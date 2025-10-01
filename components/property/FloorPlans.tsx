@@ -325,7 +325,7 @@ export const FloorPlans = ({ floorPlans }: FloorPlansProps) => {
                   <div className="flex flex-col items-center p-1 md:p-2 bg-gray-50 rounded">
                     <Square className="w-2 h-2 md:w-3 md:h-3 mb-1" />
                     <span className="text-[8px] md:text-[10px] whitespace-nowrap">
-                      {plan.builtUpArea} sqft
+                      {Array.isArray(plan.builtUpArea) ? plan.builtUpArea[0] : plan.builtUpArea} sqft
                     </span>
                   </div>
                 </div>

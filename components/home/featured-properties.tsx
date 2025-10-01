@@ -382,7 +382,7 @@ function PropertyCard({
             <div className="flex items-center">
               <Square className="w-3 h-3 mr-1" />
               <span className="text-[13px]">
-                {property.area} {property.areaUnit}
+                {Array.isArray(property.area) ? property.area[0] : property.area} {property.areaUnit}
               </span>
             </div>
           </div>

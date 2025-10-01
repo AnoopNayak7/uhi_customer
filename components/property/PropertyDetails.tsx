@@ -27,7 +27,7 @@ export const PropertyDetails = ({ property }: PropertyDetailsProps) => {
             </div>
             <div>
               <h4 className="text-sm font-medium">Possession Date</h4>
-              <p className="text-sm text-gray-600">{property.possessionDate || 'Ready to Move'}</p>
+              <p className="text-sm text-gray-600">{(typeof property.possessionDate === 'string' && property.possessionDate) || 'Ready to Move'}</p>
             </div>
           </div>
           

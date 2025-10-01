@@ -239,7 +239,7 @@ export const PropertyCard = ({
               <div className="flex items-center min-w-0">
                 <Square className="w-3 h-3 mr-1 flex-shrink-0" />
                 <span className="truncate">
-                  {property.area} {property.areaUnit}
+                  {Array.isArray(property.area) ? property.area[0] : property.area} {property.areaUnit}
                 </span>
               </div>
             </div>
@@ -260,7 +260,7 @@ export const PropertyCard = ({
                   POSSESSION
                 </div>
                 <div className="text-sm font-normal text-gray-900">
-                  {property.possessionDate || "Ready to Move"}
+                  {(typeof property.possessionDate === 'string' && property.possessionDate) || "Ready to Move"}
                 </div>
               </div>
             </div>

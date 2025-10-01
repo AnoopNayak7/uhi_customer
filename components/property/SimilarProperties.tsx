@@ -78,7 +78,7 @@ export const SimilarProperties = ({ properties, formatPrice }: SimilarProperties
                     
                     <div className="flex items-center">
                       <Square className="w-3 h-3 mr-1" />
-                      <span>{property.builtUpArea} sqft</span>
+                      <span>{Array.isArray(property.builtUpArea) ? property.builtUpArea[0] : property.builtUpArea} sqft</span>
                     </div>
                   </div>
                 </div>
