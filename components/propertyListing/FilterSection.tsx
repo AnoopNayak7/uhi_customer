@@ -186,7 +186,12 @@ export function FilterSection({
               Size
             </h3>
             <div className="flex items-center justify-between gap-3 sm:gap-2">
-              <Select>
+              <Select
+                value={searchFilters.minArea?.toString() || ""}
+                onValueChange={(value) =>
+                  updateSearchFilters({ minArea: parseInt(value) || 0 })
+                }
+              >
                 <SelectTrigger className="w-full h-12 sm:h-10 text-base sm:text-sm">
                   <SelectValue placeholder="Min" />
                 </SelectTrigger>
@@ -203,7 +208,12 @@ export function FilterSection({
 
               <span className="text-gray-500 text-sm font-medium px-1">to</span>
 
-              <Select>
+              <Select
+                value={searchFilters.maxArea?.toString() || ""}
+                onValueChange={(value) =>
+                  updateSearchFilters({ maxArea: parseInt(value) || 0 })
+                }
+              >
                 <SelectTrigger className="w-full h-12 sm:h-10 text-base sm:text-sm">
                   <SelectValue placeholder="Max" />
                 </SelectTrigger>

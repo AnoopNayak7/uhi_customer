@@ -220,6 +220,50 @@ export function MobileFilterDrawer({
                 </div>
               </div>
 
+              {/* Size */}
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <h3 className="text-base font-semibold text-gray-900 mb-3">Size Range</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <Select
+                    value={searchFilters.minArea?.toString() || ""}
+                    onValueChange={(value) =>
+                      updateSearchFilters({ minArea: parseInt(value) || 0 })
+                    }
+                  >
+                    <SelectTrigger className="h-10 border-gray-200 focus:border-red-300 focus:ring-red-200 rounded-lg">
+                      <SelectValue placeholder="Min" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Min</SelectItem>
+                      <SelectItem value="500">500 sq.ft</SelectItem>
+                      <SelectItem value="1000">1000 sq.ft</SelectItem>
+                      <SelectItem value="1500">1500 sq.ft</SelectItem>
+                      <SelectItem value="2000">2000 sq.ft</SelectItem>
+                      <SelectItem value="2500">2500 sq.ft</SelectItem>
+                      <SelectItem value="3000">3000 sq.ft</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={searchFilters.maxArea?.toString() || ""}
+                    onValueChange={(value) =>
+                      updateSearchFilters({ maxArea: parseInt(value) || 0 })
+                    }
+                  >
+                    <SelectTrigger className="h-10 border-gray-200 focus:border-red-300 focus:ring-red-200 rounded-lg">
+                      <SelectValue placeholder="Max" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Max</SelectItem>
+                      <SelectItem value="1000">1000 sq.ft</SelectItem>
+                      <SelectItem value="2000">2000 sq.ft</SelectItem>
+                      <SelectItem value="3000">3000 sq.ft</SelectItem>
+                      <SelectItem value="5000">5000 sq.ft</SelectItem>
+                      <SelectItem value="10000">10000 sq.ft</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               {/* Property Category */}
               <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                 <h3 className="text-base font-semibold text-gray-900 mb-3">Property Category</h3>

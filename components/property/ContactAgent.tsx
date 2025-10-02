@@ -15,15 +15,47 @@ export const ContactAgent = ({ property }: ContactAgentProps) => {
   const [message, setMessage] = useState('');
   
   const handleCallAgent = () => {
-    toast.success('Connecting you with the agent...');
+    const phoneNumber = '+918762201252';
+    window.open(`tel:${phoneNumber}`, '_self');
+    toast.success('Calling agent...');
   };
   
   const handleSendMessage = () => {
+    const whatsappNumber = '+918217452498';
+    const propertyName = property.title || 'Property';
+    const propertyAddress = property.address || '';
+    const propertyPrice = property.price ? `₹${(property.price / 100000).toFixed(1)} L` : '';
+    
+    let preWrittenMessage = `Hi, I'm interested in the property "${propertyName}"`;
+    if (propertyAddress) {
+      preWrittenMessage += ` located at ${propertyAddress}`;
+    }
+    if (propertyPrice) {
+      preWrittenMessage += ` priced at ${propertyPrice}`;
+    }
+    preWrittenMessage += '. Could you please provide more details and schedule a viewing? Thank you.';
+    
+    const encodedMessage = encodeURIComponent(preWrittenMessage);
+    const whatsappUrl = `https://wa.me/${whatsappNumber.replace('+', '')}?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+    toast.success('Opening WhatsApp...');
+  };
+  
+  const handleCustomMessage = () => {
     if (!message.trim()) {
       toast.error('Please enter a message');
       return;
     }
-    toast.success('Message sent successfully!');
+    
+    const whatsappNumber = '+918217452498';
+    const propertyName = property.title || 'Property';
+    const customMessage = `Hi, regarding "${propertyName}": ${message}`;
+    const encodedMessage = encodeURIComponent(customMessage);
+    const whatsappUrl = `https://wa.me/${whatsappNumber.replace('+', '')}?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+    toast.success('Message sent via WhatsApp!');
     setMessage('');
   };
   
@@ -58,11 +90,19 @@ export const ContactAgent = ({ property }: ContactAgentProps) => {
             Request a call
           </Button>
           
+          <Button 
+            variant="outline" 
+            className="w-full flex items-center justify-center"
+            onClick={handleSendMessage}
+          >
+            <Mail className="w-4 h-4 mr-2" />
+            Send Message
+          </Button>
+          
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" className="w-full flex items-center justify-center">
-                <Mail className="w-4 h-4 mr-2" />
-                Send Message
+              <Button variant="ghost" className="w-full flex items-center justify-center text-sm">
+                Custom Message
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -92,7 +132,7 @@ export const ContactAgent = ({ property }: ContactAgentProps) => {
                     </div>
                   </div>
                   
-                  <Button className="w-full" onClick={handleSendMessage}>Send Message</Button>
+                  <Button className="w-full" onClick={handleCustomMessage}>Send Message</Button>
                 </div>
               </div>
             </DialogContent>
