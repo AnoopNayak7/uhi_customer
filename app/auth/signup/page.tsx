@@ -22,12 +22,18 @@ import { Mail, User, Phone, ArrowLeft } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
+import { GoogleLoginButton } from "@/components/auth/google-login-button";
 
 const signupSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().optional(),
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian WhatsApp number"),
+  phone: z
+    .string()
+    .regex(
+      /^[6-9]\d{9}$/,
+      "Please enter a valid 10-digit Indian WhatsApp number"
+    ),
   role: z.enum(["user", "builder"]).default("user"),
 });
 
@@ -66,13 +72,15 @@ export default function SignupPage() {
     setLoading(true);
     try {
       const res: any = await apiClient.signup(data);
-      
+
       // Check if the response indicates success
       if (res.success === false) {
-        toast.error(res.message || "Failed to create account. Please try again.");
+        toast.error(
+          res.message || "Failed to create account. Please try again."
+        );
         return;
       }
-      
+
       setSignupData(data);
       setStep("otp");
       toast.success("Account created! OTP sent to your WhatsApp number");
@@ -89,24 +97,31 @@ export default function SignupPage() {
         errorMessage = error.response.data.message;
       } else if (error.response?.data) {
         // Handle case where data is the error message directly
-        if (typeof error.response.data === 'string') {
+        if (typeof error.response.data === "string") {
           errorMessage = error.response.data;
         } else if (error.response.data.message) {
           errorMessage = error.response.data.message;
         }
       } else if (error.message) {
         // Check if it's a meaningful error message
-        if (error.message.includes("WhatsApp number is already registered") || 
-            error.message.includes("Phone number is already registered")) {
-          errorMessage = "WhatsApp number is already registered. Please login instead.";
-        } else if (!error.message.includes("API Error") && !error.message.includes("Failed to fetch")) {
+        if (
+          error.message.includes("WhatsApp number is already registered") ||
+          error.message.includes("Phone number is already registered")
+        ) {
+          errorMessage =
+            "WhatsApp number is already registered. Please login instead.";
+        } else if (
+          !error.message.includes("API Error") &&
+          !error.message.includes("Failed to fetch")
+        ) {
           errorMessage = error.message;
         }
       }
 
       // Special handling for 409 status (conflict)
       if (error.response?.status === 409) {
-        errorMessage = "WhatsApp number is already registered. Please login instead.";
+        errorMessage =
+          "WhatsApp number is already registered. Please login instead.";
         setShowLoginPrompt(true);
       }
 
@@ -134,7 +149,10 @@ export default function SignupPage() {
       }
     } catch (error: any) {
       console.error("OTP verification error:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Invalid OTP. Please try again.";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Invalid OTP. Please try again.";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -175,7 +193,7 @@ export default function SignupPage() {
                       {...signupForm.register("firstName")}
                       placeholder="John"
                       className="pl-10"
-                      style={{ fontSize: '16px' }} // Prevent zoom on mobile
+                      style={{ fontSize: "16px" }} // Prevent zoom on mobile
                     />
                   </div>
                   {signupForm.formState.errors.firstName && (
@@ -190,7 +208,7 @@ export default function SignupPage() {
                   <Input
                     {...signupForm.register("lastName")}
                     placeholder="Doe"
-                    style={{ fontSize: '16px' }} // Prevent zoom on mobile
+                    style={{ fontSize: "16px" }} // Prevent zoom on mobile
                   />
                   {signupForm.formState.errors.lastName && (
                     <p className="text-sm text-red-500">
@@ -209,7 +227,7 @@ export default function SignupPage() {
                     type="email"
                     placeholder="john@example.com"
                     className="pl-10"
-                    style={{ fontSize: '16px' }} // Prevent zoom on mobile
+                    style={{ fontSize: "16px" }} // Prevent zoom on mobile
                   />
                 </div>
                 {signupForm.formState.errors.email && (
@@ -227,7 +245,7 @@ export default function SignupPage() {
                     {...signupForm.register("phone")}
                     placeholder="9876543210"
                     className="pl-10"
-                    style={{ fontSize: '16px' }} // Prevent zoom on mobile
+                    style={{ fontSize: "16px" }} // Prevent zoom on mobile
                     onChange={(e) => {
                       signupForm.setValue("phone", e.target.value);
                       handlePhoneChange();
@@ -251,6 +269,22 @@ export default function SignupPage() {
               >
                 {loading ? "Creating Account..." : "Create Account"}
               </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              <GoogleLoginButton
+                onSuccess={() => router.push("/dashboard")}
+                className="w-full"
+              />
 
               {showLoginPrompt && (
                 <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -298,7 +332,7 @@ export default function SignupPage() {
                     placeholder="000000"
                     maxLength={6}
                     className="text-center text-lg tracking-widest"
-                    style={{ fontSize: '16px' }} // Prevent zoom on mobile
+                    style={{ fontSize: "16px" }} // Prevent zoom on mobile
                   />
                   {otpForm.formState.errors.otp && (
                     <p className="text-sm text-red-500">

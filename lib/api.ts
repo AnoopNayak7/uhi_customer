@@ -6,6 +6,8 @@ const BYPASS_AUTH_ENDPOINTS = [
   '/auth/signup', 
   '/auth/send-otp',
   '/auth/verify-otp',
+  '/auth/google',
+  '/auth/google/callback',
   '/properties',
   '/properties/',
   '/area-insights',
@@ -456,6 +458,28 @@ class ApiClient {
 
   async checkPartnershipStatus(email: string) {
     return this.request(`/business-partnerships/partnerships/check-status?email=${encodeURIComponent(email)}`);
+  }
+
+  // Google OAuth methods
+  async checkGoogleUser(email: string) {
+    return this.request(`/auth/google/check-user?email=${encodeURIComponent(email)}`);
+  }
+
+  async createGoogleUser(data: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    googleId: string;
+    profilePicture?: string;
+  }) {
+    return this.request('/auth/google/create-user', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getGoogleUser(email: string) {
+    return this.request(`/auth/google/user?email=${encodeURIComponent(email)}`);
   }
 
 }
