@@ -7,16 +7,17 @@ import { Button } from "@/components/ui/button";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { useAuthStore, useSearchStore } from "@/lib/store";
-import { trackPropertySearch, trackUserInteraction } from "@/components/analytics/GoogleAnalytics";
-import { Search, Navigation, Loader2, Grid3X3, MapIcon, Filter, X, MapPin } from "lucide-react";
+import {
+  trackPropertySearch,
+  trackUserInteraction,
+} from "@/components/analytics/GoogleAnalytics";
+import { Search, Navigation, Loader2, Grid3X3, MapIcon } from "lucide-react";
 import { toast } from "sonner";
 import { FilterSection } from "@/components/propertyListing/FilterSection";
 import { PropertyList } from "@/components/propertyListing/PropertyList";
 import { MapView } from "@/components/propertyListing/MapView";
 
 import { PageContent } from "@/components/animations/layout-wrapper";
-import { PROPERTY_CATEGORIES, BHK_OPTIONS, FURNISHING_STATUS, POSSESSION_STATUS } from "@/lib/config";
-import { Badge } from "@/components/ui/badge";
 
 // Location suggestion interface
 interface LocationSuggestion {
@@ -38,7 +39,9 @@ export function PropertiesPageClient() {
   const [isSearching, setIsSearching] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(
+    null
+  );
   const [showFilters, setShowFilters] = useState(false);
 
   const [properties, setProperties] = useState<any[]>([]);
@@ -55,6 +58,7 @@ export function PropertiesPageClient() {
   const [mapType, setMapType] = useState<"map" | "satellite">("map");
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const mobileLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // Cleanup search timeout
   useEffect(() => {
@@ -65,76 +69,85 @@ export function PropertiesPageClient() {
     };
   }, []);
 
-  const fetchProperties = useCallback(async (page = 1, append = false) => {
-    if (append) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-    }
-    
-    try {
-      const params: any = {};
-
-      // Convert URL search params to API params
-      for (const [key, value] of searchParams.entries()) {
-        if (value) {
-          params[key] = value;
-        }
-      }
-
-      params.limit = 9; // Load 9 properties at a time
-      params.page = page;
-
-      const response: any = await apiClient.getProperties(params);
-
-      if (response.success && response.data) {
-        console.log('Properties API response:', response);
-        console.log('Properties data:', response.data);
-        console.log('First property sample:', response.data[0]);
-        
-        // Ensure all properties have images
-        const propertiesWithImages = response.data.map((property: any) => {
-          if (!property.images || property.images.length === 0) {
-            // Add default images if none exist - using more reliable URLs
-            property.images = [
-              'https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=Property+Image',
-              'https://via.placeholder.com/800x600/10B981/FFFFFF?text=Property+Image',
-              'https://via.placeholder.com/800x600/F59E0B/FFFFFF?text=Property+Image'
-            ];
-            console.log(`Added default images to property ${property.id}:`, property.images);
-          } else {
-            console.log(`Property ${property.id} already has images:`, property.images);
-          }
-          return property;
-        });
-        
-        if (append) {
-          setProperties(prev => [...prev, ...propertiesWithImages]);
-        } else {
-          setProperties(propertiesWithImages);
-        }
-        
-        // Check if there are more pages
-        const totalPages = response.pagination?.totalPages || 1;
-        setHasMore(page < totalPages);
-        setCurrentPage(page);
-      } else {
-        throw new Error("Failed to fetch properties");
-      }
-    } catch (error) {
-      console.error("Error fetching properties:", error);
-      if (!append) {
-        setProperties([]);
-      }
-      toast.error("Failed to load properties");
-    } finally {
+  const fetchProperties = useCallback(
+    async (page = 1, append = false) => {
       if (append) {
-        setLoadingMore(false);
+        setLoadingMore(true);
       } else {
-        setLoading(false);
+        setLoading(true);
       }
-    }
-  }, [searchParams]);
+
+      try {
+        const params: any = {};
+
+        // Convert URL search params to API params
+        for (const [key, value] of searchParams.entries()) {
+          if (value) {
+            params[key] = value;
+          }
+        }
+
+        params.limit = 9; // Load 9 properties at a time
+        params.page = page;
+
+        const response: any = await apiClient.getProperties(params);
+
+        if (response.success && response.data) {
+          console.log("Properties API response:", response);
+          console.log("Properties data:", response.data);
+          console.log("First property sample:", response.data[0]);
+
+          // Ensure all properties have images
+          const propertiesWithImages = response.data.map((property: any) => {
+            if (!property.images || property.images.length === 0) {
+              // Add default images if none exist - using more reliable URLs
+              property.images = [
+                "https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=Property+Image",
+                "https://via.placeholder.com/800x600/10B981/FFFFFF?text=Property+Image",
+                "https://via.placeholder.com/800x600/F59E0B/FFFFFF?text=Property+Image",
+              ];
+              console.log(
+                `Added default images to property ${property.id}:`,
+                property.images
+              );
+            } else {
+              console.log(
+                `Property ${property.id} already has images:`,
+                property.images
+              );
+            }
+            return property;
+          });
+
+          if (append) {
+            setProperties((prev) => [...prev, ...propertiesWithImages]);
+          } else {
+            setProperties(propertiesWithImages);
+          }
+
+          // Check if there are more pages
+          const totalPages = response.pagination?.totalPages || 1;
+          setHasMore(page < totalPages);
+          setCurrentPage(page);
+        } else {
+          throw new Error("Failed to fetch properties");
+        }
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+        if (!append) {
+          setProperties([]);
+        }
+        toast.error("Failed to load properties");
+      } finally {
+        if (append) {
+          setLoadingMore(false);
+        } else {
+          setLoading(false);
+        }
+      }
+    },
+    [searchParams]
+  );
 
   useEffect(() => {
     // Update search filters from URL params
@@ -169,8 +182,12 @@ export function PropertiesPageClient() {
       { threshold: 0.1 }
     );
 
+    // Observe both mobile and desktop load more triggers
     if (loadMoreRef.current) {
       observerRef.current.observe(loadMoreRef.current);
+    }
+    if (mobileLoadMoreRef.current) {
+      observerRef.current.observe(mobileLoadMoreRef.current);
     }
 
     return () => {
@@ -345,7 +362,7 @@ export function PropertiesPageClient() {
 
   const handleFavorite = async (property: any) => {
     if (!user) {
-      toast.error('Please login to add favourites');
+      toast.error("Please login to add favourites");
       return;
     }
 
@@ -353,20 +370,20 @@ export function PropertiesPageClient() {
       const isFavorite = property.isFavourite;
       if (isFavorite) {
         await apiClient.removeFromFavourites(property.id);
-        toast.success('Property removed from favourites');
+        toast.success("Property removed from favourites");
       } else {
         await apiClient.addToFavourites(property.id);
-        toast.success('Property added to favourites');
+        toast.success("Property added to favourites");
       }
       // Update the property's favourite status
-      setProperties(prev => prev.map(p => 
-        p.id === property.id 
-          ? { ...p, isFavourite: !isFavorite }
-          : p
-      ));
+      setProperties((prev) =>
+        prev.map((p) =>
+          p.id === property.id ? { ...p, isFavourite: !isFavorite } : p
+        )
+      );
     } catch (error) {
-      console.error('Error updating favourite:', error);
-      toast.error('Failed to update favourite');
+      console.error("Error updating favourite:", error);
+      toast.error("Failed to update favourite");
     }
   };
 
@@ -392,7 +409,7 @@ export function PropertiesPageClient() {
                   onBlur={() =>
                     setTimeout(() => setShowSuggestions(false), 200)
                   }
-                  style={{ fontSize: '16px' }} // Prevent zoom on mobile
+                  style={{ fontSize: "16px" }} // Prevent zoom on mobile
                 />
 
                 {/* Search Button beside search bar */}
@@ -413,7 +430,9 @@ export function PropertiesPageClient() {
                       >
                         <div className="flex items-center">
                           <div className="w-2 h-2 bg-red-400 rounded-full mr-3"></div>
-                          <span className="text-gray-700">{suggestion.display_name}</span>
+                          <span className="text-gray-700">
+                            {suggestion.display_name}
+                          </span>
                         </div>
                       </div>
                     ))}
@@ -462,7 +481,7 @@ export function PropertiesPageClient() {
                     onBlur={() =>
                       setTimeout(() => setShowSuggestions(false), 200)
                     }
-                    style={{ fontSize: '16px' }} // Prevent zoom on mobile
+                    style={{ fontSize: "16px" }} // Prevent zoom on mobile
                   />
 
                   {showSuggestions && suggestions.length > 0 && (
@@ -504,13 +523,13 @@ export function PropertiesPageClient() {
                   onClick={handleSearch}
                   className="h-12 px-6 text-sm bg-red-500 hover:bg-red-600 text-white"
                 >
-                    Search
-                  </Button>
+                  Search
+                </Button>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 overflow-x-hidden h-[calc(100vh-200px)]">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 overflow-x-hidden lg:h-[calc(100vh-200px)]">
             {/* Filter Section */}
             <FilterSection
               onSearch={handleSearch}
@@ -522,7 +541,6 @@ export function PropertiesPageClient() {
 
             {/* Main Content */}
             <div className="flex-1 min-w-0 overflow-x-hidden flex flex-col">
-
               {/* Desktop Properties Count and View Toggle */}
               <div className="hidden lg:block mb-4">
                 <div className="flex items-center justify-between">
@@ -559,7 +577,7 @@ export function PropertiesPageClient() {
                 </div>
               </div>
 
-              {/* Mobile view - always show grid */}
+              {/* Mobile view - always show grid with proper scrolling */}
               <div className="block lg:hidden">
                 <PropertyList
                   properties={properties}
@@ -569,11 +587,16 @@ export function PropertiesPageClient() {
                   onFavorite={handleFavorite}
                 />
                 {/* Infinite scroll trigger for mobile */}
-                <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
+                <div
+                  ref={mobileLoadMoreRef}
+                  className="h-10 flex items-center justify-center mt-4"
+                >
                   {loadingMore && (
                     <div className="flex items-center space-x-2">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span className="text-sm text-gray-600">Loading more properties...</span>
+                      <span className="text-sm text-gray-600">
+                        Loading more properties...
+                      </span>
                     </div>
                   )}
                 </div>
@@ -591,11 +614,16 @@ export function PropertiesPageClient() {
                       onFavorite={handleFavorite}
                     />
                     {/* Infinite scroll trigger for desktop */}
-                    <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
+                    <div
+                      ref={loadMoreRef}
+                      className="h-10 flex items-center justify-center"
+                    >
                       {loadingMore && (
                         <div className="flex items-center space-x-2">
                           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                          <span className="text-sm text-gray-600">Loading more properties...</span>
+                          <span className="text-sm text-gray-600">
+                            Loading more properties...
+                          </span>
                         </div>
                       )}
                     </div>
