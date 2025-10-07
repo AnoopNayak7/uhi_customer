@@ -21,6 +21,7 @@ import { Mail, Phone, ArrowLeft } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
+import { GoogleLoginButton } from "@/components/auth/google-login-button";
 
 const loginSchema = z.object({
   identifier: z.string().min(1, "Please enter your email or WhatsApp number"),
@@ -61,10 +62,17 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Failed to send OTP. Please try again.";
-      
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to send OTP. Please try again.";
+
       // Check if it's a user not found error
-      if (errorMessage.includes("User not found") || errorMessage.includes("404") || error.response?.status === 404) {
+      if (
+        errorMessage.includes("User not found") ||
+        errorMessage.includes("404") ||
+        error.response?.status === 404
+      ) {
         toast.error("Account not found. Redirecting to signup...", {
           duration: 3000,
         });
@@ -92,7 +100,10 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error("OTP verification error:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Invalid OTP. Please try again.";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Invalid OTP. Please try again.";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -120,44 +131,63 @@ export default function LoginPage() {
 
         <CardContent className="space-y-6">
           {step === "identifier" ? (
-            <form
-              onSubmit={identifierForm.handleSubmit(onIdentifierSubmit)}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="identifier">Email or WhatsApp Number</Label>
-                <div className="relative">
-                  {identifier.includes('@') ? (
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  )}
-                  <Input
-                    {...identifierForm.register("identifier")}
-                    type="text"
-                    placeholder="Enter your email or WhatsApp number"
-                    className="pl-10"
-                    style={{ fontSize: '16px' }} // Prevent zoom on mobile
-                  />
-                </div>
-                <p className="text-xs text-gray-500">
-                  For WhatsApp: Enter 10-digit number. For email: Enter your email address.
-                </p>
-                {identifierForm.formState.errors.identifier && (
-                  <p className="text-sm text-red-500">
-                    {identifierForm.formState.errors.identifier.message}
+            <>
+              <form
+                onSubmit={identifierForm.handleSubmit(onIdentifierSubmit)}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="identifier">Email or WhatsApp Number</Label>
+                  <div className="relative">
+                    {identifier.includes("@") ? (
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    )}
+                    <Input
+                      {...identifierForm.register("identifier")}
+                      type="text"
+                      placeholder="Enter your email or WhatsApp number"
+                      className="pl-10"
+                      style={{ fontSize: "16px" }} // Prevent zoom on mobile
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    For WhatsApp: Enter 10-digit number. For email: Enter your
+                    email address.
                   </p>
-                )}
+                  {identifierForm.formState.errors.identifier && (
+                    <p className="text-sm text-red-500">
+                      {identifierForm.formState.errors.identifier.message}
+                    </p>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-red-500 hover:bg-red-600"
+                  disabled={loading}
+                >
+                  {loading ? "Sending OTP..." : "Send OTP"}
+                </Button>
+              </form>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full bg-red-500 hover:bg-red-600"
-                disabled={loading}
-              >
-                {loading ? "Sending OTP..." : "Send OTP"}
-              </Button>
-            </form>
+              <GoogleLoginButton
+                onSuccess={() => router.push("/dashboard")}
+                className="w-full"
+              />
+            </>
           ) : (
             <div className="space-y-4">
               <Button
@@ -182,7 +212,7 @@ export default function LoginPage() {
                     placeholder="000000"
                     maxLength={6}
                     className="text-center text-lg tracking-widest"
-                    style={{ fontSize: '16px' }} // Prevent zoom on mobile
+                    style={{ fontSize: "16px" }} // Prevent zoom on mobile
                   />
                   {otpForm.formState.errors.otp && (
                     <p className="text-sm text-red-500">
