@@ -49,6 +49,7 @@ export function PropertiesPageClient() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [selectedLocalities, setSelectedLocalities] = useState<string[]>([]);
   const [showLocalitySearch, setShowLocalitySearch] = useState(false);
   const [localitySearchQuery, setLocalitySearchQuery] = useState("");
@@ -125,10 +126,12 @@ export function PropertiesPageClient() {
             setProperties(propertiesWithImages);
           }
 
-          // Check if there are more pages
+          // Check if there are more pages and set total count
           const totalPages = response.pagination?.totalPages || 1;
+          const total = response.pagination?.total || response.data.length;
           setHasMore(page < totalPages);
           setCurrentPage(page);
+          setTotalCount(total);
         } else {
           throw new Error("Failed to fetch properties");
         }
@@ -158,6 +161,7 @@ export function PropertiesPageClient() {
     // Reset pagination when search params change
     setCurrentPage(1);
     setHasMore(true);
+    setTotalCount(0);
     fetchProperties(1, false);
   }, [searchParams, updateSearchFilters, fetchProperties]);
 
@@ -549,7 +553,7 @@ export function PropertiesPageClient() {
                       Properties
                     </h1>
                     <p className="text-gray-500 text-sm">
-                      {properties.length} properties found
+                      {totalCount} properties found
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
