@@ -43,20 +43,6 @@ export function FilterSection({
 
   return (
     <>
-      {/* Mobile filter drawer */}
-      <div className="block sm:hidden mb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Properties</h1>
-            <p className="text-gray-500 text-sm">{propertiesCount} properties found</p>
-          </div>
-          <MobileFilterDrawer
-            onSearch={onSearch}
-            handleFilterChange={handleFilterChange}
-          />
-        </div>
-      </div>
-      
       {/* Tablet filter toggle */}
       <div className="hidden sm:block lg:hidden mb-4">
         <Button

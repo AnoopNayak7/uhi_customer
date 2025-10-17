@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { FilterSection } from "@/components/propertyListing/FilterSection";
 import { PropertyList } from "@/components/propertyListing/PropertyList";
 import { MapView } from "@/components/propertyListing/MapView";
+import { MobileFilterDrawer } from "@/components/propertyListing/MobileFilterDrawer";
 
 import { PageContent } from "@/components/animations/layout-wrapper";
 
@@ -583,6 +584,22 @@ export function PropertiesPageClient() {
 
               {/* Mobile view - always show grid with proper scrolling */}
               <div className="block lg:hidden">
+                {/* Mobile Properties Count and Filter */}
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900">
+                      Properties
+                    </h1>
+                    <p className="text-gray-500 text-sm">
+                      {totalCount} properties found
+                    </p>
+                  </div>
+                  <MobileFilterDrawer
+                    onSearch={handleSearch}
+                    handleFilterChange={handleFilterChange}
+                  />
+                </div>
+
                 <PropertyList
                   properties={properties}
                   loading={loading}

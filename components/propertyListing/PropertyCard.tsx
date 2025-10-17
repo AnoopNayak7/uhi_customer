@@ -3,7 +3,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart, MapPin, Bed, Bath, Square, BarChart3 } from "lucide-react";
+import {
+  Heart,
+  MapPin,
+  Bed,
+  Bath,
+  Square,
+  GitCompareArrows,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CardHover } from "@/components/animations/page-transitions";
 import { motion } from "framer-motion";
@@ -150,12 +157,15 @@ export const PropertyCard = ({
             >
               <Image
                 src={property.images?.[0] || defaultImage}
-                alt={property.title || 'Property'}
+                alt={property.title || "Property"}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                 blurDataURL={BLUR_DATA_URLS.property}
                 onError={() => {
-                  console.log('Image failed to load for property:', property.id);
+                  console.log(
+                    "Image failed to load for property:",
+                    property.id
+                  );
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -173,7 +183,7 @@ export const PropertyCard = ({
                   }`}
                   onClick={handleCompareClick}
                 >
-                  <BarChart3
+                  <GitCompareArrows
                     className={`w-5 h-5 sm:w-4 sm:h-4 ${
                       compareList.some((p) => p.id === property.id)
                         ? "fill-current"
@@ -224,7 +234,9 @@ export const PropertyCard = ({
               {property.bhkVariants && property.bhkVariants.length > 0 ? (
                 <div className="flex items-center min-w-0">
                   <Bed className="w-4 h-4 mr-1 flex-shrink-0" />
-                  <span className="truncate">{property.bhkVariants.join(', ')}</span>
+                  <span className="truncate">
+                    {property.bhkVariants.join(", ")}
+                  </span>
                 </div>
               ) : (
                 <div className="flex items-center min-w-0">
@@ -239,7 +251,10 @@ export const PropertyCard = ({
               <div className="flex items-center min-w-0">
                 <Square className="w-3 h-3 mr-1 flex-shrink-0" />
                 <span className="truncate">
-                  {Array.isArray(property.area) ? property.area[0] : property.area} {property.areaUnit}
+                  {Array.isArray(property.area)
+                    ? property.area[0]
+                    : property.area}{" "}
+                  {property.areaUnit}
                 </span>
               </div>
             </div>
@@ -260,7 +275,9 @@ export const PropertyCard = ({
                   POSSESSION
                 </div>
                 <div className="text-sm font-normal text-gray-900">
-                  {(typeof property.possessionDate === 'string' && property.possessionDate) || "Ready to Move"}
+                  {(typeof property.possessionDate === "string" &&
+                    property.possessionDate) ||
+                    "Ready to Move"}
                 </div>
               </div>
             </div>

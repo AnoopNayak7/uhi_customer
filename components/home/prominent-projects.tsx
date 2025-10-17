@@ -15,6 +15,7 @@ import {
   BarChart3,
   Star,
   Flame,
+  GitCompareArrows,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -362,7 +363,7 @@ function PropertyCard({
             }`}
             onClick={handleCompareClick}
           >
-            <BarChart3
+            <GitCompareArrows
               className={`w-4 h-4 ${isInCompare ? "fill-current" : ""}`}
             />
           </Button>
@@ -394,21 +395,21 @@ function PropertyCard({
         </div>
 
         <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-          {property.category?.toLowerCase() !== 'plot' && (
+          {property.category?.toLowerCase() !== "plot" && (
             <div className="flex items-center">
               <Bed className="w-4 h-4 mr-1" />
               <span>
-                {property.bhkVariants && property.bhkVariants.length > 0 
-                  ? property.bhkVariants.join(', ')
-                  : `${property.bedrooms},${property.bathrooms}`
-                }
+                {property.bhkVariants && property.bhkVariants.length > 0
+                  ? property.bhkVariants.join(", ")
+                  : `${property.bedrooms},${property.bathrooms}`}
               </span>
             </div>
           )}
           <div className="flex items-center">
             <Square className="w-3 h-3 mr-1" />
             <span className="text-[13px]">
-              {Array.isArray(property.area) ? property.area[0] : property.area} {property.areaUnit}
+              {Array.isArray(property.area) ? property.area[0] : property.area}{" "}
+              {property.areaUnit}
             </span>
           </div>
         </div>
