@@ -254,7 +254,7 @@ export const PropertyCard = ({
                   {Array.isArray(property.area)
                     ? property.area[0]
                     : property.area}{" "}
-                  {property.areaUnit}
+                  sqft
                 </span>
               </div>
             </div>
