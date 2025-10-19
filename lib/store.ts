@@ -124,6 +124,10 @@ export const useAuthStore = create<AuthState>()(
   },
   logout: () => {
     set({ user: null, token: null, isAuthenticated: false, isInitialized: true });
+    // Redirect to homepage after logout
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
   },
   updateUser: (userData) => set((state) => ({
     user: state.user ? { ...state.user, ...userData } : null

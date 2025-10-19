@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -18,6 +18,10 @@ interface MapViewProps {
   userLocation: [number, number] | null;
   mapType: "map" | "satellite";
   setMapType: (type: "map" | "satellite") => void;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
+  totalCount?: number;
 }
 
 export function MapView({
@@ -25,9 +29,14 @@ export function MapView({
   userLocation,
   mapType,
   setMapType,
+  hasMore = false,
+  loadingMore = false,
+  onLoadMore,
+  totalCount = 0,
 }: MapViewProps) {
   const { favourites } = usePropertyStore();
   const { addToFavourites, removeFromFavourites } = usePropertyStore();
+  const mapLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const handleFavorite = (property: any) => {
     const isFavorite = favourites.some((p) => p.id === property.id);
@@ -37,6 +46,26 @@ export function MapView({
       addToFavourites(property);
     }
   };
+
+  // Infinite scroll for map view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && onLoadMore) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (mapLoadMoreRef.current) {
+      observer.observe(mapLoadMoreRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasMore, loadingMore, onLoadMore]);
 
   // Filter properties with valid coordinates
   const propertiesWithCoordinates = properties.filter(
@@ -95,24 +124,73 @@ export function MapView({
         <div className="p-4 sm:p-4 border-b flex-shrink-0">
           <h3 className="font-medium text-base sm:text-base">Properties</h3>
           <p className="text-sm text-gray-500">
-            {propertiesWithCoordinates.length} properties found
+            {totalCount > 0 
+              ? `${totalCount} properties found`
+              : `${propertiesWithCoordinates.length} properties found`
+            }
           </p>
         </div>
         <div className="flex-1 overflow-y-auto">
           {propertiesWithCoordinates.length > 0 ? (
-            propertiesWithCoordinates.map((property) => (
+            <>
+              {propertiesWithCoordinates.map((property) => (
+                <div
+                  key={property.id}
+                  className="p-2 sm:p-2 border-b last:border-b-0"
+                >
+                  <PropertyCard
+                    property={property}
+                    onFavorite={() => handleFavorite(property)}
+                    isFavorite={favourites.some((p) => p.id === property.id)}
+                    compact
+                  />
+                </div>
+              ))}
+              
+              {/* Infinite scroll trigger for map view */}
               <div
-                key={property.id}
-                className="p-2 sm:p-2 border-b last:border-b-0"
+                ref={mapLoadMoreRef}
+                className="h-10 flex items-center justify-center"
               >
-                <PropertyCard
-                  property={property}
-                  onFavorite={() => handleFavorite(property)}
-                  isFavorite={favourites.some((p) => p.id === property.id)}
-                  compact
-                />
+                {loadingMore ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <span className="text-sm text-gray-600">
+                      Loading more properties...
+                    </span>
+                  </div>
+                ) : hasMore ? (
+                  <div className="text-sm text-gray-500">
+                    Scroll down to load more properties
+                  </div>
+                ) : properties.length > 0 ? (
+                  <div className="text-sm text-gray-500">
+                    No more properties to load
+                  </div>
+                ) : null}
               </div>
-            ))
+              
+              {/* Load more button for map view (fallback) */}
+              {hasMore && onLoadMore && (
+                <div className="p-4 border-t">
+                  <Button
+                    onClick={onLoadMore}
+                    disabled={loadingMore}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    {loadingMore ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <span>Loading more properties...</span>
+                      </div>
+                    ) : (
+                      "Load More Properties"
+                    )}
+                  </Button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="p-6 text-center text-gray-500">
               <p className="text-sm">No properties with location data found</p>

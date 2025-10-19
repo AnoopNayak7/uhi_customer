@@ -179,6 +179,13 @@ export function PropertiesPageClient() {
     fetchProperties(1, false);
   }, [searchParams, updateSearchFilters, fetchProperties]);
 
+  // Handle load more for manual triggers (like MapView button)
+  const handleLoadMore = useCallback(() => {
+    if (hasMore && !loadingMore && !loading) {
+      fetchProperties(currentPage + 1, true);
+    }
+  }, [hasMore, loadingMore, loading, currentPage, fetchProperties]);
+
   // Infinite scroll effect
   useEffect(() => {
     const loadMore = () => {
@@ -691,6 +698,10 @@ export function PropertiesPageClient() {
                       userLocation={userLocation}
                       mapType={mapType}
                       setMapType={setMapType}
+                      hasMore={hasMore}
+                      loadingMore={loadingMore}
+                      onLoadMore={handleLoadMore}
+                      totalCount={totalCount}
                     />
                   </div>
                 )}
