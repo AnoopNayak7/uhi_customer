@@ -19,6 +19,7 @@ import { MapView } from "@/components/propertyListing/MapView";
 import { MobileFilterDrawer } from "@/components/propertyListing/MobileFilterDrawer";
 
 import { PageContent } from "@/components/animations/layout-wrapper";
+import { PropertyGridSkeleton } from "@/components/ui/PropertyCardSkeleton";
 
 // Location suggestion interface
 interface LocationSuggestion {
@@ -128,9 +129,21 @@ export function PropertiesPageClient() {
           }
 
           // Check if there are more pages and set total count
-          const totalPages = response.pagination?.totalPages || 1;
-          const total = response.pagination?.total || response.data.length;
-          setHasMore(page < totalPages);
+          const pagination = response.pagination || response.meta;
+          const totalPages = pagination?.totalPages || 1;
+          const total = pagination?.totalItems || response.data.length;
+          const hasMoreData = pagination?.hasNext || page < totalPages;
+          
+          console.log("Pagination debug:", {
+            currentPage: page,
+            totalPages,
+            total,
+            hasMoreData,
+            dataLength: response.data.length,
+            pagination: pagination
+          });
+          
+          setHasMore(hasMoreData);
           setCurrentPage(page);
           setTotalCount(total);
         } else {
@@ -600,13 +613,17 @@ export function PropertiesPageClient() {
                   />
                 </div>
 
-                <PropertyList
-                  properties={properties}
-                  loading={loading}
-                  viewMode="grid"
-                  setViewMode={setViewMode}
-                  onFavorite={handleFavorite}
-                />
+                {loading ? (
+                  <PropertyGridSkeleton count={9} />
+                ) : (
+                  <PropertyList
+                    properties={properties}
+                    loading={loading}
+                    viewMode="grid"
+                    setViewMode={setViewMode}
+                    onFavorite={handleFavorite}
+                  />
+                )}
                 {/* Infinite scroll trigger for mobile */}
                 <div
                   ref={mobileLoadMoreRef}
@@ -621,19 +638,30 @@ export function PropertiesPageClient() {
                     </div>
                   )}
                 </div>
+                
+                {/* Show skeleton when loading more */}
+                {loadingMore && (
+                  <div className="mt-4">
+                    <PropertyGridSkeleton count={3} />
+                  </div>
+                )}
               </div>
 
               {/* Desktop view - show grid or map based on viewMode */}
               <div className="hidden lg:block flex-1 overflow-hidden">
                 {viewMode === "grid" ? (
                   <div className="h-full overflow-y-auto">
-                    <PropertyList
-                      properties={properties}
-                      loading={loading}
-                      viewMode={viewMode}
-                      setViewMode={setViewMode}
-                      onFavorite={handleFavorite}
-                    />
+                    {loading ? (
+                      <PropertyGridSkeleton count={9} />
+                    ) : (
+                      <PropertyList
+                        properties={properties}
+                        loading={loading}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onFavorite={handleFavorite}
+                      />
+                    )}
                     {/* Infinite scroll trigger for desktop */}
                     <div
                       ref={loadMoreRef}
@@ -648,6 +676,13 @@ export function PropertiesPageClient() {
                         </div>
                       )}
                     </div>
+                    
+                    {/* Show skeleton when loading more */}
+                    {loadingMore && (
+                      <div className="mt-4">
+                        <PropertyGridSkeleton count={3} />
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="h-full">
