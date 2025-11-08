@@ -240,6 +240,111 @@
     --accent: 0 100% 50% !important;
   }
   
+  /* Override hardcoded red colors for Diwali theme */
+  html[data-theme="diwali"] .bg-red-500,
+  html[data-theme="diwali"] .bg-red-600,
+  html[data-theme="diwali"] .bg-red-50,
+  html[data-theme="diwali"] .bg-red-100 {
+    background-color: hsl(35, 100%, 50%) !important; /* Gold/Orange */
+  }
+  
+  html[data-theme="diwali"] .text-red-500,
+  html[data-theme="diwali"] .text-red-600,
+  html[data-theme="diwali"] .text-red-700,
+  html[data-theme="diwali"] .text-red-900 {
+    color: hsl(35, 100%, 50%) !important; /* Gold/Orange */
+  }
+  
+  html[data-theme="diwali"] .border-red-200,
+  html[data-theme="diwali"] .border-red-300,
+  html[data-theme="diwali"] .border-red-500 {
+    border-color: hsl(35, 100%, 50%) !important; /* Gold/Orange */
+  }
+  
+  html[data-theme="diwali"] .hover\:bg-red-50:hover,
+  html[data-theme="diwali"] .hover\:bg-red-600:hover {
+    background-color: hsl(45, 100%, 60%) !important; /* Light Gold */
+  }
+  
+  html[data-theme="diwali"] .hover\:text-red-500:hover,
+  html[data-theme="diwali"] .hover\:text-red-700:hover {
+    color: hsl(35, 100%, 50%) !important; /* Gold/Orange */
+  }
+  
+  html[data-theme="diwali"] .hover\:border-red-300:hover {
+    border-color: hsl(35, 100%, 50%) !important; /* Gold/Orange */
+  }
+  
+  html[data-theme="diwali"] .ring-red-500 {
+    --tw-ring-color: hsl(35, 100%, 50%) !important; /* Gold/Orange */
+  }
+  
+  /* Override purple/pink accents for Diwali */
+  html[data-theme="diwali"] .from-purple-50,
+  html[data-theme="diwali"] .to-pink-50 {
+    --tw-gradient-from: hsl(45, 100%, 95%) !important;
+    --tw-gradient-to: hsl(35, 100%, 95%) !important;
+  }
+  
+  /* Override gradient backgrounds for Diwali */
+  html[data-theme="diwali"] .from-red-50,
+  html[data-theme="diwali"] .to-orange-50 {
+    --tw-gradient-from: hsl(45, 100%, 95%) !important;
+    --tw-gradient-to: hsl(35, 100%, 95%) !important;
+  }
+  
+  /* Additional red color overrides */
+  html[data-theme="diwali"] .bg-red-100 {
+    background-color: hsl(45, 100%, 90%) !important;
+  }
+  
+  html[data-theme="diwali"] .bg-red-200 {
+    background-color: hsl(45, 100%, 80%) !important;
+  }
+  
+  html[data-theme="diwali"] .bg-red-300 {
+    background-color: hsl(45, 100%, 70%) !important;
+  }
+  
+  html[data-theme="diwali"] .bg-red-400 {
+    background-color: hsl(40, 100%, 60%) !important;
+  }
+  
+  html[data-theme="diwali"] .text-red-100 {
+    color: hsl(45, 100%, 90%) !important;
+  }
+  
+  html[data-theme="diwali"] .text-red-200 {
+    color: hsl(45, 100%, 80%) !important;
+  }
+  
+  html[data-theme="diwali"] .text-red-300 {
+    color: hsl(45, 100%, 70%) !important;
+  }
+  
+  html[data-theme="diwali"] .text-red-400 {
+    color: hsl(40, 100%, 60%) !important;
+  }
+  
+  html[data-theme="diwali"] .border-red-100 {
+    border-color: hsl(45, 100%, 90%) !important;
+  }
+  
+  html[data-theme="diwali"] .border-red-400 {
+    border-color: hsl(40, 100%, 60%) !important;
+  }
+  
+  /* Override fill colors for SVGs/icons */
+  html[data-theme="diwali"] [class*="fill-red-"],
+  html[data-theme="diwali"] svg[class*="text-red-"] {
+    fill: hsl(35, 100%, 50%) !important;
+  }
+  
+  /* Override stroke colors */
+  html[data-theme="diwali"] [class*="stroke-red-"] {
+    stroke: hsl(35, 100%, 50%) !important;
+  }
+  
   /* Holi Theme */
   .festival-theme[data-festival="holi"],
   [data-theme="holi"],
