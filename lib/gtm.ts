@@ -49,11 +49,23 @@ export const getDataLayerValue = (key: string): any => {
 
 /**
  * Set GTM variable
+ * Also pushes simplified versions for GTM compatibility
  */
 export const setGTMVariable = (key: string, value: any) => {
   if (typeof window !== 'undefined') {
     (window as any)[key] = value;
     pushToDataLayer({ [key]: value });
+    
+    // Map to simplified GTM variable names
+    const gtmKeyMap: Record<string, string> = {
+      'gtmTheme': 'theme',
+      'gtmBanner': 'banner',
+      'gtmUserSegment': 'userSegment',
+    };
+    
+    if (gtmKeyMap[key]) {
+      pushToDataLayer({ [gtmKeyMap[key]]: value });
+    }
   }
 };
 
@@ -74,11 +86,14 @@ export const trackUserInfo = (userInfo: {
     user_id: userInfo.userId,
     user_email: userInfo.email,
     user_role: userInfo.role,
+    role: userInfo.role, // Simplified for GTM
     user_name: userInfo.firstName && userInfo.lastName 
       ? `${userInfo.firstName} ${userInfo.lastName}` 
       : undefined,
     user_city: userInfo.city,
+    city: userInfo.city, // Simplified for GTM
     user_segment: userInfo.userSegment,
+    userSegment: userInfo.userSegment, // Simplified for GTM
   });
 
   // Also set as window variable for easy access

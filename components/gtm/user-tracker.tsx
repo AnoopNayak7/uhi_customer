@@ -47,8 +47,10 @@ export function UserTracker() {
           event: "user_authenticated",
           user_id: user.id,
           user_role: user.role,
+          role: user.role, // Simplified for GTM
           user_verified: user.isVerified,
           user_city: selectedLocation?.city,
+          city: selectedLocation?.city, // Simplified for GTM
         });
       }
     } else {
@@ -57,6 +59,9 @@ export function UserTracker() {
         window.dataLayer.push({
           event: "user_anonymous",
           user_segment: "visitor",
+          userSegment: "visitor", // Simplified for GTM
+          city: selectedLocation?.city, // Simplified for GTM
+          user_city: selectedLocation?.city,
         });
       }
     }
