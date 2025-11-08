@@ -30,7 +30,7 @@ export const SimilarProperties = ({ properties, formatPrice }: SimilarProperties
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {properties.map((property, index) => (
-            <Link href={`/properties/${property.id}`} key={index} passHref>
+            <Link href={`/properties/${property.slug || property.id}`} key={index} passHref>
               <div className="border border-gray-100 rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-300">
                 <div className="relative h-36 w-full bg-gray-100">
                   {property.image ? (

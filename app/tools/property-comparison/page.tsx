@@ -832,7 +832,7 @@ function PropertyComparisonCard({
           {/* Quick Actions */}
           <div className="flex space-x-2">
             <Button variant="outline" size="sm" className="flex-1" asChild>
-              <Link href={`/properties/${property.id}`}>
+              <Link href={`/properties/${property.slug || property.id}`}>
                 <Eye className="w-4 h-4 mr-1" />
                 View
               </Link>
@@ -1013,7 +1013,7 @@ function RecommendationSection({ properties }: { properties: any[] }) {
                   ₹{(bestProperty.price / 10000000).toFixed(1)} Cr
                 </div>
                 <Button className="bg-blue-600 hover:bg-blue-700" asChild>
-                  <Link href={`/properties/${bestProperty.id}`}>
+                  <Link href={`/properties/${bestProperty.slug || bestProperty.id}`}>
                     View Details
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>

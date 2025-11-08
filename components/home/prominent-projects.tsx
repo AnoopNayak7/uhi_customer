@@ -289,7 +289,8 @@ function PropertyCard({
   };
 
   const handleCardClick = () => {
-    router.push(`/properties/${property.id}`);
+    const slug = property.slug || property.id;
+    router.push(`/properties/${slug}`);
   };
 
   const handleFavouriteClick = async (e: React.MouseEvent) => {

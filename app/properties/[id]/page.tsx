@@ -1087,8 +1087,9 @@ export default function PropertyDetailPage() {
             addToViewed(response.data);
             addToRecentlyViewed(response.data);
             // Also add to the new viewed properties API
+            // Use the actual property ID from the response, not the slug from URL
             try {
-              await apiClient.addViewedProperty(user.id, id);
+              await apiClient.addViewedProperty(user.id, response.data.id);
             } catch (error) {
               console.error("Error adding to viewed properties:", error);
             }
@@ -1177,8 +1178,11 @@ export default function PropertyDetailPage() {
         return;
       }
 
+      // Use the actual property ID from the property state, not the slug from URL
+      const actualPropertyId = property?.id || params.id as string;
+      
       const response: any = await apiClient.bookPropertyVisit({
-        propertyId: params.id as string,
+        propertyId: actualPropertyId,
         name: bookingForm.name,
         email: bookingForm.email,
         phone: bookingForm.phone,

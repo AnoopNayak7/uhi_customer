@@ -87,7 +87,8 @@ export const PropertyCard = ({
   const { preloadOnHover } = useHoverPreloader();
 
   const handleCardClick = () => {
-    router.push(`/properties/${property.id}`);
+    const slug = property.slug || property.id;
+    router.push(`/properties/${slug}`);
   };
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
