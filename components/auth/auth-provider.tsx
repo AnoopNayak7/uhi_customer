@@ -1,13 +1,20 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { SessionProvider } from "next-auth/react";
 import { useAuthStore } from "@/lib/store";
+import { useNextAuthSync } from "@/hooks/use-nextauth-sync";
 
 interface AuthContextType {
   isInitialized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function AuthSyncProvider({ children }: { children: React.ReactNode }) {
+  useNextAuthSync();
+  return <>{children}</>;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { isInitialized, initialize } = useAuthStore();
@@ -23,9 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ isInitialized }}>
-      {children}
-    </AuthContext.Provider>
+    <SessionProvider>
+      <AuthSyncProvider>
+        <AuthContext.Provider value={{ isInitialized }}>
+          {children}
+        </AuthContext.Provider>
+      </AuthSyncProvider>
+    </SessionProvider>
   );
 }
 
