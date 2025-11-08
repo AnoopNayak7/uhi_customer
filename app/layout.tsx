@@ -11,6 +11,9 @@ import {
   PerformanceBudget,
 } from "@/components/performance/web-vitals";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { ThemeManager } from "@/components/gtm/theme-manager";
+import { DynamicBanner } from "@/components/gtm/dynamic-banner";
+import { UserTracker } from "@/components/gtm/user-tracker";
 
 // Manrope - Primary font (closest to Airbnb Cereal)
 // Optimized with font-display: swap for better performance
@@ -191,6 +194,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         {/* End Google Tag Manager (noscript) */}
         <AuthProvider>
           <LocationProvider>
+            <ThemeManager />
+            <UserTracker />
+            <DynamicBanner />
             <FavouritesSync />
             <LayoutWrapper>{children}</LayoutWrapper>
           </LocationProvider>
