@@ -26,6 +26,7 @@ import Image from "next/image";
 
 interface Property {
   id: string;
+  slug?: string;
   title: string;
   description?: string;
   price: number;

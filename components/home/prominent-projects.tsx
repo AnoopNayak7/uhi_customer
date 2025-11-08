@@ -27,6 +27,7 @@ import { toast } from "sonner";
 
 interface Property {
   id: string;
+  slug?: string;
   title: string;
   description?: string;
   price: number;
