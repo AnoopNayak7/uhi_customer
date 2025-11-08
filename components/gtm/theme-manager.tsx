@@ -20,7 +20,7 @@ export function ThemeManager() {
     const root = document.documentElement;
     const festival = getFestivalTheme();
 
-    // Apply festival theme if available
+    // Apply festival theme if available (from festivalTheme object)
     if (festival && festival.colors) {
       const { primary, secondary, accent } = festival.colors;
 
@@ -42,42 +42,57 @@ export function ThemeManager() {
       // Add festival class to body
       root.classList.add("festival-theme");
       root.setAttribute("data-festival", festival.name);
-    } else {
-      // Remove festival theme
-      root.classList.remove("festival-theme");
-      root.removeAttribute("data-festival");
-      root.style.removeProperty("--festival-primary");
-      root.style.removeProperty("--festival-secondary");
-      root.style.removeProperty("--festival-accent");
-    }
-
-    // Apply custom theme if specified
-    if (theme && !festival) {
+      root.setAttribute("data-theme", festival.name);
+    } else if (theme) {
+      // Apply theme from GTM theme variable (e.g., theme: "diwali")
       root.setAttribute("data-theme", theme);
 
       // Apply theme-specific styles
       switch (theme) {
         case "diwali":
           applyDiwaliTheme(root);
+          root.classList.add("festival-theme");
+          root.setAttribute("data-festival", "diwali");
           break;
         case "holi":
           applyHoliTheme(root);
+          root.classList.add("festival-theme");
+          root.setAttribute("data-festival", "holi");
           break;
         case "eid":
           applyEidTheme(root);
+          root.classList.add("festival-theme");
+          root.setAttribute("data-festival", "eid");
           break;
         case "christmas":
           applyChristmasTheme(root);
+          root.classList.add("festival-theme");
+          root.setAttribute("data-festival", "christmas");
           break;
         case "newyear":
           applyNewYearTheme(root);
+          root.classList.add("festival-theme");
+          root.setAttribute("data-festival", "newyear");
           break;
         default:
           // Custom theme - GTM will provide CSS variables
           break;
       }
-    } else if (!theme && !festival) {
+    } else {
+      // Remove all theme classes and attributes
+      root.classList.remove(
+        "festival-theme",
+        "festival-diwali",
+        "festival-holi",
+        "festival-eid",
+        "festival-christmas",
+        "festival-newyear"
+      );
+      root.removeAttribute("data-festival");
       root.removeAttribute("data-theme");
+      root.style.removeProperty("--festival-primary");
+      root.style.removeProperty("--festival-secondary");
+      root.style.removeProperty("--festival-accent");
     }
   }, [theme, festivalTheme]);
 

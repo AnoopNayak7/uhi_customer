@@ -231,34 +231,44 @@
     transition: all 0.3s ease;
   }
   
-  .festival-theme [data-festival="diwali"] {
-    --primary: hsl(35, 100%, 50%);
-    --secondary: hsl(45, 100%, 60%);
-    --accent: hsl(0, 100%, 50%);
+  /* Diwali Theme */
+  .festival-theme[data-festival="diwali"],
+  [data-theme="diwali"] {
+    --primary: hsl(35, 100%, 50%) !important;
+    --secondary: hsl(45, 100%, 60%) !important;
+    --accent: hsl(0, 100%, 50%) !important;
   }
   
-  .festival-theme [data-festival="holi"] {
-    --primary: hsl(300, 100%, 60%);
-    --secondary: hsl(120, 100%, 50%);
-    --accent: hsl(240, 100%, 60%);
+  /* Holi Theme */
+  .festival-theme[data-festival="holi"],
+  [data-theme="holi"] {
+    --primary: hsl(300, 100%, 60%) !important;
+    --secondary: hsl(120, 100%, 50%) !important;
+    --accent: hsl(240, 100%, 60%) !important;
   }
   
-  .festival-theme [data-festival="eid"] {
-    --primary: hsl(210, 100%, 50%);
-    --secondary: hsl(150, 100%, 40%);
-    --accent: hsl(45, 100%, 50%);
+  /* Eid Theme */
+  .festival-theme[data-festival="eid"],
+  [data-theme="eid"] {
+    --primary: hsl(210, 100%, 50%) !important;
+    --secondary: hsl(150, 100%, 40%) !important;
+    --accent: hsl(45, 100%, 50%) !important;
   }
   
-  .festival-theme [data-festival="christmas"] {
-    --primary: hsl(0, 100%, 40%);
-    --secondary: hsl(120, 100%, 30%);
-    --accent: hsl(45, 100%, 50%);
+  /* Christmas Theme */
+  .festival-theme[data-festival="christmas"],
+  [data-theme="christmas"] {
+    --primary: hsl(0, 100%, 40%) !important;
+    --secondary: hsl(120, 100%, 30%) !important;
+    --accent: hsl(45, 100%, 50%) !important;
   }
   
-  .festival-theme [data-festival="newyear"] {
-    --primary: hsl(280, 100%, 60%);
-    --secondary: hsl(200, 100%, 50%);
-    --accent: hsl(0, 0%, 100%);
+  /* New Year Theme */
+  .festival-theme[data-festival="newyear"],
+  [data-theme="newyear"] {
+    --primary: hsl(280, 100%, 60%) !important;
+    --secondary: hsl(200, 100%, 50%) !important;
+    --accent: hsl(0, 0%, 100%) !important;
   }
   
   /* Custom focus styles for our search bar */

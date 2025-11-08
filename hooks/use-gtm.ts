@@ -39,16 +39,29 @@ export function useGTMTheme() {
     // Check immediately
     checkTheme();
 
-    // Set up interval to check for changes
-    const interval = setInterval(checkTheme, 1000);
+    // Set up interval to check for changes (check more frequently initially)
+    const interval = setInterval(() => {
+      checkTheme();
+      checkDataLayer();
+    }, 500);
 
     // Listen for custom events
     const handleGTMEvent = (event: CustomEvent) => {
-      if (event.detail?.gtmTheme || event.detail?.theme) {
+      if (event.detail?.gtmTheme || event.detail?.theme || event.detail?.activeFestival) {
         checkTheme();
       }
       if (event.detail?.festivalTheme) {
         checkTheme();
+      }
+    };
+    
+    // Also listen to dataLayer changes directly
+    const checkDataLayer = () => {
+      if (typeof window !== 'undefined' && window.dataLayer) {
+        const lastEvent = window.dataLayer[window.dataLayer.length - 1];
+        if (lastEvent && (lastEvent.theme || lastEvent.activeFestival || lastEvent.festivalTheme)) {
+          checkTheme();
+        }
       }
     };
 
