@@ -226,6 +226,41 @@
   }
   */
   
+  /* Festival Theme Styles */
+  .festival-theme {
+    transition: all 0.3s ease;
+  }
+  
+  .festival-theme [data-festival="diwali"] {
+    --primary: hsl(35, 100%, 50%);
+    --secondary: hsl(45, 100%, 60%);
+    --accent: hsl(0, 100%, 50%);
+  }
+  
+  .festival-theme [data-festival="holi"] {
+    --primary: hsl(300, 100%, 60%);
+    --secondary: hsl(120, 100%, 50%);
+    --accent: hsl(240, 100%, 60%);
+  }
+  
+  .festival-theme [data-festival="eid"] {
+    --primary: hsl(210, 100%, 50%);
+    --secondary: hsl(150, 100%, 40%);
+    --accent: hsl(45, 100%, 50%);
+  }
+  
+  .festival-theme [data-festival="christmas"] {
+    --primary: hsl(0, 100%, 40%);
+    --secondary: hsl(120, 100%, 30%);
+    --accent: hsl(45, 100%, 50%);
+  }
+  
+  .festival-theme [data-festival="newyear"] {
+    --primary: hsl(280, 100%, 60%);
+    --secondary: hsl(200, 100%, 50%);
+    --accent: hsl(0, 0%, 100%);
+  }
+  
   /* Custom focus styles for our search bar */
   .hero-search input:focus,
   .hero-search select:focus,
