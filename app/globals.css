@@ -233,42 +233,47 @@
   
   /* Diwali Theme */
   .festival-theme[data-festival="diwali"],
-  [data-theme="diwali"] {
-    --primary: hsl(35, 100%, 50%) !important;
-    --secondary: hsl(45, 100%, 60%) !important;
-    --accent: hsl(0, 100%, 50%) !important;
+  [data-theme="diwali"],
+  html[data-theme="diwali"] {
+    --primary: 35 100% 50% !important;
+    --secondary: 45 100% 60% !important;
+    --accent: 0 100% 50% !important;
   }
   
   /* Holi Theme */
   .festival-theme[data-festival="holi"],
-  [data-theme="holi"] {
-    --primary: hsl(300, 100%, 60%) !important;
-    --secondary: hsl(120, 100%, 50%) !important;
-    --accent: hsl(240, 100%, 60%) !important;
+  [data-theme="holi"],
+  html[data-theme="holi"] {
+    --primary: 300 100% 60% !important;
+    --secondary: 120 100% 50% !important;
+    --accent: 240 100% 60% !important;
   }
   
   /* Eid Theme */
   .festival-theme[data-festival="eid"],
-  [data-theme="eid"] {
-    --primary: hsl(210, 100%, 50%) !important;
-    --secondary: hsl(150, 100%, 40%) !important;
-    --accent: hsl(45, 100%, 50%) !important;
+  [data-theme="eid"],
+  html[data-theme="eid"] {
+    --primary: 210 100% 50% !important;
+    --secondary: 150 100% 40% !important;
+    --accent: 45 100% 50% !important;
   }
   
   /* Christmas Theme */
   .festival-theme[data-festival="christmas"],
-  [data-theme="christmas"] {
-    --primary: hsl(0, 100%, 40%) !important;
-    --secondary: hsl(120, 100%, 30%) !important;
-    --accent: hsl(45, 100%, 50%) !important;
+  [data-theme="christmas"],
+  html[data-theme="christmas"] {
+    --primary: 0 100% 40% !important;
+    --secondary: 120 100% 30% !important;
+    --accent: 45 100% 50% !important;
   }
   
   /* New Year Theme */
   .festival-theme[data-festival="newyear"],
-  [data-theme="newyear"] {
-    --primary: hsl(280, 100%, 60%) !important;
-    --secondary: hsl(200, 100%, 50%) !important;
-    --accent: hsl(0, 0%, 100%) !important;
+  [data-theme="newyear"],
+  html[data-theme="newyear"] {
+    --primary: 280 100% 60% !important;
+    --secondary: 200 100% 50% !important;
+    --accent: 0 0% 100% !important;
   }
   
   /* Custom focus styles for our search bar */

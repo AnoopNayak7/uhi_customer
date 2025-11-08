@@ -32,10 +32,16 @@ export const getDataLayerValue = (key: string): any => {
     return null;
   }
 
-  // Search through dataLayer for the key
+  // Search through dataLayer for the key (newest first)
   for (let i = window.dataLayer.length - 1; i >= 0; i--) {
-    if (window.dataLayer[i] && window.dataLayer[i][key] !== undefined) {
-      return window.dataLayer[i][key];
+    const item = window.dataLayer[i];
+    if (item && item[key] !== undefined && item[key] !== null) {
+      // For objects, return the object itself
+      if (typeof item[key] === 'object' && !Array.isArray(item[key])) {
+        return item[key];
+      }
+      // For primitives, return the value
+      return item[key];
     }
   }
 
@@ -155,7 +161,14 @@ export const trackSearch = (searchData: {
  * Get current theme from GTM
  */
 export const getGTMTheme = (): string | null => {
-  return getDataLayerValue('gtmTheme') || getDataLayerValue('theme') || null;
+  const theme = getDataLayerValue('gtmTheme') || getDataLayerValue('theme') || null;
+  
+  // Debug logging
+  if (process.env.NODE_ENV === 'development' && theme) {
+    console.log('getGTMTheme found:', theme);
+  }
+  
+  return theme;
 };
 
 /**

@@ -20,6 +20,15 @@ export function ThemeManager() {
     const root = document.documentElement;
     const festival = getFestivalTheme();
 
+    // Debug logging
+    if (process.env.NODE_ENV === "development") {
+      console.log("ThemeManager effect:", {
+        theme,
+        festivalTheme,
+        hasFestival: !!festival,
+      });
+    }
+
     // Apply festival theme if available (from festivalTheme object)
     if (festival && festival.colors) {
       const { primary, secondary, accent } = festival.colors;
@@ -94,43 +103,55 @@ export function ThemeManager() {
       root.style.removeProperty("--festival-secondary");
       root.style.removeProperty("--festival-accent");
     }
+
+    // Debug logging (remove in production)
+    if (process.env.NODE_ENV === "development") {
+      console.log("ThemeManager applied:", {
+        "data-theme": root.getAttribute("data-theme"),
+        "data-festival": root.getAttribute("data-festival"),
+        "has-festival-theme-class": root.classList.contains("festival-theme"),
+        "primary-color": getComputedStyle(root).getPropertyValue("--primary"),
+      });
+    }
   }, [theme, festivalTheme]);
 
   return null; // This component doesn't render anything
 }
 
 // Festival-specific theme functions
+// Note: CSS variables should be set WITHOUT hsl() wrapper for Tailwind compatibility
+// Tailwind uses hsl(var(--primary)) so we need just the values: "35 100% 50%"
 function applyDiwaliTheme(root: HTMLElement) {
-  root.style.setProperty("--primary", "hsl(35, 100%, 50%)"); // Gold/Orange
-  root.style.setProperty("--secondary", "hsl(45, 100%, 60%)"); // Light Gold
-  root.style.setProperty("--accent", "hsl(0, 100%, 50%)"); // Red
+  root.style.setProperty("--primary", "35 100% 50%"); // Gold/Orange
+  root.style.setProperty("--secondary", "45 100% 60%"); // Light Gold
+  root.style.setProperty("--accent", "0 100% 50%"); // Red
   root.classList.add("festival-diwali");
 }
 
 function applyHoliTheme(root: HTMLElement) {
-  root.style.setProperty("--primary", "hsl(300, 100%, 60%)"); // Pink
-  root.style.setProperty("--secondary", "hsl(120, 100%, 50%)"); // Green
-  root.style.setProperty("--accent", "hsl(240, 100%, 60%)"); // Blue
+  root.style.setProperty("--primary", "300 100% 60%"); // Pink
+  root.style.setProperty("--secondary", "120 100% 50%"); // Green
+  root.style.setProperty("--accent", "240 100% 60%"); // Blue
   root.classList.add("festival-holi");
 }
 
 function applyEidTheme(root: HTMLElement) {
-  root.style.setProperty("--primary", "hsl(210, 100%, 50%)"); // Blue
-  root.style.setProperty("--secondary", "hsl(150, 100%, 40%)"); // Green
-  root.style.setProperty("--accent", "hsl(45, 100%, 50%)"); // Gold
+  root.style.setProperty("--primary", "210 100% 50%"); // Blue
+  root.style.setProperty("--secondary", "150 100% 40%"); // Green
+  root.style.setProperty("--accent", "45 100% 50%"); // Gold
   root.classList.add("festival-eid");
 }
 
 function applyChristmasTheme(root: HTMLElement) {
-  root.style.setProperty("--primary", "hsl(0, 100%, 40%)"); // Red
-  root.style.setProperty("--secondary", "hsl(120, 100%, 30%)"); // Green
-  root.style.setProperty("--accent", "hsl(45, 100%, 50%)"); // Gold
+  root.style.setProperty("--primary", "0 100% 40%"); // Red
+  root.style.setProperty("--secondary", "120 100% 30%"); // Green
+  root.style.setProperty("--accent", "45 100% 50%"); // Gold
   root.classList.add("festival-christmas");
 }
 
 function applyNewYearTheme(root: HTMLElement) {
-  root.style.setProperty("--primary", "hsl(280, 100%, 60%)"); // Purple
-  root.style.setProperty("--secondary", "hsl(200, 100%, 50%)"); // Cyan
-  root.style.setProperty("--accent", "hsl(0, 0%, 100%)"); // White
+  root.style.setProperty("--primary", "280 100% 60%"); // Purple
+  root.style.setProperty("--secondary", "200 100% 50%"); // Cyan
+  root.style.setProperty("--accent", "0 0% 100%"); // White
   root.classList.add("festival-newyear");
 }

@@ -23,15 +23,33 @@ export function useGTMTheme() {
   const [festivalTheme, setFestivalTheme] = useState<any>(null);
 
   useEffect(() => {
+    // Also listen to dataLayer changes directly
+    const checkDataLayer = () => {
+      if (typeof window !== 'undefined' && window.dataLayer) {
+        const lastEvent = window.dataLayer[window.dataLayer.length - 1];
+        if (lastEvent && (lastEvent.theme || lastEvent.activeFestival || lastEvent.festivalTheme)) {
+          return true;
+        }
+      }
+      return false;
+    };
+    
     const checkTheme = () => {
       const currentTheme = getGTMTheme();
       const currentFestivalTheme = getFestivalTheme();
+      
+      // Debug logging
+      if (process.env.NODE_ENV === 'development') {
+        if (currentTheme !== theme) {
+          console.log('Theme changed:', { from: theme, to: currentTheme });
+        }
+      }
       
       if (currentTheme !== theme) {
         setTheme(currentTheme);
       }
       
-      if (currentFestivalTheme !== festivalTheme) {
+      if (JSON.stringify(currentFestivalTheme) !== JSON.stringify(festivalTheme)) {
         setFestivalTheme(currentFestivalTheme);
       }
     };
@@ -41,9 +59,10 @@ export function useGTMTheme() {
 
     // Set up interval to check for changes (check more frequently initially)
     const interval = setInterval(() => {
-      checkTheme();
-      checkDataLayer();
-    }, 500);
+      if (checkDataLayer() || true) { // Always check
+        checkTheme();
+      }
+    }, 300); // Check every 300ms
 
     // Listen for custom events
     const handleGTMEvent = (event: CustomEvent) => {
@@ -55,15 +74,19 @@ export function useGTMTheme() {
       }
     };
     
-    // Also listen to dataLayer changes directly
-    const checkDataLayer = () => {
-      if (typeof window !== 'undefined' && window.dataLayer) {
-        const lastEvent = window.dataLayer[window.dataLayer.length - 1];
-        if (lastEvent && (lastEvent.theme || lastEvent.activeFestival || lastEvent.festivalTheme)) {
-          checkTheme();
+    // Override dataLayer.push to detect changes
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      const originalPush = window.dataLayer.push;
+      window.dataLayer.push = function(...args: any[]) {
+        const result = originalPush.apply(this, args);
+        if (args[0] && typeof args[0] === 'object') {
+          if (args[0].theme || args[0].activeFestival || args[0].festivalTheme) {
+            setTimeout(checkTheme, 100); // Small delay to ensure dataLayer is updated
+          }
         }
-      }
-    };
+        return result;
+      };
+    }
 
     window.addEventListener('gtm-custom-event', handleGTMEvent as EventListener);
 
@@ -84,18 +107,52 @@ export function useGTMBanner() {
 
   useEffect(() => {
     const checkBanner = () => {
-      const currentBanner = getGTMBanner();
+      // Check dataLayer directly for banner
+      let currentBanner = null;
+      
+      if (typeof window !== 'undefined' && window.dataLayer) {
+        // Search through dataLayer from newest to oldest
+        for (let i = window.dataLayer.length - 1; i >= 0; i--) {
+          const item = window.dataLayer[i];
+          if (item) {
+            if (item.banner && typeof item.banner === 'object') {
+              currentBanner = item.banner;
+              break;
+            }
+            if (item.gtmBanner && typeof item.gtmBanner === 'object') {
+              currentBanner = item.gtmBanner;
+              break;
+            }
+          }
+        }
+      }
+      
+      // Also try the getter function
+      if (!currentBanner) {
+        currentBanner = getGTMBanner();
+      }
+      
       if (JSON.stringify(currentBanner) !== JSON.stringify(banner)) {
         setBanner(currentBanner);
       }
     };
 
     checkBanner();
-    const interval = setInterval(checkBanner, 1000);
+    const interval = setInterval(checkBanner, 500);
 
     const handleGTMEvent = (event: CustomEvent) => {
       if (event.detail?.gtmBanner || event.detail?.banner) {
         checkBanner();
+      }
+    };
+    
+    // Also listen to dataLayer changes directly
+    const checkDataLayer = () => {
+      if (typeof window !== 'undefined' && window.dataLayer) {
+        const lastEvent = window.dataLayer[window.dataLayer.length - 1];
+        if (lastEvent && (lastEvent.banner || lastEvent.gtmBanner)) {
+          checkBanner();
+        }
       }
     };
 
