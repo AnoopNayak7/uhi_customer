@@ -354,6 +354,60 @@
     --accent: 240 100% 60% !important;
   }
   
+  /* Override hardcoded red colors for Holi theme (Pink/Green/Blue) */
+  html[data-theme="holi"] .bg-red-500,
+  html[data-theme="holi"] .bg-red-600,
+  html[data-theme="holi"] .bg-red-50,
+  html[data-theme="holi"] .bg-red-100 {
+    background-color: hsl(300, 100%, 60%) !important; /* Pink */
+  }
+  
+  html[data-theme="holi"] .text-red-500,
+  html[data-theme="holi"] .text-red-600,
+  html[data-theme="holi"] .text-red-700,
+  html[data-theme="holi"] .text-red-900 {
+    color: hsl(300, 100%, 60%) !important; /* Pink */
+  }
+  
+  html[data-theme="holi"] .border-red-200,
+  html[data-theme="holi"] .border-red-300,
+  html[data-theme="holi"] .border-red-500 {
+    border-color: hsl(300, 100%, 60%) !important; /* Pink */
+  }
+  
+  html[data-theme="holi"] .hover\:bg-red-50:hover,
+  html[data-theme="holi"] .hover\:bg-red-600:hover {
+    background-color: hsl(120, 100%, 50%) !important; /* Green */
+  }
+  
+  html[data-theme="holi"] .hover\:text-red-500:hover,
+  html[data-theme="holi"] .hover\:text-red-700:hover {
+    color: hsl(300, 100%, 60%) !important; /* Pink */
+  }
+  
+  html[data-theme="holi"] .hover\:border-red-300:hover {
+    border-color: hsl(300, 100%, 60%) !important; /* Pink */
+  }
+  
+  html[data-theme="holi"] .ring-red-500 {
+    --tw-ring-color: hsl(300, 100%, 60%) !important; /* Pink */
+  }
+  
+  html[data-theme="holi"] .from-red-50,
+  html[data-theme="holi"] .to-orange-50 {
+    --tw-gradient-from: hsl(300, 100%, 95%) !important;
+    --tw-gradient-to: hsl(120, 100%, 95%) !important;
+  }
+  
+  html[data-theme="holi"] [class*="fill-red-"],
+  html[data-theme="holi"] svg[class*="text-red-"] {
+    fill: hsl(300, 100%, 60%) !important;
+  }
+  
+  html[data-theme="holi"] [class*="stroke-red-"] {
+    stroke: hsl(300, 100%, 60%) !important;
+  }
+  
   /* Eid Theme */
   .festival-theme[data-festival="eid"],
   [data-theme="eid"],
@@ -361,6 +415,60 @@
     --primary: 210 100% 50% !important;
     --secondary: 150 100% 40% !important;
     --accent: 45 100% 50% !important;
+  }
+  
+  /* Override hardcoded red colors for Eid theme (Blue/Green/Gold) */
+  html[data-theme="eid"] .bg-red-500,
+  html[data-theme="eid"] .bg-red-600,
+  html[data-theme="eid"] .bg-red-50,
+  html[data-theme="eid"] .bg-red-100 {
+    background-color: hsl(210, 100%, 50%) !important; /* Blue */
+  }
+  
+  html[data-theme="eid"] .text-red-500,
+  html[data-theme="eid"] .text-red-600,
+  html[data-theme="eid"] .text-red-700,
+  html[data-theme="eid"] .text-red-900 {
+    color: hsl(210, 100%, 50%) !important; /* Blue */
+  }
+  
+  html[data-theme="eid"] .border-red-200,
+  html[data-theme="eid"] .border-red-300,
+  html[data-theme="eid"] .border-red-500 {
+    border-color: hsl(210, 100%, 50%) !important; /* Blue */
+  }
+  
+  html[data-theme="eid"] .hover\:bg-red-50:hover,
+  html[data-theme="eid"] .hover\:bg-red-600:hover {
+    background-color: hsl(150, 100%, 40%) !important; /* Green */
+  }
+  
+  html[data-theme="eid"] .hover\:text-red-500:hover,
+  html[data-theme="eid"] .hover\:text-red-700:hover {
+    color: hsl(210, 100%, 50%) !important; /* Blue */
+  }
+  
+  html[data-theme="eid"] .hover\:border-red-300:hover {
+    border-color: hsl(210, 100%, 50%) !important; /* Blue */
+  }
+  
+  html[data-theme="eid"] .ring-red-500 {
+    --tw-ring-color: hsl(210, 100%, 50%) !important; /* Blue */
+  }
+  
+  html[data-theme="eid"] .from-red-50,
+  html[data-theme="eid"] .to-orange-50 {
+    --tw-gradient-from: hsl(210, 100%, 95%) !important;
+    --tw-gradient-to: hsl(150, 100%, 95%) !important;
+  }
+  
+  html[data-theme="eid"] [class*="fill-red-"],
+  html[data-theme="eid"] svg[class*="text-red-"] {
+    fill: hsl(210, 100%, 50%) !important;
+  }
+  
+  html[data-theme="eid"] [class*="stroke-red-"] {
+    stroke: hsl(210, 100%, 50%) !important;
   }
   
   /* Christmas Theme */
@@ -372,6 +480,97 @@
     --accent: 45 100% 50% !important;
   }
   
+  /* Christmas Snowflakes Animation */
+  html[data-theme="christmas"] .festival-snowflakes,
+  html[data-festival="christmas"] .festival-snowflakes {
+    z-index: 40;
+  }
+  
+  /* Enhanced snowflake visibility for Christmas theme */
+  html[data-theme="christmas"] .festival-snowflake,
+  html[data-festival="christmas"] .festival-snowflake {
+    color: #ffffff !important; /* Pure white snowflakes */
+    text-shadow: 
+      0 0 4px rgba(255, 255, 255, 0.9),
+      0 0 8px rgba(255, 255, 255, 0.7),
+      0 0 12px rgba(255, 255, 255, 0.5),
+      0 1px 2px rgba(0, 0, 0, 0.15) !important;
+    filter: 
+      drop-shadow(0 0 2px rgba(255, 255, 255, 0.9))
+      drop-shadow(0 0 4px rgba(255, 255, 255, 0.7))
+      drop-shadow(0 0 6px rgba(255, 255, 255, 0.5))
+      drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2)) !important;
+  }
+  
+  /* Alternative: Gray snowflakes for subtle effect */
+  html[data-theme="christmas"] .festival-snowflake.alternate,
+  html[data-festival="christmas"] .festival-snowflake.alternate {
+    color: #64748b !important; /* Slate-500 */
+    text-shadow: 
+      0 0 2px rgba(100, 116, 139, 0.6),
+      0 1px 1px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  /* Override hardcoded red colors for Christmas theme (Red/Green/Gold) */
+  html[data-theme="christmas"] .bg-red-500,
+  html[data-theme="christmas"] .bg-red-600 {
+    background-color: hsl(0, 100%, 40%) !important; /* Red */
+  }
+  
+  html[data-theme="christmas"] .bg-red-50,
+  html[data-theme="christmas"] .bg-red-100 {
+    background-color: hsl(0, 100%, 95%) !important; /* Light Red */
+  }
+  
+  html[data-theme="christmas"] .text-red-500,
+  html[data-theme="christmas"] .text-red-600,
+  html[data-theme="christmas"] .text-red-700,
+  html[data-theme="christmas"] .text-red-900 {
+    color: hsl(0, 100%, 40%) !important; /* Red */
+  }
+  
+  html[data-theme="christmas"] .border-red-200,
+  html[data-theme="christmas"] .border-red-300,
+  html[data-theme="christmas"] .border-red-500 {
+    border-color: hsl(0, 100%, 40%) !important; /* Red */
+  }
+  
+  html[data-theme="christmas"] .hover\:bg-red-50:hover {
+    background-color: hsl(120, 100%, 95%) !important; /* Light Green */
+  }
+  
+  html[data-theme="christmas"] .hover\:bg-red-600:hover {
+    background-color: hsl(0, 100%, 40%) !important; /* Red */
+  }
+  
+  html[data-theme="christmas"] .hover\:text-red-500:hover,
+  html[data-theme="christmas"] .hover\:text-red-700:hover {
+    color: hsl(0, 100%, 40%) !important; /* Red */
+  }
+  
+  html[data-theme="christmas"] .hover\:border-red-300:hover {
+    border-color: hsl(0, 100%, 40%) !important; /* Red */
+  }
+  
+  html[data-theme="christmas"] .ring-red-500 {
+    --tw-ring-color: hsl(0, 100%, 40%) !important; /* Red */
+  }
+  
+  html[data-theme="christmas"] .from-red-50,
+  html[data-theme="christmas"] .to-orange-50 {
+    --tw-gradient-from: hsl(0, 100%, 95%) !important;
+    --tw-gradient-to: hsl(120, 100%, 95%) !important;
+  }
+  
+  html[data-theme="christmas"] [class*="fill-red-"],
+  html[data-theme="christmas"] svg[class*="text-red-"] {
+    fill: hsl(0, 100%, 40%) !important;
+  }
+  
+  html[data-theme="christmas"] [class*="stroke-red-"] {
+    stroke: hsl(0, 100%, 40%) !important;
+  }
+  
   /* New Year Theme */
   .festival-theme[data-festival="newyear"],
   [data-theme="newyear"],
@@ -379,6 +578,60 @@
     --primary: 280 100% 60% !important;
     --secondary: 200 100% 50% !important;
     --accent: 0 0% 100% !important;
+  }
+  
+  /* Override hardcoded red colors for New Year theme (Purple/Cyan/White) */
+  html[data-theme="newyear"] .bg-red-500,
+  html[data-theme="newyear"] .bg-red-600,
+  html[data-theme="newyear"] .bg-red-50,
+  html[data-theme="newyear"] .bg-red-100 {
+    background-color: hsl(280, 100%, 60%) !important; /* Purple */
+  }
+  
+  html[data-theme="newyear"] .text-red-500,
+  html[data-theme="newyear"] .text-red-600,
+  html[data-theme="newyear"] .text-red-700,
+  html[data-theme="newyear"] .text-red-900 {
+    color: hsl(280, 100%, 60%) !important; /* Purple */
+  }
+  
+  html[data-theme="newyear"] .border-red-200,
+  html[data-theme="newyear"] .border-red-300,
+  html[data-theme="newyear"] .border-red-500 {
+    border-color: hsl(280, 100%, 60%) !important; /* Purple */
+  }
+  
+  html[data-theme="newyear"] .hover\:bg-red-50:hover,
+  html[data-theme="newyear"] .hover\:bg-red-600:hover {
+    background-color: hsl(200, 100%, 50%) !important; /* Cyan */
+  }
+  
+  html[data-theme="newyear"] .hover\:text-red-500:hover,
+  html[data-theme="newyear"] .hover\:text-red-700:hover {
+    color: hsl(280, 100%, 60%) !important; /* Purple */
+  }
+  
+  html[data-theme="newyear"] .hover\:border-red-300:hover {
+    border-color: hsl(280, 100%, 60%) !important; /* Purple */
+  }
+  
+  html[data-theme="newyear"] .ring-red-500 {
+    --tw-ring-color: hsl(280, 100%, 60%) !important; /* Purple */
+  }
+  
+  html[data-theme="newyear"] .from-red-50,
+  html[data-theme="newyear"] .to-orange-50 {
+    --tw-gradient-from: hsl(280, 100%, 95%) !important;
+    --tw-gradient-to: hsl(200, 100%, 95%) !important;
+  }
+  
+  html[data-theme="newyear"] [class*="fill-red-"],
+  html[data-theme="newyear"] svg[class*="text-red-"] {
+    fill: hsl(280, 100%, 60%) !important;
+  }
+  
+  html[data-theme="newyear"] [class*="stroke-red-"] {
+    stroke: hsl(280, 100%, 60%) !important;
   }
   
   /* Custom focus styles for our search bar */
@@ -428,5 +681,48 @@
   /* Critical images should load immediately */
   img[data-priority="true"] {
     loading: eager;
+  }
+
+  /* GTM Dynamic Banner Styles */
+  [data-banner-container] {
+    position: fixed !important;
+    z-index: 100 !important;
+    width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+
+  /* Ensure banner is always visible above header */
+  .gtm-banner {
+    position: fixed !important;
+    z-index: 100 !important;
+    width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Add padding to body when banner is visible at top to prevent header overlap */
+  body.banner-visible-top {
+    padding-top: 60px;
+  }
+
+  @media (min-width: 640px) {
+    body.banner-visible-top {
+      padding-top: 64px;
+    }
+  }
+
+  /* Adjust header position when banner is visible */
+  body.banner-visible-top header {
+    top: 60px;
+  }
+
+  @media (min-width: 640px) {
+    body.banner-visible-top header {
+      top: 64px;
+    }
   }
 }

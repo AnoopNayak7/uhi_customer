@@ -26,7 +26,28 @@ Applies dynamic themes based on GTM variables.
 
 **Usage:** Already integrated in `app/layout.tsx`
 
-### 3. UserTracker
+### 3. FestivalAnimations
+Displays festival-specific animations on the landing page.
+
+**Features:**
+- **Christmas Theme:**
+  - Beautiful falling snowflakes animation (blue snowflakes for visibility on white backgrounds)
+  - Christmas trees positioned on the sides (2-3 on each side)
+  - Festive candies scattered across the page (🍬🍭🍫)
+  - Gentle floating animation for decorations
+- Only shows on the homepage (landing page)
+- Automatically activates when Christmas theme is active
+- Performance optimized (fewer elements on mobile)
+
+**Usage:** Already integrated in `app/layout.tsx`
+
+**How to activate:**
+1. Set GTM variable `theme` to `"christmas"` OR
+2. Set GTM variable `activeFestival` to `"christmas"`
+
+The snowflakes, trees, and candies will automatically appear on the homepage!
+
+### 4. UserTracker
 Automatically tracks user information to GTM.
 
 **Features:**

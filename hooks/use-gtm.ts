@@ -14,6 +14,7 @@ import {
   trackPropertyInteraction,
   trackSearch,
 } from '@/lib/gtm';
+import type { BannerConfig } from '@/lib/gtm';
 
 /**
  * Hook to get and react to GTM theme changes
@@ -103,42 +104,41 @@ export function useGTMTheme() {
  * Hook to get and react to GTM banner configuration
  */
 export function useGTMBanner() {
-  const [banner, setBanner] = useState<any>(null);
+  const [banner, setBanner] = useState<BannerConfig | null>(null);
 
   useEffect(() => {
-    const checkBanner = () => {
-      // Check dataLayer directly for banner
-      let currentBanner = null;
-      
+    // Check dataLayer for banner changes
+    const checkDataLayer = () => {
       if (typeof window !== 'undefined' && window.dataLayer) {
-        // Search through dataLayer from newest to oldest
-        for (let i = window.dataLayer.length - 1; i >= 0; i--) {
-          const item = window.dataLayer[i];
-          if (item) {
-            if (item.banner && typeof item.banner === 'object') {
-              currentBanner = item.banner;
-              break;
-            }
-            if (item.gtmBanner && typeof item.gtmBanner === 'object') {
-              currentBanner = item.gtmBanner;
-              break;
-            }
-          }
+        const lastEvent = window.dataLayer[window.dataLayer.length - 1];
+        if (lastEvent && (lastEvent.banner || lastEvent.gtmBanner)) {
+          return true;
         }
       }
+      return false;
+    };
+    
+    const checkBanner = () => {
+      const currentBanner = getGTMBanner();
       
-      // Also try the getter function
-      if (!currentBanner) {
-        currentBanner = getGTMBanner();
-      }
+      // Always update if banner changed (including null to object or vice versa)
+      const currentStr = JSON.stringify(currentBanner);
+      const prevStr = JSON.stringify(banner);
       
-      if (JSON.stringify(currentBanner) !== JSON.stringify(banner)) {
+      if (currentStr !== prevStr) {
         setBanner(currentBanner);
       }
     };
 
+    // Check immediately
     checkBanner();
-    const interval = setInterval(checkBanner, 500);
+
+    // Set up interval to check for changes (more frequent like theme hook)
+    const interval = setInterval(() => {
+      if (checkDataLayer() || true) { // Always check
+        checkBanner();
+      }
+    }, 300); // Check every 300ms (same as theme hook)
 
     const handleGTMEvent = (event: CustomEvent) => {
       if (event.detail?.gtmBanner || event.detail?.banner) {
@@ -146,15 +146,19 @@ export function useGTMBanner() {
       }
     };
     
-    // Also listen to dataLayer changes directly
-    const checkDataLayer = () => {
-      if (typeof window !== 'undefined' && window.dataLayer) {
-        const lastEvent = window.dataLayer[window.dataLayer.length - 1];
-        if (lastEvent && (lastEvent.banner || lastEvent.gtmBanner)) {
-          checkBanner();
+    // Override dataLayer.push to detect banner changes
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      const originalPush = window.dataLayer.push;
+      window.dataLayer.push = function(...args: any[]) {
+        const result = originalPush.apply(this, args);
+        if (args[0] && typeof args[0] === 'object') {
+          if (args[0].banner || args[0].gtmBanner) {
+            setTimeout(checkBanner, 100); // Small delay to ensure dataLayer is updated
+          }
         }
-      }
-    };
+        return result;
+      };
+    }
 
     window.addEventListener('gtm-custom-event', handleGTMEvent as EventListener);
 

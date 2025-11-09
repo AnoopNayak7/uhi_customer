@@ -55,18 +55,17 @@ export const getDataLayerValue = (key: string): any => {
 
 /**
  * Set GTM variable
- * Also pushes simplified versions for GTM compatibility
+ * Also pushes simplified versions for GTM compatibility (only for theme/banner)
  */
 export const setGTMVariable = (key: string, value: any) => {
   if (typeof window !== 'undefined') {
     (window as any)[key] = value;
     pushToDataLayer({ [key]: value });
     
-    // Map to simplified GTM variable names
+    // Map to simplified GTM variable names (only for theme/banner, not user variables)
     const gtmKeyMap: Record<string, string> = {
       'gtmTheme': 'theme',
       'gtmBanner': 'banner',
-      'gtmUserSegment': 'userSegment',
     };
     
     if (gtmKeyMap[key]) {
@@ -91,21 +90,13 @@ export const trackUserInfo = (userInfo: {
     event: 'user_info',
     user_id: userInfo.userId,
     user_email: userInfo.email,
-    user_role: userInfo.role,
-    role: userInfo.role, // Simplified for GTM
+    role: userInfo.role,
     user_name: userInfo.firstName && userInfo.lastName 
       ? `${userInfo.firstName} ${userInfo.lastName}` 
       : undefined,
-    user_city: userInfo.city,
-    city: userInfo.city, // Simplified for GTM
-    user_segment: userInfo.userSegment,
-    userSegment: userInfo.userSegment, // Simplified for GTM
+    city: userInfo.city,
+    userSegment: userInfo.userSegment,
   });
-
-  // Also set as window variable for easy access
-  if (userInfo.userSegment) {
-    setGTMVariable('gtmUserSegment', userInfo.userSegment);
-  }
 };
 
 /**
@@ -161,28 +152,71 @@ export const trackSearch = (searchData: {
  * Get current theme from GTM
  */
 export const getGTMTheme = (): string | null => {
-  const theme = getDataLayerValue('gtmTheme') || getDataLayerValue('theme') || null;
-  
-  // Debug logging
-  if (process.env.NODE_ENV === 'development' && theme) {
-    console.log('getGTMTheme found:', theme);
-  }
-  
-  return theme;
+  return getDataLayerValue('gtmTheme') || getDataLayerValue('theme') || null;
 };
+
+/**
+ * Banner configuration type
+ */
+export interface BannerConfig {
+  enabled: boolean;
+  type: "info" | "success" | "warning" | "error" | "festival" | "promo";
+  message: string;
+  title?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  ctaAction?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  position?: "top" | "bottom";
+  dismissible?: boolean;
+  targetSegment?: string;
+  targetCity?: string;
+  targetRole?: string;
+  imageUrl?: string;
+  startDate?: string;
+  endDate?: string;
+}
 
 /**
  * Get banner configuration from GTM
  */
-export const getGTMBanner = (): any => {
-  return getDataLayerValue('gtmBanner') || getDataLayerValue('banner') || null;
+export const getGTMBanner = (): BannerConfig | null => {
+  if (typeof window === 'undefined' || !window.dataLayer) {
+    return null;
+  }
+
+  // First check window object
+  if (window.gtmBanner) {
+    return window.gtmBanner;
+  }
+
+  // Search through dataLayer from newest to oldest
+  for (let i = window.dataLayer.length - 1; i >= 0; i--) {
+    const item = window.dataLayer[i];
+    if (item) {
+      // Check for banner object (simplified key)
+      if (item.banner && typeof item.banner === 'object' && !Array.isArray(item.banner)) {
+        return item.banner;
+      }
+      // Check for gtmBanner object (full key)
+      if (item.gtmBanner && typeof item.gtmBanner === 'object' && !Array.isArray(item.gtmBanner)) {
+        return item.gtmBanner;
+      }
+    }
+  }
+
+  // Fallback to getDataLayerValue
+  const bannerFromValue = getDataLayerValue('gtmBanner') || getDataLayerValue('banner');
+  
+  return bannerFromValue || null;
 };
 
 /**
  * Get user segment from GTM
  */
 export const getUserSegment = (): string | null => {
-  return getDataLayerValue('gtmUserSegment') || getDataLayerValue('user_segment') || null;
+  return getDataLayerValue('userSegment') || null;
 };
 
 /**

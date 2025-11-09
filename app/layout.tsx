@@ -14,6 +14,7 @@ import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { ThemeManager } from "@/components/gtm/theme-manager";
 import { DynamicBanner } from "@/components/gtm/dynamic-banner";
 import { UserTracker } from "@/components/gtm/user-tracker";
+import { FestivalAnimations } from "@/components/gtm/festival-animations";
 
 // Manrope - Primary font (closest to Airbnb Cereal)
 // Optimized with font-display: swap for better performance
@@ -197,6 +198,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <ThemeManager />
             <UserTracker />
             <DynamicBanner />
+            <FestivalAnimations />
             <FavouritesSync />
             <LayoutWrapper>{children}</LayoutWrapper>
           </LocationProvider>
