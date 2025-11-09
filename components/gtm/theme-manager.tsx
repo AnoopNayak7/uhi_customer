@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useGTMTheme, useFestivalStatus } from "@/hooks/use-gtm";
 import { getFestivalTheme } from "@/lib/gtm";
+import { applyTheme, festivalThemes } from "@/lib/theme-config";
 
 /**
  * Theme Manager Component
@@ -56,36 +57,43 @@ export function ThemeManager() {
       // Apply theme from GTM theme variable (e.g., theme: "diwali")
       root.setAttribute("data-theme", theme);
 
-      // Apply theme-specific styles
-      switch (theme) {
-        case "diwali":
-          applyDiwaliTheme(root);
-          root.classList.add("festival-theme");
-          root.setAttribute("data-festival", "diwali");
-          break;
-        case "holi":
-          applyHoliTheme(root);
-          root.classList.add("festival-theme");
-          root.setAttribute("data-festival", "holi");
-          break;
-        case "eid":
-          applyEidTheme(root);
-          root.classList.add("festival-theme");
-          root.setAttribute("data-festival", "eid");
-          break;
-        case "christmas":
-          applyChristmasTheme(root);
-          root.classList.add("festival-theme");
-          root.setAttribute("data-festival", "christmas");
-          break;
-        case "newyear":
-          applyNewYearTheme(root);
-          root.classList.add("festival-theme");
-          root.setAttribute("data-festival", "newyear");
-          break;
-        default:
-          // Custom theme - GTM will provide CSS variables
-          break;
+      // Apply comprehensive theme-specific styles
+      if (festivalThemes[theme]) {
+        applyTheme(root, theme);
+        root.classList.add("festival-theme");
+        root.setAttribute("data-festival", theme);
+      } else {
+        // Fallback to old theme functions for backward compatibility
+        switch (theme) {
+          case "diwali":
+            applyDiwaliTheme(root);
+            root.classList.add("festival-theme");
+            root.setAttribute("data-festival", "diwali");
+            break;
+          case "holi":
+            applyHoliTheme(root);
+            root.classList.add("festival-theme");
+            root.setAttribute("data-festival", "holi");
+            break;
+          case "eid":
+            applyEidTheme(root);
+            root.classList.add("festival-theme");
+            root.setAttribute("data-festival", "eid");
+            break;
+          case "christmas":
+            applyChristmasTheme(root);
+            root.classList.add("festival-theme");
+            root.setAttribute("data-festival", "christmas");
+            break;
+          case "newyear":
+            applyNewYearTheme(root);
+            root.classList.add("festival-theme");
+            root.setAttribute("data-festival", "newyear");
+            break;
+          default:
+            // Custom theme - GTM will provide CSS variables
+            break;
+        }
       }
     } else {
       // Remove all theme classes and attributes
@@ -99,9 +107,40 @@ export function ThemeManager() {
       );
       root.removeAttribute("data-festival");
       root.removeAttribute("data-theme");
+
+      // Remove all custom theme CSS variables that were set by applyTheme
+      // This ensures default colors are restored when no theme is active
       root.style.removeProperty("--festival-primary");
       root.style.removeProperty("--festival-secondary");
       root.style.removeProperty("--festival-accent");
+
+      // Remove all CSS variables that might have been set by applyTheme
+      root.style.removeProperty("--primary");
+      root.style.removeProperty("--primary-foreground");
+      root.style.removeProperty("--secondary");
+      root.style.removeProperty("--secondary-foreground");
+      root.style.removeProperty("--accent");
+      root.style.removeProperty("--accent-foreground");
+      root.style.removeProperty("--background");
+      root.style.removeProperty("--foreground");
+      root.style.removeProperty("--card");
+      root.style.removeProperty("--card-foreground");
+      root.style.removeProperty("--popover");
+      root.style.removeProperty("--popover-foreground");
+      root.style.removeProperty("--muted");
+      root.style.removeProperty("--muted-foreground");
+      root.style.removeProperty("--destructive");
+      root.style.removeProperty("--destructive-foreground");
+      root.style.removeProperty("--border");
+      root.style.removeProperty("--input");
+      root.style.removeProperty("--ring");
+      root.style.removeProperty("--chart-1");
+      root.style.removeProperty("--chart-2");
+      root.style.removeProperty("--chart-3");
+      root.style.removeProperty("--chart-4");
+      root.style.removeProperty("--chart-5");
+
+      // After removing inline styles, CSS defaults from :root will apply
     }
 
     // Debug logging (remove in production)

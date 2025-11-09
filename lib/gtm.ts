@@ -245,6 +245,48 @@ export const getFestivalTheme = (): {
 };
 
 /**
+ * Get hero background image configuration from GTM
+ */
+export const getGTMHeroBackground = (): {
+  enabled: boolean;
+  imageUrl: string;
+  propertyTitle?: string;
+  propertyType?: string;
+  tag?: string;
+  opacity?: number;
+  position?: string;
+} | null => {
+  if (typeof window === 'undefined' || !window.dataLayer) {
+    return null;
+  }
+
+  // First check window object
+  if ((window as any).gtmHeroBackground) {
+    return (window as any).gtmHeroBackground;
+  }
+
+  // Search through dataLayer from newest to oldest
+  for (let i = window.dataLayer.length - 1; i >= 0; i--) {
+    const item = window.dataLayer[i];
+    if (item) {
+      // Check for heroBackground object (simplified key)
+      if (item.heroBackground && typeof item.heroBackground === 'object' && !Array.isArray(item.heroBackground)) {
+        return item.heroBackground;
+      }
+      // Check for gtmHeroBackground object (full key)
+      if (item.gtmHeroBackground && typeof item.gtmHeroBackground === 'object' && !Array.isArray(item.gtmHeroBackground)) {
+        return item.gtmHeroBackground;
+      }
+    }
+  }
+
+  // Fallback to getDataLayerValue
+  const heroBgFromValue = getDataLayerValue('gtmHeroBackground') || getDataLayerValue('heroBackground');
+  
+  return heroBgFromValue || null;
+};
+
+/**
  * Initialize GTM listener for custom events
  */
 export const initGTMListener = (callback: (event: any) => void) => {

@@ -91,19 +91,19 @@
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    --primary: 0 84.2% 60.2%; /* Red - brand color */
+    --primary-foreground: 0 0% 100%; /* White text on red */
+    --secondary: 0 0% 96.1%; /* Light gray */
+    --secondary-foreground: 0 0% 9%; /* Dark text */
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 0 84.2% 60.2%; /* Red accent */
+    --accent-foreground: 0 0% 100%; /* White text */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    --ring: 0 84.2% 60.2%; /* Red ring for focus */
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -231,13 +231,28 @@
     transition: all 0.3s ease;
   }
   
-  /* Diwali Theme */
-  .festival-theme[data-festival="diwali"],
-  [data-theme="diwali"],
-  html[data-theme="diwali"] {
+  /* Comprehensive Theme Overrides - These will override CSS variables set by ThemeManager */
+  /* Diwali Theme - Comprehensive */
+  html[data-theme="diwali"],
+  html[data-festival="diwali"] {
+    /* Core colors are set by ThemeManager, but we ensure they're applied */
     --primary: 35 100% 50% !important;
+    --primary-foreground: 0 0% 100% !important;
     --secondary: 45 100% 60% !important;
+    --secondary-foreground: 0 0% 10% !important;
     --accent: 0 100% 50% !important;
+    --accent-foreground: 0 0% 100% !important;
+    --background: 45 30% 98% !important;
+    --foreground: 0 0% 10% !important;
+    --card: 45 20% 99% !important;
+    --card-foreground: 0 0% 10% !important;
+    --popover: 45 20% 99% !important;
+    --popover-foreground: 0 0% 10% !important;
+    --muted: 45 10% 95% !important;
+    --muted-foreground: 0 0% 45% !important;
+    --border: 45 15% 90% !important;
+    --input: 45 15% 90% !important;
+    --ring: 35 100% 50% !important;
   }
   
   /* Override hardcoded red colors for Diwali theme */
@@ -345,13 +360,26 @@
     stroke: hsl(35, 100%, 50%) !important;
   }
   
-  /* Holi Theme */
-  .festival-theme[data-festival="holi"],
-  [data-theme="holi"],
-  html[data-theme="holi"] {
+  /* Holi Theme - Comprehensive */
+  html[data-theme="holi"],
+  html[data-festival="holi"] {
     --primary: 300 100% 60% !important;
+    --primary-foreground: 0 0% 100% !important;
     --secondary: 120 100% 50% !important;
+    --secondary-foreground: 0 0% 100% !important;
     --accent: 240 100% 60% !important;
+    --accent-foreground: 0 0% 100% !important;
+    --background: 300 20% 99% !important;
+    --foreground: 0 0% 10% !important;
+    --card: 300 15% 98% !important;
+    --card-foreground: 0 0% 10% !important;
+    --popover: 300 15% 98% !important;
+    --popover-foreground: 0 0% 10% !important;
+    --muted: 300 10% 95% !important;
+    --muted-foreground: 0 0% 45% !important;
+    --border: 300 20% 90% !important;
+    --input: 300 20% 90% !important;
+    --ring: 300 100% 60% !important;
   }
   
   /* Override hardcoded red colors for Holi theme (Pink/Green/Blue) */
@@ -408,13 +436,26 @@
     stroke: hsl(300, 100%, 60%) !important;
   }
   
-  /* Eid Theme */
-  .festival-theme[data-festival="eid"],
-  [data-theme="eid"],
-  html[data-theme="eid"] {
+  /* Eid Theme - Comprehensive */
+  html[data-theme="eid"],
+  html[data-festival="eid"] {
     --primary: 210 100% 50% !important;
+    --primary-foreground: 0 0% 100% !important;
     --secondary: 150 100% 40% !important;
+    --secondary-foreground: 0 0% 100% !important;
     --accent: 45 100% 50% !important;
+    --accent-foreground: 0 0% 10% !important;
+    --background: 210 20% 99% !important;
+    --foreground: 0 0% 10% !important;
+    --card: 210 15% 98% !important;
+    --card-foreground: 0 0% 10% !important;
+    --popover: 210 15% 98% !important;
+    --popover-foreground: 0 0% 10% !important;
+    --muted: 210 10% 95% !important;
+    --muted-foreground: 0 0% 45% !important;
+    --border: 210 20% 90% !important;
+    --input: 210 20% 90% !important;
+    --ring: 210 100% 50% !important;
   }
   
   /* Override hardcoded red colors for Eid theme (Blue/Green/Gold) */
@@ -471,13 +512,26 @@
     stroke: hsl(210, 100%, 50%) !important;
   }
   
-  /* Christmas Theme */
-  .festival-theme[data-festival="christmas"],
-  [data-theme="christmas"],
-  html[data-theme="christmas"] {
+  /* Christmas Theme - Comprehensive */
+  html[data-theme="christmas"],
+  html[data-festival="christmas"] {
     --primary: 0 100% 40% !important;
+    --primary-foreground: 0 0% 100% !important;
     --secondary: 120 100% 30% !important;
+    --secondary-foreground: 0 0% 100% !important;
     --accent: 45 100% 50% !important;
+    --accent-foreground: 0 0% 10% !important;
+    --background: 0 15% 99% !important;
+    --foreground: 0 0% 10% !important;
+    --card: 0 10% 98% !important;
+    --card-foreground: 0 0% 10% !important;
+    --popover: 0 10% 98% !important;
+    --popover-foreground: 0 0% 10% !important;
+    --muted: 0 10% 95% !important;
+    --muted-foreground: 0 0% 45% !important;
+    --border: 0 20% 90% !important;
+    --input: 0 20% 90% !important;
+    --ring: 0 100% 40% !important;
   }
   
   /* Christmas Snowflakes Animation */
@@ -571,13 +625,26 @@
     stroke: hsl(0, 100%, 40%) !important;
   }
   
-  /* New Year Theme */
-  .festival-theme[data-festival="newyear"],
-  [data-theme="newyear"],
-  html[data-theme="newyear"] {
+  /* New Year Theme - Comprehensive */
+  html[data-theme="newyear"],
+  html[data-festival="newyear"] {
     --primary: 280 100% 60% !important;
+    --primary-foreground: 0 0% 100% !important;
     --secondary: 200 100% 50% !important;
+    --secondary-foreground: 0 0% 10% !important;
     --accent: 0 0% 100% !important;
+    --accent-foreground: 0 0% 10% !important;
+    --background: 280 20% 99% !important;
+    --foreground: 0 0% 10% !important;
+    --card: 280 15% 98% !important;
+    --card-foreground: 0 0% 10% !important;
+    --popover: 280 15% 98% !important;
+    --popover-foreground: 0 0% 10% !important;
+    --muted: 280 10% 95% !important;
+    --muted-foreground: 0 0% 45% !important;
+    --border: 280 20% 90% !important;
+    --input: 280 20% 90% !important;
+    --ring: 280 100% 60% !important;
   }
   
   /* Override hardcoded red colors for New Year theme (Purple/Cyan/White) */

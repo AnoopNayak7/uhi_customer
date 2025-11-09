@@ -27,6 +27,7 @@ import {
   StaggerItem,
 } from "@/components/animations/motion-wrapper";
 import { ButtonAnimation } from "@/components/animations/page-transitions";
+import { useGTMHeroBackground } from "@/hooks/use-gtm";
 
 export function HeroSection() {
   const router = useRouter();
@@ -116,15 +117,46 @@ export function HeroSection() {
     }
   };
 
+  const heroBackground = useGTMHeroBackground();
+
   return (
-    <section className="relative bg-gradient-to-br from-gray-50 via-white to-gray-50 py-16 md:py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative bg-gradient-to-br from-gray-50 via-white to-gray-50 py-16 md:py-24 overflow-hidden">
+      {/* Hero Background Image from GTM */}
+      {heroBackground?.enabled && heroBackground?.imageUrl && (
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            opacity: heroBackground.opacity || 0.15,
+            backgroundImage: `url(${heroBackground.imageUrl})`,
+            backgroundSize: heroBackground.position || "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
+          {/* Overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/60 to-white/80" />
+        </div>
+      )}
+
+      {/* Property Tag Badge - Floating */}
+      {heroBackground?.enabled && heroBackground?.tag && (
+        <div className="absolute top-4 right-4 z-10 md:top-8 md:right-8">
+          <Badge
+            variant="default"
+            className="bg-primary text-primary-foreground border-0 shadow-lg px-4 py-2 text-sm font-semibold"
+          >
+            {heroBackground.tag}
+          </Badge>
+        </div>
+      )}
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <StaggerContainer className="text-center mb-12">
           <StaggerItem>
             <div className="flex items-center justify-center mb-4">
               <Badge
                 variant="outline"
-                className="text-red-500 border-red-200 bg-red-50 px-4 py-2"
+                className="text-primary border-primary/20 bg-primary/10 px-4 py-2 font-medium"
               >
                 <Star className="w-3 h-3 mr-2 fill-current" />
                 Trusted by 1000+ customers
@@ -135,7 +167,7 @@ export function HeroSection() {
           <StaggerItem>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
               Find Your
-              <span className="text-red-500 block">Dream Home</span>
+              <span className="text-primary block">Dream Home</span>
             </h1>
           </StaggerItem>
 
@@ -164,7 +196,7 @@ export function HeroSection() {
                     }
                     className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
                       searchForm.type === type.value
-                        ? "bg-red-500 text-white shadow-md"
+                        ? "bg-primary text-primary-foreground shadow-md"
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     }`}
                   >
@@ -272,7 +304,7 @@ export function HeroSection() {
                 <ButtonAnimation>
                   <Button
                     onClick={handleSearch}
-                    className="h-14 w-14 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-shrink-0 focus:ring-0"
+                    className="h-14 w-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-shrink-0 focus:ring-0"
                   >
                     <Search className="w-5 h-5" />
                   </Button>

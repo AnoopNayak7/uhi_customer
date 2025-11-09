@@ -4,15 +4,13 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   getGTMTheme,
   getGTMBanner,
+  getGTMHeroBackground,
   getUserSegment,
   getFestivalTheme,
   isFestivalActive,
-  getDataLayerValue,
-  pushToDataLayer,
   trackUserInfo,
   trackPageView,
   trackPropertyInteraction,
-  trackSearch,
 } from '@/lib/gtm';
 import type { BannerConfig } from '@/lib/gtm';
 
@@ -22,72 +20,52 @@ import type { BannerConfig } from '@/lib/gtm';
 export function useGTMTheme() {
   const [theme, setTheme] = useState<string | null>(null);
   const [festivalTheme, setFestivalTheme] = useState<any>(null);
+  const [activeFestival, setActiveFestival] = useState<string | null>(null);
 
   useEffect(() => {
-    // Also listen to dataLayer changes directly
-    const checkDataLayer = () => {
-      if (typeof window !== 'undefined' && window.dataLayer) {
-        const lastEvent = window.dataLayer[window.dataLayer.length - 1];
-        if (lastEvent && (lastEvent.theme || lastEvent.activeFestival || lastEvent.festivalTheme)) {
-          return true;
-        }
-      }
-      return false;
-    };
-    
     const checkTheme = () => {
       const currentTheme = getGTMTheme();
-      const currentFestivalTheme = getFestivalTheme();
-      
-      // Debug logging
-      if (process.env.NODE_ENV === 'development') {
-        if (currentTheme !== theme) {
-          console.log('Theme changed:', { from: theme, to: currentTheme });
-        }
-      }
-      
+      const festival = getFestivalTheme();
+      const festivalName = festival?.name || null;
+
       if (currentTheme !== theme) {
         setTheme(currentTheme);
       }
-      
-      if (JSON.stringify(currentFestivalTheme) !== JSON.stringify(festivalTheme)) {
-        setFestivalTheme(currentFestivalTheme);
+      if (JSON.stringify(festival) !== JSON.stringify(festivalTheme)) {
+        setFestivalTheme(festival);
+      }
+      if (festivalName !== activeFestival) {
+        setActiveFestival(festivalName);
       }
     };
 
     // Check immediately
     checkTheme();
 
-    // Set up interval to check for changes (check more frequently initially)
+    // Set up interval to check for changes
     const interval = setInterval(() => {
-      if (checkDataLayer() || true) { // Always check
-        checkTheme();
-      }
-    }, 300); // Check every 300ms
+      checkTheme();
+    }, 300);
 
-    // Listen for custom events
-    const handleGTMEvent = (event: CustomEvent) => {
-      if (event.detail?.gtmTheme || event.detail?.theme || event.detail?.activeFestival) {
-        checkTheme();
-      }
-      if (event.detail?.festivalTheme) {
-        checkTheme();
-      }
-    };
-    
-    // Override dataLayer.push to detect changes
+    // Override dataLayer.push to detect theme changes
     if (typeof window !== 'undefined' && window.dataLayer) {
       const originalPush = window.dataLayer.push;
       window.dataLayer.push = function(...args: any[]) {
         const result = originalPush.apply(this, args);
         if (args[0] && typeof args[0] === 'object') {
-          if (args[0].theme || args[0].activeFestival || args[0].festivalTheme) {
-            setTimeout(checkTheme, 100); // Small delay to ensure dataLayer is updated
+          if (args[0].theme || args[0].gtmTheme || args[0].festivalTheme || args[0].activeFestival) {
+            setTimeout(checkTheme, 100);
           }
         }
         return result;
       };
     }
+
+    const handleGTMEvent = (event: CustomEvent) => {
+      if (event.detail?.theme || event.detail?.gtmTheme || event.detail?.festivalTheme) {
+        checkTheme();
+      }
+    };
 
     window.addEventListener('gtm-custom-event', handleGTMEvent as EventListener);
 
@@ -95,9 +73,9 @@ export function useGTMTheme() {
       clearInterval(interval);
       window.removeEventListener('gtm-custom-event', handleGTMEvent as EventListener);
     };
-  }, [theme, festivalTheme]);
+  }, [theme, festivalTheme, activeFestival]);
 
-  return { theme, festivalTheme };
+  return { theme, festivalTheme, activeFestival };
 }
 
 /**
@@ -172,6 +150,75 @@ export function useGTMBanner() {
 }
 
 /**
+ * Hook to get hero background image configuration from GTM
+ */
+export function useGTMHeroBackground() {
+  const [heroConfig, setHeroConfig] = useState<{
+    enabled: boolean;
+    imageUrl: string;
+    propertyTitle?: string;
+    propertyType?: string;
+    tag?: string;
+    opacity?: number;
+    position?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const checkHeroBackground = () => {
+      const heroBg = getGTMHeroBackground();
+      
+      if (heroBg) {
+        const currentStr = JSON.stringify(heroBg);
+        const prevStr = JSON.stringify(heroConfig);
+        
+        if (currentStr !== prevStr) {
+          setHeroConfig(heroBg);
+        }
+      } else if (!heroBg && heroConfig) {
+        setHeroConfig(null);
+      }
+    };
+
+    // Check immediately
+    checkHeroBackground();
+
+    // Set up interval to check for changes
+    const interval = setInterval(() => {
+      checkHeroBackground();
+    }, 300);
+
+    // Override dataLayer.push to detect hero background changes
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      const originalPush = window.dataLayer.push;
+      window.dataLayer.push = function(...args: any[]) {
+        const result = originalPush.apply(this, args);
+        if (args[0] && typeof args[0] === 'object') {
+          if (args[0].heroBackground || args[0].gtmHeroBackground) {
+            setTimeout(checkHeroBackground, 100);
+          }
+        }
+        return result;
+      };
+    }
+
+    const handleGTMEvent = (event: CustomEvent) => {
+      if (event.detail?.heroBackground || event.detail?.gtmHeroBackground) {
+        checkHeroBackground();
+      }
+    };
+
+    window.addEventListener('gtm-custom-event', handleGTMEvent as EventListener);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('gtm-custom-event', handleGTMEvent as EventListener);
+    };
+  }, [heroConfig]);
+
+  return heroConfig;
+}
+
+/**
  * Hook to get user segment from GTM
  */
 export function useUserSegment() {
@@ -186,27 +233,16 @@ export function useUserSegment() {
     };
 
     checkSegment();
-    const interval = setInterval(checkSegment, 2000);
+    const interval = setInterval(checkSegment, 1000);
 
-    const handleGTMEvent = (event: CustomEvent) => {
-      if (event.detail?.gtmUserSegment || event.detail?.user_segment) {
-        checkSegment();
-      }
-    };
-
-    window.addEventListener('gtm-custom-event', handleGTMEvent as EventListener);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('gtm-custom-event', handleGTMEvent as EventListener);
-    };
+    return () => clearInterval(interval);
   }, [segment]);
 
   return segment;
 }
 
 /**
- * Hook to check if a festival is active
+ * Hook to check if a specific festival is active
  */
 export function useFestivalStatus(festivalName: string) {
   const [isActive, setIsActive] = useState(false);
@@ -222,85 +258,31 @@ export function useFestivalStatus(festivalName: string) {
     checkStatus();
     const interval = setInterval(checkStatus, 1000);
 
-    const handleGTMEvent = (event: CustomEvent) => {
-      if (event.detail?.activeFestival) {
-        checkStatus();
-      }
-    };
-
-    window.addEventListener('gtm-custom-event', handleGTMEvent as EventListener);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('gtm-custom-event', handleGTMEvent as EventListener);
-    };
+    return () => clearInterval(interval);
   }, [festivalName, isActive]);
 
   return isActive;
 }
 
 /**
- * Hook for GTM tracking functions
+ * Hook to get GTM tracking functions
  */
 export function useGTMTracking() {
-  const trackUser = useCallback((userInfo: Parameters<typeof trackUserInfo>[0]) => {
+  const trackUser = useCallback((userInfo: any) => {
     trackUserInfo(userInfo);
   }, []);
 
-  const trackPage = useCallback((pageData?: Parameters<typeof trackPageView>[0]) => {
+  const trackPage = useCallback((pageData: any) => {
     trackPageView(pageData);
   }, []);
 
-  const trackProperty = useCallback((
-    action: string,
-    propertyData: Parameters<typeof trackPropertyInteraction>[1]
-  ) => {
+  const trackProperty = useCallback((action: string, propertyData: any) => {
     trackPropertyInteraction(action, propertyData);
   }, []);
 
-  const trackSearchActivity = useCallback((searchData: Parameters<typeof trackSearch>[0]) => {
+  const trackSearch = useCallback((searchData: any) => {
     trackSearch(searchData);
   }, []);
 
-  return {
-    trackUser,
-    trackPage,
-    trackProperty,
-    trackSearch: trackSearchActivity,
-  };
+  return { trackUser, trackPage, trackProperty, trackSearch };
 }
-
-/**
- * Hook to get any GTM variable
- */
-export function useGTMVariable(key: string) {
-  const [value, setValue] = useState<any>(null);
-
-  useEffect(() => {
-    const checkValue = () => {
-      const currentValue = getDataLayerValue(key);
-      if (JSON.stringify(currentValue) !== JSON.stringify(value)) {
-        setValue(currentValue);
-      }
-    };
-
-    checkValue();
-    const interval = setInterval(checkValue, 1000);
-
-    const handleGTMEvent = (event: CustomEvent) => {
-      if (event.detail && event.detail[key] !== undefined) {
-        checkValue();
-      }
-    };
-
-    window.addEventListener('gtm-custom-event', handleGTMEvent as EventListener);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('gtm-custom-event', handleGTMEvent as EventListener);
-    };
-  }, [key, value]);
-
-  return value;
-}
-
