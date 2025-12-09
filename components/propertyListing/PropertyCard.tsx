@@ -10,6 +10,7 @@ import {
   Bath,
   Square,
   GitCompareArrows,
+  PhoneCall,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CardHover } from "@/components/animations/page-transitions";
@@ -20,6 +21,7 @@ import { usePropertyStore, useAuthStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
 import { useHoverPreloader } from "@/hooks/use-image-preloader";
+import { openWhatsAppChat } from "@/lib/whatsapp";
 import {
   Dialog,
   DialogContent,
@@ -131,6 +133,20 @@ export const PropertyCard = ({
     }
   };
 
+  const handleWhatsAppClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    openWhatsAppChat(property, undefined, {
+      trackEvent: true,
+      onSuccess: () => {
+        toast.success("Opening WhatsApp...");
+      },
+      onError: (error) => {
+        toast.error("Failed to open WhatsApp");
+        console.error("WhatsApp error:", error);
+      },
+    });
+  };
+
   const defaultImage = PROPERTY_IMAGES.default;
 
   const handleMouseEnter = () => {
@@ -193,6 +209,7 @@ export const PropertyCard = ({
                   />
                 </Button>
               </motion.div>
+
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <Button
                   variant="ghost"
@@ -209,6 +226,17 @@ export const PropertyCard = ({
                       isFavorite ? "fill-current" : ""
                     }`}
                   />
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-10 w-10 sm:h-8 sm:w-8 p-0 rounded-full backdrop-blur-sm bg-green-500/80 hover:bg-green-600 text-white border border-green-400/50 shadow-sm"
+                  onClick={handleWhatsAppClick}
+                  title="Chat on WhatsApp"
+                >
+                  <PhoneCall className="w-5 h-5 sm:w-4 sm:h-4" />
                 </Button>
               </motion.div>
             </div>
