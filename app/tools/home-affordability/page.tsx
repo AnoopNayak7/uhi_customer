@@ -12,6 +12,8 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuthStore } from "@/lib/store";
+import { ToolUsagePrompt } from "@/components/signup/ToolUsagePrompt";
+import { SmartSignupPrompt } from "@/components/signup/SmartSignupPrompt";
 import {
   MotionWrapper,
   StaggerContainer,
@@ -45,7 +47,8 @@ import {
 import Link from "next/link";
 
 export default function HomeAffordabilityPage() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const [showSignupModal, setShowSignupModal] = useState(false);
   const [monthlyIncome, setMonthlyIncome] = useState([100000]); // 1L
   const [monthlyExpenses, setMonthlyExpenses] = useState([40000]); // 40K
   const [existingEMIs, setExistingEMIs] = useState([0]); // 0
@@ -55,6 +58,25 @@ export default function HomeAffordabilityPage() {
   const [results, setResults] = useState<any>(null);
 
   const calculateAffordability = useCallback(() => {
+    // Show signup prompt if not authenticated
+    if (!isAuthenticated) {
+      const dismissedKey = "signup-prompt-dismissed-tool-usage";
+      const dismissedTime = localStorage.getItem(dismissedKey);
+      if (dismissedTime) {
+        const hoursSinceDismiss =
+          (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60);
+        if (hoursSinceDismiss < 24) {
+          // Continue with calculation if dismissed recently
+        } else {
+          setShowSignupModal(true);
+          return;
+        }
+      } else {
+        setShowSignupModal(true);
+        return;
+      }
+    }
+
     console.log("calculateAffordability called with:", {
       monthlyIncome: monthlyIncome[0],
       monthlyExpenses: monthlyExpenses[0],
@@ -262,7 +284,8 @@ export default function HomeAffordabilityPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <ToolUsagePrompt toolName="Home Affordability Calculator">
+      <div className="min-h-screen flex flex-col">
       <Head>
         <title>Home Affordability Calculator | Mortgage Calculator | Property Budget Tool | Urbanhousein</title>
         <meta 
@@ -1020,6 +1043,25 @@ export default function HomeAffordabilityPage() {
       </main>
 
       <Footer />
+
+      {/* Signup Modal - Shows when user tries to use tool without login */}
+      {showSignupModal && (
+        <SmartSignupPrompt
+          trigger="tool-usage"
+          context={{ toolName: "Home Affordability Calculator" }}
+          onDismiss={() => {
+            setShowSignupModal(false);
+            localStorage.setItem(
+              "signup-prompt-dismissed-tool-usage",
+              Date.now().toString()
+            );
+          }}
+          onSignup={() => {
+            setShowSignupModal(false);
+          }}
+        />
+      )}
     </div>
+    </ToolUsagePrompt>
   );
 }

@@ -22,6 +22,7 @@ import { apiClient } from "@/lib/api";
 import { usePropertyStore, useAuthStore } from "@/lib/store";
 import { useLocationData } from "@/hooks/use-location-data";
 import { LoginModal } from "@/components/ui/login-modal";
+import { SmartSignupPrompt } from "@/components/signup/SmartSignupPrompt";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -55,6 +56,11 @@ interface Property {
 
 export function FeaturedProperties() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const [showFavoriteModal, setShowFavoriteModal] = useState(false);
+  const [signupModalTrigger, setSignupModalTrigger] = useState<
+    "compare" | "favorite"
+  >("compare");
   const {
     featuredProperties: properties,
     loading,
@@ -69,6 +75,7 @@ export function FeaturedProperties() {
     removeFromCompare,
     compareList,
   } = usePropertyStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   // Removed unnecessary useEffect and fetchFeaturedProperties function
   // The useLocationData hook now handles all the data fetching logic
@@ -211,9 +218,21 @@ export function FeaturedProperties() {
               <PropertyCard
                 key={property.id}
                 property={property}
-                onFavourite={() => addToFavourites(property)}
+                onFavourite={() => {
+                  if (!isAuthenticated) {
+                    setSignupModalTrigger("favorite");
+                    setShowFavoriteModal(true);
+                    return;
+                  }
+                  addToFavourites(property);
+                }}
                 isFavourite={favourites.some((p) => p.id === property.id)}
                 onCompare={() => {
+                  if (!isAuthenticated) {
+                    // Show signup modal instead of overlay
+                    setShowSignupModal(true);
+                    return;
+                  }
                   const isInCompare = compareList.some(
                     (p) => p.id === property.id
                   );
@@ -230,6 +249,7 @@ export function FeaturedProperties() {
                   }
                 }}
                 isInCompare={compareList.some((p) => p.id === property.id)}
+                onFavoriteClick={() => setShowFavoriteModal(true)}
               />
             ))}
           </div>
@@ -245,6 +265,33 @@ export function FeaturedProperties() {
           </Button>
         </div>
       </div>
+
+      {/* Signup Modal - Shows when user tries to compare without login */}
+      {showSignupModal && (
+        <SmartSignupPrompt
+          trigger="compare"
+          onDismiss={() => {
+            setShowSignupModal(false);
+          }}
+          onSignup={() => {
+            setShowSignupModal(false);
+          }}
+        />
+      )}
+
+      {/* Signup Modal - Shows when user tries to favorite without login */}
+      {showFavoriteModal && (
+        <SmartSignupPrompt
+          trigger="favorite"
+          context={{ propertyTitle: "property" }}
+          onDismiss={() => {
+            setShowFavoriteModal(false);
+          }}
+          onSignup={() => {
+            setShowFavoriteModal(false);
+          }}
+        />
+      )}
     </section>
   );
 }
@@ -255,12 +302,14 @@ function PropertyCard({
   isFavourite,
   onCompare,
   isInCompare,
+  onFavoriteClick,
 }: {
   property: Property;
   onFavourite: () => void;
   isFavourite: boolean;
   onCompare: () => void;
   isInCompare: boolean;
+  onFavoriteClick?: () => void;
 }) {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
@@ -285,7 +334,8 @@ function PropertyCard({
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      setShowLoginModal(true);
+      // Show signup modal instead of login modal
+      onFavoriteClick?.();
       return;
     }
 
@@ -298,6 +348,7 @@ function PropertyCard({
 
   const handleCompareClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     onCompare();
   };
 
@@ -333,7 +384,13 @@ function PropertyCard({
                   ? "text-blue-500"
                   : "text-gray-600 hover:text-blue-500"
               }`}
-              onClick={handleCompareClick}
+              onClick={(e) => {
+                console.log("Button onClick fired directly");
+                handleCompareClick(e);
+              }}
+              title={
+                isInCompare ? "Remove from comparison" : "Add to comparison"
+              }
             >
               <GitCompareArrows
                 className={`w-4 h-4 ${isInCompare ? "fill-current" : ""}`}

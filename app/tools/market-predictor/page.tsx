@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAuthStore } from '@/lib/store';
+import { ToolUsagePrompt } from '@/components/signup/ToolUsagePrompt';
+import { SmartSignupPrompt } from '@/components/signup/SmartSignupPrompt';
 import { 
   Target, 
   TrendingUp, 
@@ -39,7 +41,8 @@ const propertyTypes = [
 ];
 
 export default function MarketPredictorPage() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const [showSignupModal, setShowSignupModal] = useState(false);
   const [selectedCity, setSelectedCity] = useState('Bangalore');
   const [selectedPropertyType, setSelectedPropertyType] = useState('residential');
   const [selectedArea, setSelectedArea] = useState('');
@@ -101,6 +104,25 @@ export default function MarketPredictorPage() {
   const generatePredictions = async () => {
     if (!selectedArea) return;
 
+    // Show signup prompt if not authenticated
+    if (!isAuthenticated) {
+      const dismissedKey = "signup-prompt-dismissed-tool-usage";
+      const dismissedTime = localStorage.getItem(dismissedKey);
+      if (dismissedTime) {
+        const hoursSinceDismiss =
+          (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60);
+        if (hoursSinceDismiss < 24) {
+          // Continue with calculation if dismissed recently
+        } else {
+          setShowSignupModal(true);
+          return;
+        }
+      } else {
+        setShowSignupModal(true);
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const response = await apiClient.getToolsMarketPredictions({
@@ -114,11 +136,21 @@ export default function MarketPredictorPage() {
         setPredictions(response.data);
         toast.success('AI predictions generated successfully!');
       } else {
+        // If not authenticated and API fails, show signup prompt
+        if (!isAuthenticated) {
+          setShowSignupModal(true);
+          return;
+        }
         const errorMessage = response && typeof response === 'object' && 'message' in response ? String(response.message) : 'Failed to generate predictions';
         toast.error(errorMessage);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating predictions:', error);
+      // If not authenticated and API call fails, show signup prompt
+      if (!isAuthenticated || error?.message?.includes("Authentication required") || error?.message?.includes("Session expired")) {
+        setShowSignupModal(true);
+        return;
+      }
       toast.error('Failed to generate predictions. Please try again.');
     } finally {
       setLoading(false);
@@ -151,7 +183,8 @@ export default function MarketPredictorPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <ToolUsagePrompt toolName="Market Trend Predictor">
+      <div className="min-h-screen flex flex-col">
       <Header />
       
       <main className="flex-1">
@@ -573,6 +606,25 @@ export default function MarketPredictorPage() {
       </main>
       
       <Footer />
+
+      {/* Signup Modal - Shows when user tries to use tool without login */}
+      {showSignupModal && (
+        <SmartSignupPrompt
+          trigger="tool-usage"
+          context={{ toolName: "Market Trend Predictor" }}
+          onDismiss={() => {
+            setShowSignupModal(false);
+            localStorage.setItem(
+              "signup-prompt-dismissed-tool-usage",
+              Date.now().toString()
+            );
+          }}
+          onSignup={() => {
+            setShowSignupModal(false);
+          }}
+        />
+      )}
     </div>
+    </ToolUsagePrompt>
   );
 }

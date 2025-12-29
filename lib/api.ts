@@ -10,7 +10,8 @@ const BYPASS_AUTH_ENDPOINTS = [
   '/properties/',
   '/area-insights',
   '/tools',
-  '/business-partnerships'
+  '/business-partnerships',
+  '/leads/signup-prompt'
 ];
 
 class ApiClient {
@@ -268,6 +269,18 @@ class ApiClient {
   async getMyLeads(params: any = {}) {
     const searchParams = new URLSearchParams(params);
     return this.request(`/leads/my?${searchParams}`);
+  }
+
+  async createSignupLead(data: {
+    name: string;
+    phone: string;
+    trigger?: string;
+    context?: Record<string, any>;
+  }) {
+    return this.request('/leads/signup-prompt', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 
   // Area Insights methods

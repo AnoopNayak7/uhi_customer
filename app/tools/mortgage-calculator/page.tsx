@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/lib/store";
+import { ToolUsagePrompt } from "@/components/signup/ToolUsagePrompt";
+import { SmartSignupPrompt } from "@/components/signup/SmartSignupPrompt";
 import {
   Calculator,
   IndianRupee,
@@ -41,7 +43,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function MortgageCalculatorPage() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const [showSignupModal, setShowSignupModal] = useState(false);
   const [loanAmount, setLoanAmount] = useState([5000000]); // 50L
   const [interestRate, setInterestRate] = useState([9]); // 9%
   const [loanTenure, setLoanTenure] = useState([20]); // 20 years
@@ -50,6 +53,25 @@ export default function MortgageCalculatorPage() {
   const [isCalculating, setIsCalculating] = useState(false);
 
   const calculateEMI = useCallback(() => {
+    // Show signup prompt if not authenticated
+    if (!isAuthenticated) {
+      const dismissedKey = "signup-prompt-dismissed-tool-usage";
+      const dismissedTime = localStorage.getItem(dismissedKey);
+      if (dismissedTime) {
+        const hoursSinceDismiss =
+          (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60);
+        if (hoursSinceDismiss < 24) {
+          // Continue with calculation if dismissed recently
+        } else {
+          setShowSignupModal(true);
+          return;
+        }
+      } else {
+        setShowSignupModal(true);
+        return;
+      }
+    }
+
     // Validate inputs
     if (loanAmount[0] <= 0 || interestRate[0] <= 0 || loanTenure[0] <= 0) {
       setResults(null);
@@ -148,7 +170,8 @@ export default function MortgageCalculatorPage() {
   };
 
   if (!user) {
-    return (
+  return (
+    <ToolUsagePrompt toolName="Mortgage Calculator">
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
@@ -993,6 +1016,25 @@ export default function MortgageCalculatorPage() {
       </main>
 
       <Footer />
+
+      {/* Signup Modal - Shows when user tries to use tool without login */}
+      {showSignupModal && (
+        <SmartSignupPrompt
+          trigger="tool-usage"
+          context={{ toolName: "Mortgage Calculator" }}
+          onDismiss={() => {
+            setShowSignupModal(false);
+            localStorage.setItem(
+              "signup-prompt-dismissed-tool-usage",
+              Date.now().toString()
+            );
+          }}
+          onSignup={() => {
+            setShowSignupModal(false);
+          }}
+        />
+      )}
     </div>
+    </ToolUsagePrompt>
   );
 }

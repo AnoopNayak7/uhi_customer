@@ -41,6 +41,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PageContent } from "@/components/animations/layout-wrapper";
 import { MotionWrapper } from "@/components/animations/motion-wrapper";
 import { apiClient } from "@/lib/api";
+import { ToolUsagePrompt } from "@/components/signup/ToolUsagePrompt";
+import { useAuthStore } from "@/lib/store";
+import { SmartSignupPrompt } from "@/components/signup/SmartSignupPrompt";
+import { toast } from "sonner";
 
 const cities = [
   "Bangalore",
@@ -111,6 +115,8 @@ interface PriceTrendData {
 }
 
 export default function PriceTrendsPage() {
+  const { isAuthenticated } = useAuthStore();
+  const [showSignupModal, setShowSignupModal] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Bangalore");
   const [selectedPropertyType, setSelectedPropertyType] = useState("villas");
   const [selectedTimeRange, setSelectedTimeRange] = useState("5y");
@@ -119,6 +125,25 @@ export default function PriceTrendsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchPriceTrends = async () => {
+    // Show signup prompt if not authenticated
+    if (!isAuthenticated) {
+      const dismissedKey = "signup-prompt-dismissed-tool-usage";
+      const dismissedTime = localStorage.getItem(dismissedKey);
+      if (dismissedTime) {
+        const hoursSinceDismiss =
+          (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60);
+        if (hoursSinceDismiss < 24) {
+          // Continue with calculation if dismissed recently
+        } else {
+          setShowSignupModal(true);
+          return;
+        }
+      } else {
+        setShowSignupModal(true);
+        return;
+      }
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -167,12 +192,22 @@ export default function PriceTrendsPage() {
         }
       } else {
         console.error("API Error:", response.message);
+        // If not authenticated and API fails, show signup prompt
+        if (!isAuthenticated) {
+          setShowSignupModal(true);
+          return;
+        }
         setError(
           response.message || "Failed to fetch price trends. Please try again."
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching price trends:", error);
+      // If not authenticated and API call fails, show signup prompt
+      if (!isAuthenticated || error?.message?.includes("Authentication required") || error?.message?.includes("Session expired")) {
+        setShowSignupModal(true);
+        return;
+      }
       setError("Failed to fetch price trends. Please try again.");
     } finally {
       setLoading(false);
@@ -286,7 +321,8 @@ export default function PriceTrendsPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <ToolUsagePrompt toolName="Price Trends">
+      <div className="min-h-screen flex flex-col">
       <Head>
         <title>Property Price Trends Analysis | Real Estate Market Insights | Urbanhousein</title>
         <meta 
@@ -1130,6 +1166,25 @@ export default function PriceTrendsPage() {
       </main>
 
       <Footer />
-    </div>
+
+      {/* Signup Modal - Shows when user tries to use tool without login */}
+      {showSignupModal && (
+        <SmartSignupPrompt
+          trigger="tool-usage"
+          context={{ toolName: "Price Trends" }}
+          onDismiss={() => {
+            setShowSignupModal(false);
+            localStorage.setItem(
+              "signup-prompt-dismissed-tool-usage",
+              Date.now().toString()
+            );
+          }}
+          onSignup={() => {
+            setShowSignupModal(false);
+          }}
+        />
+      )}
+      </div>
+    </ToolUsagePrompt>
   );
 }

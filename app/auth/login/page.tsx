@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,38 @@ export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [otpType, setOtpType] = useState<"email" | "sms">("email");
   const [loading, setLoading] = useState(false);
+
+  // Check for phone parameter in URL (from signup prompt)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const phone = params.get("phone");
+      if (phone) {
+        setIdentifier(phone);
+        // Auto-trigger login to send OTP
+        handleAutoLogin(phone);
+      }
+    }
+  }, []);
+
+  const handleAutoLogin = async (phone: string) => {
+    setLoading(true);
+    try {
+      const response: any = await apiClient.login(phone);
+      if (response.success) {
+        setIdentifier(phone);
+        setOtpType(response.data.type);
+        setStep("otp");
+        toast.success(response.data.message);
+      }
+    } catch (error: any) {
+      console.error("Auto login error:", error);
+      // If auto-login fails, just pre-fill the phone number
+      toast.info("Please verify your phone number");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const identifierForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),

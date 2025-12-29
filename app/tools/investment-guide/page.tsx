@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { ToolUsagePrompt } from "@/components/signup/ToolUsagePrompt";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -857,7 +858,8 @@ export default function InvestmentGuidePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <ToolUsagePrompt toolName="Investment Guide">
+      <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
 
       <main className="flex-1">
@@ -1607,5 +1609,6 @@ export default function InvestmentGuidePage() {
 
       <Footer />
     </div>
+    </ToolUsagePrompt>
   );
 }

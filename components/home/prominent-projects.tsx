@@ -22,6 +22,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { usePropertyStore, useAuthStore } from "@/lib/store";
+import { SmartSignupPrompt } from "@/components/signup/SmartSignupPrompt";
 import { useLocationData } from "@/hooks/use-location-data";
 import { toast } from "sonner";
 
@@ -55,6 +56,8 @@ interface Property {
 
 export function ProminentProjects() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const [showFavoriteModal, setShowFavoriteModal] = useState(false);
   const [prominentProperties, setProminentProperties] = useState<Property[]>(
     []
   );
@@ -67,6 +70,7 @@ export function ProminentProjects() {
     removeFromCompare,
     compareList,
   } = usePropertyStore();
+  const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     const fetchProminentProperties = async () => {
@@ -225,9 +229,19 @@ export function ProminentProjects() {
               <PropertyCard
                 key={property.id}
                 property={property}
-                onFavourite={() => addToFavourites(property)}
+                onFavourite={() => {
+                  if (!isAuthenticated) {
+                    setShowFavoriteModal(true);
+                    return;
+                  }
+                  addToFavourites(property);
+                }}
                 isFavourite={favourites.some((p) => p.id === property.id)}
                 onCompare={() => {
+                  if (!isAuthenticated) {
+                    setShowSignupModal(true);
+                    return;
+                  }
                   const isInCompare = compareList.some(
                     (p) => p.id === property.id
                   );
@@ -244,6 +258,7 @@ export function ProminentProjects() {
                   }
                 }}
                 isInCompare={compareList.some((p) => p.id === property.id)}
+                onFavoriteClick={() => setShowFavoriteModal(true)}
               />
             ))}
           </div>
@@ -259,6 +274,25 @@ export function ProminentProjects() {
           </Button>
         </div>
       </div>
+
+      {/* Signup Modal - Shows when user tries to compare without login */}
+      {showSignupModal && (
+        <SmartSignupPrompt
+          trigger="compare"
+          onDismiss={() => setShowSignupModal(false)}
+          onSignup={() => setShowSignupModal(false)}
+        />
+      )}
+
+      {/* Signup Modal - Shows when user tries to favorite without login */}
+      {showFavoriteModal && (
+        <SmartSignupPrompt
+          trigger="favorite"
+          context={{ propertyTitle: "property" }}
+          onDismiss={() => setShowFavoriteModal(false)}
+          onSignup={() => setShowFavoriteModal(false)}
+        />
+      )}
     </section>
   );
 }
@@ -269,12 +303,14 @@ function PropertyCard({
   isFavourite,
   onCompare,
   isInCompare,
+  onFavoriteClick,
 }: {
   property: Property;
   onFavourite: () => void;
   isFavourite: boolean;
   onCompare: () => void;
   isInCompare: boolean;
+  onFavoriteClick?: () => void;
 }) {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
@@ -298,7 +334,7 @@ function PropertyCard({
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      toast.error("Please login to add properties to favourites");
+      onFavoriteClick?.();
       return;
     }
 
@@ -311,6 +347,7 @@ function PropertyCard({
 
   const handleCompareClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     onCompare();
   };
 
@@ -364,6 +401,7 @@ function PropertyCard({
                 : "text-gray-600 hover:text-blue-500"
             }`}
             onClick={handleCompareClick}
+            title={isInCompare ? "Remove from comparison" : "Add to comparison"}
           >
             <GitCompareArrows
               className={`w-4 h-4 ${isInCompare ? "fill-current" : ""}`}

@@ -52,6 +52,9 @@ import {
 } from "recharts";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
+import { ToolUsagePrompt } from "@/components/signup/ToolUsagePrompt";
+import { useAuthStore } from "@/lib/store";
+import { SmartSignupPrompt } from "@/components/signup/SmartSignupPrompt";
 
 const cities = [
   "Bangalore",
@@ -65,6 +68,8 @@ const cities = [
 ];
 
 export default function AreaInsightsPage() {
+  const { isAuthenticated } = useAuthStore();
+  const [showSignupModal, setShowSignupModal] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Bangalore");
   const [selectedArea, setSelectedArea] = useState("");
   const [loading, setLoading] = useState(false);
@@ -100,6 +105,12 @@ export default function AreaInsightsPage() {
       return;
     }
 
+    // Show signup prompt if not authenticated - same behavior as compare button
+    if (!isAuthenticated) {
+      setShowSignupModal(true);
+      return;
+    }
+
     setLoading(true);
     try {
       const response: any = await apiClient.getToolsAreaInsights(
@@ -111,11 +122,25 @@ export default function AreaInsightsPage() {
         setAreaData(response.data);
         toast.success("Area insights loaded successfully!");
       } else {
+        // If not authenticated and API fails, show signup prompt
+        if (!isAuthenticated) {
+          setShowSignupModal(true);
+          return;
+        }
         toast.error(response.message || "Failed to fetch area insights");
         setAreaData(null);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching area insights:", error);
+      // If not authenticated and API call fails, show signup prompt
+      if (
+        !isAuthenticated ||
+        error?.message?.includes("Authentication required") ||
+        error?.message?.includes("Session expired")
+      ) {
+        setShowSignupModal(true);
+        return;
+      }
       toast.error("Failed to fetch area insights. Please try again.");
       setAreaData(null);
     } finally {
@@ -133,46 +158,73 @@ export default function AreaInsightsPage() {
   };
 
   return (
-    <>
+    <ToolUsagePrompt toolName="Area Insights">
       <Head>
-        <title>Area Insights & Neighborhood Analysis | Property Location Intelligence | Urbanhousein</title>
-        <meta 
-          name="description" 
-          content="Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions." 
+        <title>
+          Area Insights & Neighborhood Analysis | Property Location Intelligence
+          | Urbanhousein
+        </title>
+        <meta
+          name="description"
+          content="Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions."
         />
-        <meta 
-          name="keywords" 
-          content="area insights, neighborhood analysis, property location intelligence, area demographics, neighborhood amenities, infrastructure analysis, safety ratings, livability scores, area statistics, property location data, neighborhood insights, area analysis tool, location intelligence, property research, area comparison, neighborhood comparison, Bangalore areas, Mumbai areas, Delhi areas, Chennai areas, Hyderabad areas, Pune areas, Kolkata areas, Ahmedabad areas" 
+        <meta
+          name="keywords"
+          content="area insights, neighborhood analysis, property location intelligence, area demographics, neighborhood amenities, infrastructure analysis, safety ratings, livability scores, area statistics, property location data, neighborhood insights, area analysis tool, location intelligence, property research, area comparison, neighborhood comparison, Bangalore areas, Mumbai areas, Delhi areas, Chennai areas, Hyderabad areas, Pune areas, Kolkata areas, Ahmedabad areas"
         />
         <meta name="robots" content="index,follow" />
-        <link rel="canonical" href="https://urbanhousein.com/tools/area-insights" />
-        
+        <link
+          rel="canonical"
+          href="https://urbanhousein.com/tools/area-insights"
+        />
+
         {/* Open Graph Meta Tags */}
-        <meta property="og:title" content="Area Insights & Neighborhood Analysis | Property Location Intelligence | Urbanhousein" />
-        <meta property="og:description" content="Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions." />
+        <meta
+          property="og:title"
+          content="Area Insights & Neighborhood Analysis | Property Location Intelligence | Urbanhousein"
+        />
+        <meta
+          property="og:description"
+          content="Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions."
+        />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://urbanhousein.com/tools/area-insights" />
-        <meta property="og:image" content="https://urbanhousein.com/images/og-area-insights.jpg" />
+        <meta
+          property="og:url"
+          content="https://urbanhousein.com/tools/area-insights"
+        />
+        <meta
+          property="og:image"
+          content="https://urbanhousein.com/images/og-area-insights.jpg"
+        />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Urbanhousein" />
         <meta property="og:locale" content="en_IN" />
-        
+
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Area Insights & Neighborhood Analysis | Property Location Intelligence | Urbanhousein" />
-        <meta name="twitter:description" content="Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions." />
-        <meta name="twitter:image" content="https://urbanhousein.com/images/og-area-insights.jpg" />
+        <meta
+          name="twitter:title"
+          content="Area Insights & Neighborhood Analysis | Property Location Intelligence | Urbanhousein"
+        />
+        <meta
+          name="twitter:description"
+          content="Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions."
+        />
+        <meta
+          name="twitter:image"
+          content="https://urbanhousein.com/images/og-area-insights.jpg"
+        />
         <meta name="twitter:site" content="@urbanhousein" />
         <meta name="twitter:creator" content="@urbanhousein" />
-        
+
         {/* Additional Meta Tags */}
         <meta name="author" content="Urbanhousein Team" />
         <meta name="language" content="English" />
         <meta name="revisit-after" content="7 days" />
         <meta name="distribution" content="global" />
         <meta name="rating" content="general" />
-        
+
         {/* Structured Data */}
         <script
           type="application/ld+json"
@@ -180,23 +232,24 @@ export default function AreaInsightsPage() {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebApplication",
-              "name": "Area Insights & Neighborhood Analysis Tool",
-              "description": "Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions.",
-              "url": "https://urbanhousein.com/tools/area-insights",
-              "applicationCategory": "RealEstateApplication",
-              "operatingSystem": "Web Browser",
-              "offers": {
+              name: "Area Insights & Neighborhood Analysis Tool",
+              description:
+                "Get comprehensive area insights and neighborhood analysis. Explore demographics, amenities, infrastructure, safety ratings, and livability scores for informed property decisions.",
+              url: "https://urbanhousein.com/tools/area-insights",
+              applicationCategory: "RealEstateApplication",
+              operatingSystem: "Web Browser",
+              offers: {
                 "@type": "Offer",
-                "price": "0",
-                "priceCurrency": "INR"
+                price: "0",
+                priceCurrency: "INR",
               },
-              "provider": {
+              provider: {
                 "@type": "Organization",
-                "name": "Urbanhousein",
-                "url": "https://urbanhousein.com",
-                "logo": "https://urbanhousein.com/logo/urbanhousein-logo.png"
+                name: "Urbanhousein",
+                url: "https://urbanhousein.com",
+                logo: "https://urbanhousein.com/logo/urbanhousein-logo.png",
               },
-              "featureList": [
+              featureList: [
                 "Comprehensive area demographics",
                 "Neighborhood amenities analysis",
                 "Infrastructure quality assessment",
@@ -208,14 +261,15 @@ export default function AreaInsightsPage() {
                 "Healthcare facilities overview",
                 "Shopping and recreation options",
                 "Transportation connectivity",
-                "Area comparison tools"
+                "Area comparison tools",
               ],
-              "screenshot": "https://urbanhousein.com/images/area-insights-screenshot.jpg",
-              "browserRequirements": "Requires JavaScript. Requires HTML5.",
-              "softwareVersion": "1.0",
-              "datePublished": "2024-01-01",
-              "dateModified": new Date().toISOString().split('T')[0]
-            })
+              screenshot:
+                "https://urbanhousein.com/images/area-insights-screenshot.jpg",
+              browserRequirements: "Requires JavaScript. Requires HTML5.",
+              softwareVersion: "1.0",
+              datePublished: "2024-01-01",
+              dateModified: new Date().toISOString().split("T")[0],
+            }),
           }}
         />
       </Head>
@@ -1036,7 +1090,25 @@ export default function AreaInsightsPage() {
         </main>
 
         <Footer />
+
+        {/* Signup Modal - Shows when user tries to use tool without login */}
+        {showSignupModal && (
+          <SmartSignupPrompt
+            trigger="tool-usage"
+            context={{ toolName: "Area Insights" }}
+            onDismiss={() => {
+              setShowSignupModal(false);
+              localStorage.setItem(
+                "signup-prompt-dismissed-tool-usage",
+                Date.now().toString()
+              );
+            }}
+            onSignup={() => {
+              setShowSignupModal(false);
+            }}
+          />
+        )}
       </div>
-    </>
+    </ToolUsagePrompt>
   );
 }
