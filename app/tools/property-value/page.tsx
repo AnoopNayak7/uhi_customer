@@ -57,6 +57,9 @@ import { PageContent } from "@/components/animations/layout-wrapper";
 import { MotionWrapper } from "@/components/animations/motion-wrapper";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
+import { ToolUsagePrompt } from "@/components/signup/ToolUsagePrompt";
+import { useAuthStore } from "@/lib/store";
+import { SmartSignupPrompt } from "@/components/signup/SmartSignupPrompt";
 
 const cities = [
   "Bangalore",
@@ -93,6 +96,8 @@ const furnishingOptions = [
 ];
 
 export default function PropertyValuePage() {
+  const { isAuthenticated } = useAuthStore();
+  const [showSignupModal, setShowSignupModal] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Bangalore");
   const [selectedPropertyType, setSelectedPropertyType] = useState("flat");
   const [selectedArea, setSelectedArea] = useState("");
@@ -144,6 +149,37 @@ export default function PropertyValuePage() {
       return;
     }
 
+    // Show signup prompt if not authenticated
+    if (!isAuthenticated) {
+      // Track tool usage
+      const toolUsageCount = parseInt(
+        localStorage.getItem("tool-usage-count") || "0"
+      );
+      const newCount = toolUsageCount + 1;
+      localStorage.setItem("tool-usage-count", newCount.toString());
+
+      // Check if dismissed recently
+      const dismissedKey = "signup-prompt-dismissed-tool-usage";
+      const dismissedTime = localStorage.getItem(dismissedKey);
+      if (dismissedTime) {
+        const hoursSinceDismiss =
+          (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60);
+        if (hoursSinceDismiss < 24) {
+          // If dismissed recently, allow calculation but show info
+          toast.info("Sign up to save your calculations for later");
+          // Continue with calculation
+        } else {
+          // Show prompt again after 24 hours
+          setShowSignupModal(true);
+          return;
+        }
+      } else {
+        // Show prompt on first use
+        setShowSignupModal(true);
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const response: any = await apiClient.getToolsPropertyValue({
@@ -163,11 +199,23 @@ export default function PropertyValuePage() {
         setValuation(response.data);
         toast.success("Property value calculated successfully!");
       } else {
+        // If not authenticated and API fails, show signup prompt instead of error
+        if (!isAuthenticated) {
+          setShowSignupModal(true);
+          return;
+        }
         toast.error(response.message || "Failed to calculate property value");
         setValuation(null);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error calculating property value:", error);
+      
+      // If not authenticated and API call fails, show signup prompt
+      if (!isAuthenticated) {
+        setShowSignupModal(true);
+        return;
+      }
+      
       toast.error("Failed to calculate property value. Please try again.");
       setValuation(null);
     } finally {
@@ -465,8 +513,9 @@ export default function PropertyValuePage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
+    <ToolUsagePrompt toolName="Property Value Estimator">
+      <div className="min-h-screen flex flex-col">
+        <Header />
 
       <main className="flex-1">
         <PageContent>
@@ -1088,6 +1137,25 @@ export default function PropertyValuePage() {
       </main>
 
       <Footer />
-    </div>
+
+      {/* Signup Modal - Shows when user tries to use tool without login */}
+      {showSignupModal && (
+        <SmartSignupPrompt
+          trigger="tool-usage"
+          context={{ toolName: "Property Value Estimator" }}
+          onDismiss={() => {
+            setShowSignupModal(false);
+            localStorage.setItem(
+              "signup-prompt-dismissed-tool-usage",
+              Date.now().toString()
+            );
+          }}
+          onSignup={() => {
+            setShowSignupModal(false);
+          }}
+        />
+      )}
+      </div>
+    </ToolUsagePrompt>
   );
 }

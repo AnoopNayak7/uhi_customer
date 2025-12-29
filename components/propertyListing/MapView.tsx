@@ -22,6 +22,9 @@ interface MapViewProps {
   loadingMore?: boolean;
   onLoadMore?: () => void;
   totalCount?: number;
+  onFavorite?: (property: any) => void;
+  onFavoriteClick?: () => void;
+  onCompareClick?: () => void;
 }
 
 export function MapView({
@@ -33,17 +36,25 @@ export function MapView({
   loadingMore = false,
   onLoadMore,
   totalCount = 0,
+  onFavorite,
+  onFavoriteClick,
+  onCompareClick,
 }: MapViewProps) {
   const { favourites } = usePropertyStore();
-  const { addToFavourites, removeFromFavourites } = usePropertyStore();
   const mapLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const handleFavorite = (property: any) => {
-    const isFavorite = favourites.some((p) => p.id === property.id);
-    if (isFavorite) {
-      removeFromFavourites(property.id);
+    if (onFavorite) {
+      onFavorite(property);
     } else {
-      addToFavourites(property);
+      // Fallback to local store if no onFavorite prop provided
+      const { addToFavourites, removeFromFavourites } = usePropertyStore.getState();
+      const isFavorite = favourites.some((p) => p.id === property.id);
+      if (isFavorite) {
+        removeFromFavourites(property.id);
+      } else {
+        addToFavourites(property);
+      }
     }
   };
 
@@ -143,6 +154,8 @@ export function MapView({
                     onFavorite={() => handleFavorite(property)}
                     isFavorite={favourites.some((p) => p.id === property.id)}
                     compact
+                    onFavoriteClick={onFavoriteClick}
+                    onCompareClick={onCompareClick}
                   />
                 </div>
               ))}

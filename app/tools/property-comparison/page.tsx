@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore, usePropertyStore } from "@/lib/store";
+import { ToolUsagePrompt } from "@/components/signup/ToolUsagePrompt";
+import { SmartSignupPrompt } from "@/components/signup/SmartSignupPrompt";
 import {
   BarChart3,
   Plus,
@@ -50,7 +52,8 @@ const ComparisonMap = dynamic(() => import("@/components/ComparisonMap"), {
 });
 
 export default function PropertyComparisonPage() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const [showSignupModal, setShowSignupModal] = useState(false);
   const { compareList, addToCompare, removeFromCompare, clearCompare } =
     usePropertyStore();
   const [searchTerm, setSearchTerm] = useState("");
@@ -204,9 +207,9 @@ export default function PropertyComparisonPage() {
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
@@ -216,9 +219,9 @@ export default function PropertyComparisonPage() {
       return {
         center: userLocation
           ? ([userLocation.latitude, userLocation.longitude] as [
-            number,
-            number
-          ])
+              number,
+              number
+            ])
           : ([12.9716, 77.5946] as [number, number]), // Bangalore default
         markers: [],
       };
@@ -242,18 +245,19 @@ export default function PropertyComparisonPage() {
       .map((property) => {
         const distance = userLocation
           ? calculateDistance(
-            userLocation.latitude,
-            userLocation.longitude,
-            property.latitude!,
-            property.longitude!
-          )
+              userLocation.latitude,
+              userLocation.longitude,
+              property.latitude!,
+              property.longitude!
+            )
           : null;
 
         return {
           id: property.id,
           position: [property.latitude, property.longitude] as [number, number],
-          popupText: `${property.title} - ${formatPrice(property.price)}${distance ? ` (${distance.toFixed(1)} km away)` : ""
-            }`,
+          popupText: `${property.title} - ${formatPrice(property.price)}${
+            distance ? ` (${distance.toFixed(1)} km away)` : ""
+          }`,
         };
       });
 
@@ -290,23 +294,41 @@ export default function PropertyComparisonPage() {
     },
   };
 
-  return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-      <style jsx>{`
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+  // Check if user is authenticated when trying to compare
+  useEffect(() => {
+    if (!isAuthenticated && compareList.length > 0) {
+      const dismissedKey = "signup-prompt-dismissed-tool-usage";
+      const dismissedTime = localStorage.getItem(dismissedKey);
+      if (dismissedTime) {
+        const hoursSinceDismiss =
+          (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60);
+        if (hoursSinceDismiss >= 24) {
+          setShowSignupModal(true);
         }
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
-      <Header />
+      } else {
+        setShowSignupModal(true);
+      }
+    }
+  }, [compareList.length, isAuthenticated]);
 
-      <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Hero Section */}
-          {/* <motion.div
+  return (
+    <ToolUsagePrompt toolName="Property Comparison">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+        <style jsx>{`
+          .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+        <Header />
+
+        <main className="flex-1">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Hero Section */}
+            {/* <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -326,266 +348,225 @@ export default function PropertyComparisonPage() {
             </p>
           </motion.div> */}
 
-          
-
-          {/* Location Prompt */}
-          {isHydrated && compareList.length > 0 && !userLocation && (
-            <motion.div
-              className="mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-purple-50">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-blue-100 p-3 rounded-full">
-                        <MapPin className="w-6 h-6 text-blue-600" />
+            {/* Location Prompt */}
+            {isHydrated && compareList.length > 0 && !userLocation && (
+              <motion.div
+                className="mb-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-purple-50">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-blue-100 p-3 rounded-full">
+                          <MapPin className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                            Get Distance Insights
+                          </h3>
+                          <p className="text-gray-600 text-sm">
+                            Allow location access to see distances from your
+                            current location to each property
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          Get Distance Insights
-                        </h3>
-                        <p className="text-gray-600 text-sm">
-                          Allow location access to see distances from your
-                          current location to each property
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={requestLocation}
-                      disabled={locationLoading}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      {locationLoading ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Getting Location...
-                        </>
-                      ) : (
-                        <>
-                          <MapPin className="w-4 h-4 mr-2" />
-                          Get My Location
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  {locationError && (
-                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-red-600 text-sm">{locationError}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-
-          {/* Map View */}
-          {isHydrated && compareList.length > 0 && (
-            <motion.div
-              className="mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center">
-                    <MapIcon className="w-5 h-5 mr-2 text-blue-600" />
-                    Property Locations
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="h-80 w-full relative overflow-hidden rounded-b-lg">
-                    <ComparisonMap
-                      center={getMapData().center}
-                      zoom={12}
-                      markers={getMapData().markers}
-                      hoveredPropertyId={hoveredPropertyId}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-
-          {/* Loading state during hydration */}
-          {!isHydrated ? (
-            <motion.div
-              className="text-center py-16"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="bg-white rounded-2xl p-12 shadow-lg max-w-2xl mx-auto">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  Loading Comparison Data...
-                </h2>
-                <p className="text-gray-600">
-                  Please wait while we restore your property comparisons.
-                </p>
-              </div>
-            </motion.div>
-          ) : (
-            <>
-              {/* Comparison Section */}
-              {compareList.length === 0 ? (
-                <motion.div
-                  className="text-center py-16"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                >
-                  <div className="bg-white rounded-2xl p-12 shadow-lg max-w-2xl mx-auto">
-                    <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <GitCompare className="w-12 h-12 text-blue-600" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                      No Properties to Compare
-                    </h2>
-                    <p className="text-gray-600 mb-8">
-                      You haven&apos;t added any properties for comparison yet.
-                      Browse our property listings and add properties to compare
-                      their features, prices, and amenities side by side.
-                    </p>
-
-                    {/* Call to Action */}
-                    <div className="mb-8">
                       <Button
-                        size="lg"
-                        className="bg-red-600 hover:bg-red-700 px-8 py-3 text-lg"
-                        asChild
+                        onClick={requestLocation}
+                        disabled={locationLoading}
+                        className="bg-blue-600 hover:bg-blue-700"
                       >
-                        <Link href="/properties">
-                          <Home className="w-5 h-5 mr-2" />
-                          Browse Properties
-                        </Link>
+                        {locationLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Getting Location...
+                          </>
+                        ) : (
+                          <>
+                            <MapPin className="w-4 h-4 mr-2" />
+                            Get My Location
+                          </>
+                        )}
                       </Button>
                     </div>
+                    {locationError && (
+                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-red-600 text-sm">{locationError}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-                      <div className="flex items-start space-x-3">
-                        <div className="bg-green-100 p-2 rounded-lg">
-                          <Search className="w-5 h-5 text-green-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">
-                            Search
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            Find properties by name or location
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <div className="bg-blue-100 p-2 rounded-lg">
-                          <Plus className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">Add</h3>
-                          <p className="text-sm text-gray-600">
-                            Add up to 3 properties
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <div className="bg-purple-100 p-2 rounded-lg">
-                          <BarChart3 className="w-5 h-5 text-purple-600" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">
-                            Compare
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            Compare features side by side
-                          </p>
-                        </div>
-                      </div>
+            {/* Map View */}
+            {isHydrated && compareList.length > 0 && (
+              <motion.div
+                className="mb-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center">
+                      <MapIcon className="w-5 h-5 mr-2 text-blue-600" />
+                      Property Locations
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="h-80 w-full relative overflow-hidden rounded-b-lg">
+                      <ComparisonMap
+                        center={getMapData().center}
+                        zoom={12}
+                        markers={getMapData().markers}
+                        hoveredPropertyId={hoveredPropertyId}
+                      />
                     </div>
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  className="space-y-8"
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {/* Comparison Header */}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Loading state during hydration */}
+            {!isHydrated ? (
+              <motion.div
+                className="text-center py-16"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="bg-white rounded-2xl p-12 shadow-lg max-w-2xl mx-auto">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    Loading Comparison Data...
+                  </h2>
+                  <p className="text-gray-600">
+                    Please wait while we restore your property comparisons.
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              <>
+                {/* Comparison Section */}
+                {compareList.length === 0 ? (
                   <motion.div
-                    className="flex items-center justify-between"
-                    variants={itemVariants}
+                    className="text-center py-16"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
                   >
-                    <div>
-                      <h2 className="text-3xl font-bold text-gray-900">
-                        Property Comparison ({compareList.length}/3)
+                    <div className="bg-white rounded-2xl p-12 shadow-lg max-w-2xl mx-auto">
+                      <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <GitCompare className="w-12 h-12 text-blue-600" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                        No Properties to Compare
                       </h2>
-                      <p className="text-gray-600 mt-2">
-                        Compare key features and make informed decisions
+                      <p className="text-gray-600 mb-8">
+                        You haven&apos;t added any properties for comparison
+                        yet. Browse our property listings and add properties to
+                        compare their features, prices, and amenities side by
+                        side.
                       </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={clearCompare}
-                      className="border-red-200 text-red-600 hover:bg-red-50"
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      Clear All
-                    </Button>
-                  </motion.div>
 
-                  {/* Property Cards - Mobile Horizontal Scroll */}
-                  <div className="block md:hidden">
+                      {/* Call to Action */}
+                      <div className="mb-8">
+                        <Button
+                          size="lg"
+                          className="bg-red-600 hover:bg-red-700 px-8 py-3 text-lg"
+                          asChild
+                        >
+                          <Link href="/properties">
+                            <Home className="w-5 h-5 mr-2" />
+                            Browse Properties
+                          </Link>
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+                        <div className="flex items-start space-x-3">
+                          <div className="bg-green-100 p-2 rounded-lg">
+                            <Search className="w-5 h-5 text-green-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">
+                              Search
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              Find properties by name or location
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div className="bg-blue-100 p-2 rounded-lg">
+                            <Plus className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">Add</h3>
+                            <p className="text-sm text-gray-600">
+                              Add up to 3 properties
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div className="bg-purple-100 p-2 rounded-lg">
+                            <BarChart3 className="w-5 h-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">
+                              Compare
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              Compare features side by side
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    className="space-y-8"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    {/* Comparison Header */}
                     <motion.div
-                      className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar"
+                      className="flex items-center justify-between"
                       variants={itemVariants}
                     >
-                      {compareList.map((property, index) => (
-                        <motion.div
-                          key={property.id}
-                          className="flex-shrink-0 w-80 snap-start"
-                          variants={itemVariants}
-                          onHoverStart={() => setHoveredPropertyId(property.id)}
-                          onHoverEnd={() => setHoveredPropertyId(null)}
-                        >
-                          <PropertyComparisonCard
-                            property={property}
-                            index={index}
-                            onRemove={() => removeFromCompare(property.id)}
-                            score={getComparisonScore(property)}
-                            isHovered={hoveredPropertyId === property.id}
-                            userLocation={userLocation}
-                            distance={
-                              userLocation &&
-                                property.latitude &&
-                                property.longitude
-                                ? calculateDistance(
-                                  userLocation.latitude,
-                                  userLocation.longitude,
-                                  property.latitude,
-                                  property.longitude
-                                )
-                                : null
-                            }
-                          />
-                        </motion.div>
-                      ))}
+                      <div>
+                        <h2 className="text-3xl font-bold text-gray-900">
+                          Property Comparison ({compareList.length}/3)
+                        </h2>
+                        <p className="text-gray-600 mt-2">
+                          Compare key features and make informed decisions
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={clearCompare}
+                        className="border-red-200 text-red-600 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Clear All
+                      </Button>
                     </motion.div>
-                  </div>
 
-                  {/* Property Cards - Desktop Grid/Carousel */}
-                  <div className="hidden md:block">
-                    {compareList.length <= 3 ? (
-                      // Regular grid for 3 or fewer properties
+                    {/* Property Cards - Mobile Horizontal Scroll */}
+                    <div className="block md:hidden">
                       <motion.div
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                        variants={containerVariants}
+                        className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar"
+                        variants={itemVariants}
                       >
                         {compareList.map((property, index) => (
                           <motion.div
                             key={property.id}
+                            className="flex-shrink-0 w-80 snap-start"
                             variants={itemVariants}
                             onHoverStart={() =>
                               setHoveredPropertyId(property.id)
@@ -598,115 +579,179 @@ export default function PropertyComparisonPage() {
                               onRemove={() => removeFromCompare(property.id)}
                               score={getComparisonScore(property)}
                               isHovered={hoveredPropertyId === property.id}
+                              userLocation={userLocation}
+                              distance={
+                                userLocation &&
+                                property.latitude &&
+                                property.longitude
+                                  ? calculateDistance(
+                                      userLocation.latitude,
+                                      userLocation.longitude,
+                                      property.latitude,
+                                      property.longitude
+                                    )
+                                  : null
+                              }
                             />
                           </motion.div>
                         ))}
                       </motion.div>
-                    ) : (
-                      // Carousel for more than 3 properties
-                      <motion.div variants={itemVariants}>
-                        <div className="relative">
-                          {/* Carousel Navigation */}
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="text-sm text-gray-600">
-                              Showing {currentSlide * itemsPerPage + 1}-
-                              {Math.min(
-                                (currentSlide + 1) * itemsPerPage,
-                                compareList.length
-                              )}{" "}
-                              of {compareList.length} properties
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={prevSlide}
-                                disabled={totalPages <= 1}
-                                className="h-8 w-8 p-0"
-                              >
-                                <ChevronLeft className="w-4 h-4" />
-                              </Button>
-                              <div className="flex space-x-1">
-                                {Array.from({ length: totalPages }).map(
-                                  (_, index) => (
-                                    <button
-                                      key={index}
-                                      onClick={() => setCurrentSlide(index)}
-                                      className={`w-2 h-2 rounded-full transition-colors ${currentSlide === index
-                                          ? "bg-blue-600"
-                                          : "bg-gray-300"
-                                        }`}
-                                    />
-                                  )
-                                )}
+                    </div>
+
+                    {/* Property Cards - Desktop Grid/Carousel */}
+                    <div className="hidden md:block">
+                      {compareList.length <= 3 ? (
+                        // Regular grid for 3 or fewer properties
+                        <motion.div
+                          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                          variants={containerVariants}
+                        >
+                          {compareList.map((property, index) => (
+                            <motion.div
+                              key={property.id}
+                              variants={itemVariants}
+                              onHoverStart={() =>
+                                setHoveredPropertyId(property.id)
+                              }
+                              onHoverEnd={() => setHoveredPropertyId(null)}
+                            >
+                              <PropertyComparisonCard
+                                property={property}
+                                index={index}
+                                onRemove={() => removeFromCompare(property.id)}
+                                score={getComparisonScore(property)}
+                                isHovered={hoveredPropertyId === property.id}
+                              />
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      ) : (
+                        // Carousel for more than 3 properties
+                        <motion.div variants={itemVariants}>
+                          <div className="relative">
+                            {/* Carousel Navigation */}
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="text-sm text-gray-600">
+                                Showing {currentSlide * itemsPerPage + 1}-
+                                {Math.min(
+                                  (currentSlide + 1) * itemsPerPage,
+                                  compareList.length
+                                )}{" "}
+                                of {compareList.length} properties
                               </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={nextSlide}
-                                disabled={totalPages <= 1}
-                                className="h-8 w-8 p-0"
-                              >
-                                <ChevronRight className="w-4 h-4" />
-                              </Button>
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={prevSlide}
+                                  disabled={totalPages <= 1}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <ChevronLeft className="w-4 h-4" />
+                                </Button>
+                                <div className="flex space-x-1">
+                                  {Array.from({ length: totalPages }).map(
+                                    (_, index) => (
+                                      <button
+                                        key={index}
+                                        onClick={() => setCurrentSlide(index)}
+                                        className={`w-2 h-2 rounded-full transition-colors ${
+                                          currentSlide === index
+                                            ? "bg-blue-600"
+                                            : "bg-gray-300"
+                                        }`}
+                                      />
+                                    )
+                                  )}
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={nextSlide}
+                                  disabled={totalPages <= 1}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <ChevronRight className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </div>
-                          </div>
 
-                          {/* Carousel Content */}
-                          <motion.div
-                            className="grid grid-cols-3 gap-6"
-                            key={currentSlide}
-                            initial={{ opacity: 0, x: 50 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            {getVisibleProperties().map((property, index) => (
-                              <motion.div
-                                key={property.id}
-                                onHoverStart={() =>
-                                  setHoveredPropertyId(property.id)
-                                }
-                                onHoverEnd={() => setHoveredPropertyId(null)}
-                              >
-                                <PropertyComparisonCard
-                                  property={property}
-                                  index={currentSlide * itemsPerPage + index}
-                                  onRemove={() =>
-                                    removeFromCompare(property.id)
+                            {/* Carousel Content */}
+                            <motion.div
+                              className="grid grid-cols-3 gap-6"
+                              key={currentSlide}
+                              initial={{ opacity: 0, x: 50 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              {getVisibleProperties().map((property, index) => (
+                                <motion.div
+                                  key={property.id}
+                                  onHoverStart={() =>
+                                    setHoveredPropertyId(property.id)
                                   }
-                                  score={getComparisonScore(property)}
-                                  isHovered={hoveredPropertyId === property.id}
-                                />
-                              </motion.div>
-                            ))}
-                          </motion.div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
+                                  onHoverEnd={() => setHoveredPropertyId(null)}
+                                >
+                                  <PropertyComparisonCard
+                                    property={property}
+                                    index={currentSlide * itemsPerPage + index}
+                                    onRemove={() =>
+                                      removeFromCompare(property.id)
+                                    }
+                                    score={getComparisonScore(property)}
+                                    isHovered={
+                                      hoveredPropertyId === property.id
+                                    }
+                                  />
+                                </motion.div>
+                              ))}
+                            </motion.div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
 
-                  {/* Detailed Comparison Table */}
-                  <motion.div variants={itemVariants}>
-                    <ComparisonTable
-                      properties={compareList}
-                      userLocation={userLocation}
-                      calculateDistance={calculateDistance}
-                    />
+                    {/* Detailed Comparison Table */}
+                    <motion.div variants={itemVariants}>
+                      <ComparisonTable
+                        properties={compareList}
+                        userLocation={userLocation}
+                        calculateDistance={calculateDistance}
+                      />
+                    </motion.div>
+
+                    {/* Recommendations */}
+                    <motion.div variants={itemVariants}>
+                      <RecommendationSection properties={compareList} />
+                    </motion.div>
                   </motion.div>
+                )}
+              </>
+            )}
+          </div>
+        </main>
 
-                  {/* Recommendations */}
-                  <motion.div variants={itemVariants}>
-                    <RecommendationSection properties={compareList} />
-                  </motion.div>
-                </motion.div>
-              )}
-            </>
-          )}
-        </div>
-      </main>
+        <Footer />
 
-      <Footer />
-    </div>
+        {/* Signup Modal - Shows when user tries to use tool without login */}
+        {showSignupModal && (
+          <SmartSignupPrompt
+            trigger="tool-usage"
+            context={{ toolName: "Property Comparison" }}
+            onDismiss={() => {
+              setShowSignupModal(false);
+              localStorage.setItem(
+                "signup-prompt-dismissed-tool-usage",
+                Date.now().toString()
+              );
+            }}
+            onSignup={() => {
+              setShowSignupModal(false);
+            }}
+          />
+        )}
+      </div>
+    </ToolUsagePrompt>
   );
 }
 
@@ -745,8 +790,9 @@ function PropertyComparisonCard({
 
   return (
     <Card
-      className={`relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${isHovered ? "ring-2 ring-blue-500 ring-opacity-50 shadow-2xl" : ""
-        }`}
+      className={`relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${
+        isHovered ? "ring-2 ring-blue-500 ring-opacity-50 shadow-2xl" : ""
+      }`}
     >
       <Button
         variant="ghost"
@@ -1013,7 +1059,9 @@ function RecommendationSection({ properties }: { properties: any[] }) {
                   ₹{(bestProperty.price / 10000000).toFixed(1)} Cr
                 </div>
                 <Button className="bg-blue-600 hover:bg-blue-700" asChild>
-                  <Link href={`/properties/${bestProperty.slug || bestProperty.id}`}>
+                  <Link
+                    href={`/properties/${bestProperty.slug || bestProperty.id}`}
+                  >
                     View Details
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
@@ -1058,7 +1106,7 @@ function LocationInsights({
   const averageDistance =
     propertiesWithDistance.length > 0
       ? propertiesWithDistance.reduce((sum, p) => sum + p.distance, 0) /
-      propertiesWithDistance.length
+        propertiesWithDistance.length
       : 0;
 
   const closestProperty = propertiesWithDistance[0];
@@ -1127,12 +1175,13 @@ function LocationInsights({
                 >
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`w-2 h-2 rounded-full ${index === 0
+                      className={`w-2 h-2 rounded-full ${
+                        index === 0
                           ? "bg-green-500"
                           : index === propertiesWithDistance.length - 1
-                            ? "bg-orange-500"
-                            : "bg-blue-500"
-                        }`}
+                          ? "bg-orange-500"
+                          : "bg-blue-500"
+                      }`}
                     ></div>
                     <span className="font-medium text-gray-900 truncate">
                       {property.title}

@@ -17,6 +17,8 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/lib/store";
+import { ToolUsagePrompt } from "@/components/signup/ToolUsagePrompt";
+import { SmartSignupPrompt } from "@/components/signup/SmartSignupPrompt";
 import {
   TrendingUp,
   IndianRupee,
@@ -45,7 +47,8 @@ import {
 import Link from "next/link";
 
 export default function InvestmentCalculatorPage() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+  const [showSignupModal, setShowSignupModal] = useState(false);
   const [propertyValue, setPropertyValue] = useState([5000000]); // 50L
   const [downPayment, setDownPayment] = useState([1000000]); // 10L
   const [rentalYield, setRentalYield] = useState([6]); // 6%
@@ -56,6 +59,25 @@ export default function InvestmentCalculatorPage() {
   const [results, setResults] = useState<any>(null);
 
   const calculateROI = useCallback(() => {
+    // Show signup prompt if not authenticated
+    if (!isAuthenticated) {
+      const dismissedKey = "signup-prompt-dismissed-tool-usage";
+      const dismissedTime = localStorage.getItem(dismissedKey);
+      if (dismissedTime) {
+        const hoursSinceDismiss =
+          (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60);
+        if (hoursSinceDismiss < 24) {
+          // Continue with calculation if dismissed recently
+        } else {
+          setShowSignupModal(true);
+          return;
+        }
+      } else {
+        setShowSignupModal(true);
+        return;
+      }
+    }
+
     const initialInvestment = downPayment[0];
     const currentValue = propertyValue[0];
     const years = investmentPeriod[0];
@@ -184,7 +206,8 @@ export default function InvestmentCalculatorPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <ToolUsagePrompt toolName="Investment Calculator">
+      <div className="min-h-screen flex flex-col">
       <Header />
 
       <main className="flex-1">
@@ -678,6 +701,25 @@ export default function InvestmentCalculatorPage() {
       </main>
 
       <Footer />
+
+      {/* Signup Modal - Shows when user tries to use tool without login */}
+      {showSignupModal && (
+        <SmartSignupPrompt
+          trigger="tool-usage"
+          context={{ toolName: "Investment Calculator" }}
+          onDismiss={() => {
+            setShowSignupModal(false);
+            localStorage.setItem(
+              "signup-prompt-dismissed-tool-usage",
+              Date.now().toString()
+            );
+          }}
+          onSignup={() => {
+            setShowSignupModal(false);
+          }}
+        />
+      )}
     </div>
+    </ToolUsagePrompt>
   );
 }

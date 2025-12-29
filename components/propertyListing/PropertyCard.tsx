@@ -77,15 +77,21 @@ export const PropertyCard = ({
   onFavorite,
   isFavorite,
   compact = false,
+  onCompare,
+  onFavoriteClick,
+  onCompareClick,
 }: {
   property: any;
   onFavorite: () => void;
   isFavorite: boolean;
   compact?: boolean;
+  onCompare?: (property: any) => void;
+  onFavoriteClick?: () => void;
+  onCompareClick?: () => void;
 }) => {
   const router = useRouter();
   const { addToCompare, removeFromCompare, compareList } = usePropertyStore();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const { preloadOnHover } = useHoverPreloader();
 
   const handleCardClick = () => {
@@ -96,8 +102,9 @@ export const PropertyCard = ({
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    if (!user) {
-      toast.error("Please login to add favourites");
+    // Show signup modal if not authenticated
+    if (!isAuthenticated) {
+      onFavoriteClick?.();
       return;
     }
 
@@ -118,6 +125,20 @@ export const PropertyCard = ({
 
   const handleCompareClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // Show signup modal if not authenticated
+    if (!isAuthenticated) {
+      onCompareClick?.();
+      return;
+    }
+
+    // If onCompare callback is provided, use it
+    if (onCompare) {
+      onCompare(property);
+      return;
+    }
+
+    // Otherwise, use default compare logic
     const isInCompare = compareList.some((p) => p.id === property.id);
 
     if (isInCompare) {

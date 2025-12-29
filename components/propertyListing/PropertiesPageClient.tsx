@@ -20,6 +20,7 @@ import { MobileFilterDrawer } from "@/components/propertyListing/MobileFilterDra
 
 import { PageContent } from "@/components/animations/layout-wrapper";
 import { PropertyGridSkeleton } from "@/components/ui/PropertyCardSkeleton";
+import { SmartSignupPrompt } from "@/components/signup/SmartSignupPrompt";
 
 // Location suggestion interface
 interface LocationSuggestion {
@@ -32,7 +33,7 @@ interface LocationSuggestion {
 export function PropertiesPageClient() {
   const searchParams: any = useSearchParams();
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const { searchFilters, updateSearchFilters } = useSearchStore();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,6 +60,9 @@ export function PropertiesPageClient() {
   const [isSearchingLocalities, setIsSearchingLocalities] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const [mapType, setMapType] = useState<"map" | "satellite">("map");
+  const [showSaveSearchModal, setShowSaveSearchModal] = useState(false);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+  const [showFavoriteModal, setShowFavoriteModal] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const mobileLoadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -133,16 +137,16 @@ export function PropertiesPageClient() {
           const totalPages = pagination?.totalPages || 1;
           const total = pagination?.totalItems || response.data.length;
           const hasMoreData = pagination?.hasNext || page < totalPages;
-          
+
           console.log("Pagination debug:", {
             currentPage: page,
             totalPages,
             total,
             hasMoreData,
             dataLength: response.data.length,
-            pagination: pagination
+            pagination: pagination,
           });
-          
+
           setHasMore(hasMoreData);
           setCurrentPage(page);
           setTotalCount(total);
@@ -299,6 +303,30 @@ export function PropertiesPageClient() {
     // Track search event
     trackPropertySearch(searchQuery || "property_search", searchFilters);
 
+    // Check if should show save-search prompt
+    if (!user) {
+      const searchCount = parseInt(localStorage.getItem("search-count") || "0");
+      const newSearchCount = searchCount + 1;
+      localStorage.setItem("search-count", newSearchCount.toString());
+
+      // Show prompt after 3 searches
+      if (newSearchCount >= 3) {
+        const dismissedKey = "signup-prompt-dismissed-save-search";
+        const dismissedTime = localStorage.getItem(dismissedKey);
+        if (dismissedTime) {
+          const hoursSinceDismiss =
+            (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60);
+          if (hoursSinceDismiss < 24) {
+            // Don't show if dismissed in last 24 hours, just navigate
+            router.push(`/properties?${params.toString()}`);
+            return;
+          }
+        }
+        setShowSaveSearchModal(true);
+        return; // Don't navigate yet, wait for user to dismiss/signup
+      }
+    }
+
     router.push(`/properties?${params.toString()}`);
   };
 
@@ -386,8 +414,9 @@ export function PropertiesPageClient() {
   };
 
   const handleFavorite = async (property: any) => {
-    if (!user) {
-      toast.error("Please login to add favourites");
+    // Show signup modal if not authenticated
+    if (!isAuthenticated) {
+      setShowFavoriteModal(true);
       return;
     }
 
@@ -410,6 +439,17 @@ export function PropertiesPageClient() {
       console.error("Error updating favourite:", error);
       toast.error("Failed to update favourite");
     }
+  };
+
+  const handleCompare = (property: any) => {
+    // Show signup modal if not authenticated
+    if (!isAuthenticated) {
+      setShowCompareModal(true);
+      return;
+    }
+
+    // If authenticated, the PropertyCard will handle the compare logic
+    // This is just a placeholder - actual compare logic is in PropertyCard
   };
 
   return (
@@ -629,6 +669,9 @@ export function PropertiesPageClient() {
                     viewMode="grid"
                     setViewMode={setViewMode}
                     onFavorite={handleFavorite}
+                    onCompare={handleCompare}
+                    onFavoriteClick={() => setShowFavoriteModal(true)}
+                    onCompareClick={() => setShowCompareModal(true)}
                   />
                 )}
                 {/* Infinite scroll trigger for mobile */}
@@ -645,7 +688,7 @@ export function PropertiesPageClient() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Show skeleton when loading more */}
                 {loadingMore && (
                   <div className="mt-4">
@@ -667,6 +710,9 @@ export function PropertiesPageClient() {
                         viewMode={viewMode}
                         setViewMode={setViewMode}
                         onFavorite={handleFavorite}
+                        onCompare={handleCompare}
+                        onFavoriteClick={() => setShowFavoriteModal(true)}
+                        onCompareClick={() => setShowCompareModal(true)}
                       />
                     )}
                     {/* Infinite scroll trigger for desktop */}
@@ -683,7 +729,7 @@ export function PropertiesPageClient() {
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Show skeleton when loading more */}
                     {loadingMore && (
                       <div className="mt-4">
@@ -702,6 +748,9 @@ export function PropertiesPageClient() {
                       loadingMore={loadingMore}
                       onLoadMore={handleLoadMore}
                       totalCount={totalCount}
+                      onFavorite={handleFavorite}
+                      onFavoriteClick={() => setShowFavoriteModal(true)}
+                      onCompareClick={() => setShowCompareModal(true)}
                     />
                   </div>
                 )}
@@ -710,6 +759,67 @@ export function PropertiesPageClient() {
           </div>
         </PageContent>
       </main>
+
+      {/* Save Search Modal */}
+      {showSaveSearchModal && (
+        <SmartSignupPrompt
+          trigger="save-search"
+          context={{ action: "save_search" }}
+          onDismiss={() => {
+            setShowSaveSearchModal(false);
+            localStorage.setItem(
+              "signup-prompt-dismissed-save-search",
+              Date.now().toString()
+            );
+            // Continue with search after dismissal
+            const params = new URLSearchParams();
+            Object.entries(searchFilters).forEach(([key, value]) => {
+              if (value && value !== "" && value !== 0) {
+                params.append(key, value.toString());
+              }
+            });
+            router.push(`/properties?${params.toString()}`);
+          }}
+          onSignup={() => {
+            setShowSaveSearchModal(false);
+            // Continue with search after signup
+            const params = new URLSearchParams();
+            Object.entries(searchFilters).forEach(([key, value]) => {
+              if (value && value !== "" && value !== 0) {
+                params.append(key, value.toString());
+              }
+            });
+            router.push(`/properties?${params.toString()}`);
+          }}
+        />
+      )}
+
+      {/* Compare Modal */}
+      {showCompareModal && (
+        <SmartSignupPrompt
+          trigger="compare"
+          onDismiss={() => {
+            setShowCompareModal(false);
+          }}
+          onSignup={() => {
+            setShowCompareModal(false);
+          }}
+        />
+      )}
+
+      {/* Favorite Modal */}
+      {showFavoriteModal && (
+        <SmartSignupPrompt
+          trigger="favorite"
+          context={{ propertyTitle: "property" }}
+          onDismiss={() => {
+            setShowFavoriteModal(false);
+          }}
+          onSignup={() => {
+            setShowFavoriteModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }

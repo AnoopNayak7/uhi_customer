@@ -14,6 +14,9 @@ interface PropertyListProps {
   viewMode: "grid" | "map";
   setViewMode: (mode: "grid" | "map") => void;
   onFavorite?: (property: any) => void;
+  onCompare?: (property: any) => void;
+  onFavoriteClick?: () => void;
+  onCompareClick?: () => void;
 }
 
 export function PropertyList({
@@ -22,6 +25,9 @@ export function PropertyList({
   viewMode,
   setViewMode,
   onFavorite,
+  onCompare,
+  onFavoriteClick,
+  onCompareClick,
 }: PropertyListProps) {
   const { favourites } = usePropertyStore();
 
@@ -56,6 +62,9 @@ export function PropertyList({
                   onFavorite={() => handleFavorite(property)}
                   isFavorite={favourites.some((p) => p.id === property.id)}
                   compact={true}
+                  onCompare={onCompare ? () => onCompare(property) : undefined}
+                  onFavoriteClick={onFavoriteClick}
+                  onCompareClick={onCompareClick}
                 />
               ))
             : !loading
