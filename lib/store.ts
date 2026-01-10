@@ -9,9 +9,12 @@ interface User {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phone?: string;
   role: 'user' | 'builder' | 'admin';
   isVerified: boolean;
+  googleId?: string;
+  profilePicture?: string;
+  authProvider?: 'email' | 'google';
 }
 
 interface Property {
@@ -48,6 +51,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isInitialized: boolean;
   login: (user: User, token: string) => void;
+  loginWithGoogle: (user: User, token: string) => void;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
   initialize: () => void;
@@ -121,6 +125,9 @@ export const useAuthStore = create<AuthState>()(
   isAuthenticated: false,
   isInitialized: false,
   login: (user, token) => {
+    set({ user, token, isAuthenticated: true, isInitialized: true });
+  },
+  loginWithGoogle: (user, token) => {
     set({ user, token, isAuthenticated: true, isInitialized: true });
   },
   logout: () => {
