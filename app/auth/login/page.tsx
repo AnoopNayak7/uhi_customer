@@ -17,13 +17,13 @@ import { Logo } from "@/components/ui/logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Mail, Phone, ArrowLeft } from "lucide-react";
+import { Mail, ArrowLeft } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
 
 const loginSchema = z.object({
-  identifier: z.string().min(1, "Please enter your email or WhatsApp number"),
+  identifier: z.string().email("Please enter a valid email address"),
 });
 
 const otpSchema = z.object({
@@ -38,7 +38,6 @@ export default function LoginPage() {
   const { login } = useAuthStore();
   const [step, setStep] = useState<"identifier" | "otp">("identifier");
   const [identifier, setIdentifier] = useState("");
-  const [otpType, setOtpType] = useState<"email" | "sms">("email");
   const [loading, setLoading] = useState(false);
 
   const identifierForm = useForm<LoginForm>({
@@ -55,9 +54,8 @@ export default function LoginPage() {
       const response: any = await apiClient.login(data.identifier);
       if (response.success) {
         setIdentifier(data.identifier);
-        setOtpType(response.data.type);
         setStep("otp");
-        toast.success(response.data.message);
+        toast.success(response.data.message || "OTP sent to your email");
       }
     } catch (error: any) {
       console.error("Login error:", error);
@@ -101,50 +99,43 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4">
+      <Card className="w-full max-w-md border shadow-sm">
+        <CardHeader className="space-y-3 pb-4">
           <div className="flex items-center justify-center">
             <Logo />
           </div>
-          <div className="text-center">
-            <CardTitle className="text-2xl font-bold">
+          <div className="text-center space-y-1">
+            <CardTitle className="text-lg font-semibold">
               {step === "identifier" ? "Welcome Back" : "Verify OTP"}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs">
               {step === "identifier"
-                ? "Enter your email or WhatsApp number to sign in"
+                ? "Enter your email address to sign in"
                 : `We've sent a 6-digit code to ${identifier}`}
             </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           {step === "identifier" ? (
             <form
               onSubmit={identifierForm.handleSubmit(onIdentifierSubmit)}
               className="space-y-4"
             >
               <div className="space-y-2">
-                <Label htmlFor="identifier">Email or WhatsApp Number</Label>
+                <Label htmlFor="identifier" className="text-sm font-medium">Email Address</Label>
                 <div className="relative">
-                  {identifier.includes('@') ? (
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  )}
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     {...identifierForm.register("identifier")}
-                    type="text"
-                    placeholder="Enter your email or WhatsApp number"
-                    className="pl-10"
+                    type="email"
+                    placeholder="Enter your email address"
+                    className="pl-10 h-10 text-sm"
                     style={{ fontSize: '16px' }} // Prevent zoom on mobile
                   />
                 </div>
-                <p className="text-xs text-gray-500">
-                  For WhatsApp: Enter 10-digit number. For email: Enter your email address.
-                </p>
                 {identifierForm.formState.errors.identifier && (
-                  <p className="text-sm text-red-500">
+                  <p className="text-xs text-destructive">
                     {identifierForm.formState.errors.identifier.message}
                   </p>
                 )}
@@ -152,7 +143,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-red-500 hover:bg-red-600"
+                className="w-full h-10 text-sm bg-red-500 hover:bg-red-600"
                 disabled={loading}
               >
                 {loading ? "Sending OTP..." : "Send OTP"}
@@ -164,9 +155,9 @@ export default function LoginPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setStep("identifier")}
-                className="mb-4"
+                className="h-8 text-xs -mb-2"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-3 h-3 mr-1.5" />
                 Back to login
               </Button>
 
@@ -175,17 +166,17 @@ export default function LoginPage() {
                 className="space-y-4"
               >
                 <div className="space-y-2">
-                  <Label htmlFor="otp">Enter OTP</Label>
+                  <Label htmlFor="otp" className="text-sm font-medium">Enter OTP</Label>
                   <Input
                     {...otpForm.register("otp")}
                     type="text"
                     placeholder="000000"
                     maxLength={6}
-                    className="text-center text-lg tracking-widest"
+                    className="text-center text-base tracking-widest h-10"
                     style={{ fontSize: '16px' }} // Prevent zoom on mobile
                   />
                   {otpForm.formState.errors.otp && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-xs text-destructive">
                       {otpForm.formState.errors.otp.message}
                     </p>
                   )}
@@ -193,7 +184,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-red-500 hover:bg-red-600"
+                  className="w-full h-10 text-sm bg-red-500 hover:bg-red-600"
                   disabled={loading}
                 >
                   {loading ? "Verifying..." : "Verify & Sign In"}
@@ -205,7 +196,7 @@ export default function LoginPage() {
                   variant="link"
                   onClick={() => onIdentifierSubmit({ identifier })}
                   disabled={loading}
-                  className="text-sm"
+                  className="text-xs h-auto p-0"
                 >
                   Didn&apos;t receive code? Resend
                 </Button>
@@ -213,7 +204,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <div className="text-center text-sm text-gray-600">
+          <div className="text-center text-xs text-muted-foreground pt-2 border-t">
             Don&apos;t have an account?{" "}
             <Link
               href="/auth/signup"

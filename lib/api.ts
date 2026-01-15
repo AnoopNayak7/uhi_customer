@@ -10,7 +10,8 @@ const BYPASS_AUTH_ENDPOINTS = [
   '/properties/',
   '/area-insights',
   '/tools',
-  '/business-partnerships'
+  '/business-partnerships',
+  '/interior/inquiries'
 ];
 
 class ApiClient {
@@ -456,6 +457,18 @@ class ApiClient {
 
   async checkPartnershipStatus(email: string) {
     return this.request(`/business-partnerships/partnerships/check-status?email=${encodeURIComponent(email)}`);
+  }
+
+  async submitInteriorInquiry(data: {
+    name: string;
+    whatsapp: string;
+    email?: string;
+    message?: string;
+  }) {
+    return this.request('/interior/inquiries', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 
 }

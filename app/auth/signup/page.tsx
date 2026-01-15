@@ -18,7 +18,7 @@ import { Logo } from "@/components/ui/logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Mail, User, Phone, ArrowLeft } from "lucide-react";
+import { Mail, User, ArrowLeft } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
@@ -27,7 +27,6 @@ const signupSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().optional(),
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian WhatsApp number"),
   role: z.enum(["user", "builder"]).default("user"),
 });
 
@@ -45,7 +44,6 @@ export default function SignupPage() {
   const [signupData, setSignupData] = useState<SignupForm | null>(null);
   const [loading, setLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   const signupForm = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
@@ -54,13 +52,6 @@ export default function SignupPage() {
   const otpForm = useForm<OTPForm>({
     resolver: zodResolver(otpSchema),
   });
-
-  // Reset login prompt when user starts typing
-  const handlePhoneChange = () => {
-    if (showLoginPrompt) {
-      setShowLoginPrompt(false);
-    }
-  };
 
   const onSignupSubmit = async (data: SignupForm) => {
     setLoading(true);
@@ -75,7 +66,7 @@ export default function SignupPage() {
       
       setSignupData(data);
       setStep("otp");
-      toast.success("Account created! OTP sent to your WhatsApp number");
+      toast.success("Account created! OTP sent to your email");
     } catch (error: any) {
       console.log("Signup error:", error);
       console.log("Error response:", error.response);
@@ -96,9 +87,9 @@ export default function SignupPage() {
         }
       } else if (error.message) {
         // Check if it's a meaningful error message
-        if (error.message.includes("WhatsApp number is already registered") || 
-            error.message.includes("Phone number is already registered")) {
-          errorMessage = "WhatsApp number is already registered. Please login instead.";
+        if (error.message.includes("email is already registered") || 
+            error.message.includes("Email is already registered")) {
+          errorMessage = "Email is already registered. Please login instead.";
         } else if (!error.message.includes("API Error") && !error.message.includes("Failed to fetch")) {
           errorMessage = error.message;
         }
@@ -106,7 +97,7 @@ export default function SignupPage() {
 
       // Special handling for 409 status (conflict)
       if (error.response?.status === 409) {
-        errorMessage = "WhatsApp number is already registered. Please login instead.";
+        errorMessage = "Email is already registered. Please login instead.";
         setShowLoginPrompt(true);
       }
 
@@ -123,7 +114,7 @@ export default function SignupPage() {
     setLoading(true);
     try {
       const response: any = await apiClient.verifyOTP(
-        signupData.phone,
+        signupData.email,
         data.otp
       );
       if (response.success) {
@@ -143,57 +134,58 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4">
+      <Card className="w-full max-w-md border shadow-sm">
+        <CardHeader className="space-y-3 pb-4">
           <div className="flex items-center justify-center">
             <Logo />
           </div>
-          <div className="text-center">
-            <CardTitle className="text-2xl font-bold">
-              {step === "signup" ? "Create Account" : "Verify WhatsApp"}
+          <div className="text-center space-y-1">
+            <CardTitle className="text-lg font-semibold">
+              {step === "signup" ? "Create Account" : "Verify Email"}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs">
               {step === "signup"
                 ? "Join Urbanhousein to find your perfect property"
-                : `We've sent a verification code to your WhatsApp number ${signupData?.phone}`}
+                : `We've sent a verification code to your email ${signupData?.email}`}
             </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           {step === "signup" ? (
             <form
               onSubmit={signupForm.handleSubmit(onSignupSubmit)}
               className="space-y-4"
             >
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       {...signupForm.register("firstName")}
                       placeholder="John"
-                      className="pl-10"
+                      className="pl-10 h-10 text-sm"
                       style={{ fontSize: '16px' }} // Prevent zoom on mobile
                     />
                   </div>
                   {signupForm.formState.errors.firstName && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-xs text-destructive">
                       {signupForm.formState.errors.firstName.message}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name (Optional)</Label>
+                  <Label htmlFor="lastName" className="text-sm font-medium">Last Name (Optional)</Label>
                   <Input
                     {...signupForm.register("lastName")}
                     placeholder="Doe"
+                    className="h-10 text-sm"
                     style={{ fontSize: '16px' }} // Prevent zoom on mobile
                   />
                   {signupForm.formState.errors.lastName && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-xs text-destructive">
                       {signupForm.formState.errors.lastName.message}
                     </p>
                   )}
@@ -201,74 +193,49 @@ export default function SignupPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     {...signupForm.register("email")}
                     type="email"
                     placeholder="john@example.com"
-                    className="pl-10"
+                    className="pl-10 h-10 text-sm"
                     style={{ fontSize: '16px' }} // Prevent zoom on mobile
                   />
                 </div>
                 {signupForm.formState.errors.email && (
-                  <p className="text-sm text-red-500">
+                  <p className="text-xs text-destructive">
                     {signupForm.formState.errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">WhatsApp Number</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    {...signupForm.register("phone")}
-                    placeholder="9876543210"
-                    className="pl-10"
-                    style={{ fontSize: '16px' }} // Prevent zoom on mobile
-                    onChange={(e) => {
-                      signupForm.setValue("phone", e.target.value);
-                      handlePhoneChange();
-                    }}
-                  />
-                </div>
-                <p className="text-xs text-gray-500">
-                  Enter your WhatsApp number to receive OTP
-                </p>
-                {signupForm.formState.errors.phone && (
-                  <p className="text-sm text-red-500">
-                    {signupForm.formState.errors.phone.message}
                   </p>
                 )}
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-red-500 hover:bg-red-600"
+                className="w-full h-10 text-sm bg-red-500 hover:bg-red-600"
                 disabled={loading}
               >
                 {loading ? "Creating Account..." : "Create Account"}
               </Button>
 
               {showLoginPrompt && (
-                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-yellow-800 font-medium">
-                        WhatsApp number already registered
+                      <p className="text-xs font-medium text-yellow-800">
+                        Email already registered
                       </p>
-                      <p className="text-xs text-yellow-600 mt-1">
-                        This number is already associated with an account
+                      <p className="text-xs text-yellow-600 mt-0.5">
+                        This email is already associated with an account
                       </p>
                     </div>
                     <Button
                       onClick={() => router.push("/auth/login")}
                       size="sm"
-                      className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                      className="h-8 text-xs bg-yellow-600 hover:bg-yellow-700 text-white"
                     >
-                      Login Instead
+                      Login
                     </Button>
                   </div>
                 </div>
@@ -280,9 +247,9 @@ export default function SignupPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setStep("signup")}
-                className="mb-4"
+                className="h-8 text-xs -mb-2"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-3 h-3 mr-1.5" />
                 Back to signup
               </Button>
 
@@ -291,17 +258,17 @@ export default function SignupPage() {
                 className="space-y-4"
               >
                 <div className="space-y-2">
-                  <Label htmlFor="otp">Enter Verification Code</Label>
+                  <Label htmlFor="otp" className="text-sm font-medium">Enter Verification Code</Label>
                   <Input
                     {...otpForm.register("otp")}
                     type="text"
                     placeholder="000000"
                     maxLength={6}
-                    className="text-center text-lg tracking-widest"
+                    className="text-center text-base tracking-widest h-10"
                     style={{ fontSize: '16px' }} // Prevent zoom on mobile
                   />
                   {otpForm.formState.errors.otp && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-xs text-destructive">
                       {otpForm.formState.errors.otp.message}
                     </p>
                   )}
@@ -309,7 +276,7 @@ export default function SignupPage() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-red-500 hover:bg-red-600"
+                  className="w-full h-10 text-sm bg-red-500 hover:bg-red-600"
                   disabled={loading}
                 >
                   {loading ? "Verifying..." : "Verify & Complete"}
@@ -320,10 +287,10 @@ export default function SignupPage() {
                 <Button
                   variant="link"
                   onClick={() =>
-                    signupData && apiClient.sendOTP(signupData.phone)
+                    signupData && apiClient.sendOTP(signupData.email)
                   }
                   disabled={loading}
-                  className="text-sm"
+                  className="text-xs h-auto p-0"
                 >
                   Didn&apos;t receive code? Resend
                 </Button>
@@ -331,7 +298,7 @@ export default function SignupPage() {
             </div>
           )}
 
-          <div className="text-center text-sm text-gray-600">
+          <div className="text-center text-xs text-muted-foreground pt-2 border-t">
             Already have an account?{" "}
             <Link
               href="/auth/login"

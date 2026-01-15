@@ -120,11 +120,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         {/* Force favicon refresh and prevent caching */}
         <meta
-          http-equiv="Cache-Control"
+          httpEquiv="Cache-Control"
           content="no-cache, no-store, must-revalidate"
         />
-        <meta http-equiv="Pragma" content="no-cache" />
-        <meta http-equiv="Expires" content="0" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
         <meta name="format-detection" content="telephone=no" />
 
         {/* Favicon debugging script */}
