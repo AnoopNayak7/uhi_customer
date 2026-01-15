@@ -115,7 +115,7 @@ class ApiClient {
     email: string;
     firstName: string;
     lastName?: string;
-    phone: string;
+    phone?: string;
     role: string;
   }) {
     return this.request('/auth/signup', {
