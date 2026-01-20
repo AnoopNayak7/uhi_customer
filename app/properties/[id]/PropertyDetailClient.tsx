@@ -49,7 +49,9 @@ import {
   Users,
   Wifi,
   BarChart3,
+  Compass,
 } from "lucide-react";
+import { VastuScoreSection } from "@/components/property/VastuScoreSection";
 import Image from "next/image";
 
 interface PropertyDetailClientProps {
@@ -517,6 +519,12 @@ export default function PropertyDetailClient({
                   </div>
                 </div>
               </div>
+
+              {/* Vastu Compliance Score Section */}
+              <VastuScoreSection 
+                vastu={property.vastu} 
+                propertyId={property.id}
+              />
             </div>
 
             {/* Enhanced Sidebar */}

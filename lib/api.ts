@@ -3,7 +3,7 @@ import { useAuthStore } from './store';
 
 const BYPASS_AUTH_ENDPOINTS = [
   '/auth/login',
-  '/auth/signup', 
+  '/auth/signup',
   '/auth/send-otp',
   '/auth/verify-otp',
   '/properties',
@@ -37,26 +37,26 @@ class ApiClient {
     if (BYPASS_AUTH_ENDPOINTS.includes(endpoint)) {
       return true;
     }
-    
+
     // Check for GET requests to single property endpoint
     if (method === 'GET' && endpoint.startsWith('/properties/') && endpoint.split('/').length === 3) {
       return true;
     }
-    
+
     if (method === 'GET' && endpoint.startsWith('/properties?')) {
       return true;
     }
-    
+
     // Check for area insights endpoints
     if (method === 'GET' && endpoint.startsWith('/area-insights/')) {
       return true;
     }
-    
+
     // Check for tools endpoints
     if (method === 'GET' && endpoint.startsWith('/tools/')) {
       return true;
     }
-    
+
     return false;
   }
 
@@ -65,7 +65,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const method = options.method || 'GET';
-    
+
     if (!this.shouldBypassAuth(endpoint, method)) {
       if (!this.checkAuth()) {
         throw new Error('Authentication required');
@@ -93,7 +93,7 @@ class ApiClient {
         useAuthStore.getState().logout();
         throw new Error('Session expired. Please login again.');
       }
-      
+
       // Try to get the error response body
       try {
         const errorData = await response.json();
@@ -167,7 +167,7 @@ class ApiClient {
       // Also support the category parameter
       params.category = params.propertyCategory;
     }
-    
+
     const searchParams = new URLSearchParams(params);
     return this.request(`/properties?${searchParams}`);
   }
@@ -260,7 +260,7 @@ class ApiClient {
     const result = await response.json();
     return result.data?.urls || [];
   }
-  
+
   async getBuilderAnalytics(params: any = {}) {
     const searchParams = new URLSearchParams(params);
     return this.request(`/leads/analytics?${searchParams}`);
@@ -466,6 +466,49 @@ class ApiClient {
     message?: string;
   }) {
     return this.request('/interior/inquiries', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async savePropertyVastu(propertyId: string, vastuData: {
+    data: any;
+    score: any;
+    analyzedBy?: 'manual' | 'ai';
+  }) {
+    return this.request(`/properties/${propertyId}/vastu`, {
+      method: 'PUT',
+      body: JSON.stringify(vastuData),
+    });
+  }
+
+  async getPropertyVastu(propertyId: string) {
+    return this.request(`/properties/${propertyId}/vastu`);
+  }
+
+  async getToolsVastuAnalysis(data: {
+    mainEntry: string;
+    rooms: Array<{
+      id: string;
+      roomType: string;
+      direction: string;
+      sleepingDirection?: string;
+      label?: string;
+    }>;
+    openSpaces: {
+      north: number;
+      south: number;
+      east: number;
+      west: number;
+    };
+    slope?: string;
+    waterElements?: {
+      undergroundTank?: string;
+      overheadTank?: string;
+      borewell?: string;
+    };
+  }) {
+    return this.request('/tools/vastu-analyzer', {
       method: 'POST',
       body: JSON.stringify(data),
     });
