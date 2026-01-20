@@ -25,9 +25,6 @@ import { EntryDirectionSelector } from "./components/DirectionGrid";
 import { RoomInput } from "./components/RoomInput";
 import { OpenSpaceSliders } from "./components/OpenSpaceSliders";
 import { VastuResults } from "./components/VastuResults";
-import { ToolUsagePrompt } from "@/components/signup/ToolUsagePrompt";
-import { useAuthStore } from "@/lib/store";
-import { SmartSignupPrompt } from "@/components/signup/SmartSignupPrompt";
 
 type Step = "entry" | "rooms" | "spaces" | "results";
 
@@ -39,9 +36,6 @@ const STEPS: { id: Step; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function VastuCheckerPage() {
-  const { isAuthenticated } = useAuthStore();
-  const [showSignupModal, setShowSignupModal] = useState(false);
-
   const [currentStep, setCurrentStep] = useState<Step>("entry");
   const [mainEntry, setMainEntry] = useState<Direction | null>(null);
   const [rooms, setRooms] = useState<RoomVastu[]>([]);
@@ -70,11 +64,6 @@ export default function VastuCheckerPage() {
 
   const handleNext = () => {
     if (currentStep === "spaces") {
-      // Check authentication before showing results
-      if (!isAuthenticated) {
-        setShowSignupModal(true);
-        return;
-      }
       // Calculate score and show results
       const input: VastuInput = {
         mainEntry: mainEntry!,
@@ -114,7 +103,7 @@ export default function VastuCheckerPage() {
   });
 
   return (
-    <ToolUsagePrompt toolName="Vastu Checker">
+    <>
       <Head>
         <title>
           Vastu Compliance Checker | Analyze Your Property&apos;s Vastu Score |
@@ -540,25 +529,7 @@ export default function VastuCheckerPage() {
         </main>
 
         <Footer />
-
-        {/* Signup Modal */}
-        {showSignupModal && (
-          <SmartSignupPrompt
-            trigger="tool-usage"
-            context={{ toolName: "Vastu Checker" }}
-            onDismiss={() => {
-              setShowSignupModal(false);
-              localStorage.setItem(
-                "signup-prompt-dismissed-tool-usage",
-                Date.now().toString()
-              );
-            }}
-            onSignup={() => {
-              setShowSignupModal(false);
-            }}
-          />
-        )}
       </div>
-    </ToolUsagePrompt>
+    </>
   );
 }
