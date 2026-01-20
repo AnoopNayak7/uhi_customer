@@ -19,6 +19,7 @@ import {
   CheckCircle,
   MapPin,
   BookOpen,
+  Compass,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/store";
@@ -90,6 +91,23 @@ export default function RealEstateToolsPage() {
         "Loan eligibility assessment",
         "Amortization schedule",
         "Tax benefit calculations",
+      ],
+    },
+    {
+      id: "vastu-checker",
+      title: "Vastu Compliance Checker",
+      description:
+        "Analyze your property's Vastu score based on room placements, entry direction, and open spaces",
+      icon: Compass,
+      href: "/tools/vastu-checker",
+      color: "text-orange-500",
+      bgColor: "bg-orange-50",
+      features: [
+        "Entry direction analysis",
+        "Room placement scoring",
+        "Sleeping direction check",
+        "Open space evaluation",
+        "Personalized recommendations",
       ],
     },
   ];
