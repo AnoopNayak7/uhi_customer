@@ -57,6 +57,11 @@ class ApiClient {
       return true;
     }
 
+    // Public insights endpoints (new-flats approved + buyer-intent)
+    if (method === 'GET' && endpoint.startsWith('/insights/')) {
+      return true;
+    }
+
     return false;
   }
 
@@ -512,6 +517,35 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  }
+
+  // Insights (new Bengaluru flats ingested from RERA + buyer-intent feed)
+  async getNewFlatsInBengaluru(params: { days?: number; limit?: number } = {}) {
+    const qs = new URLSearchParams();
+    qs.set('days', String(params.days ?? 60));
+    qs.set('limit', String(params.limit ?? 20));
+    return this.request<{
+      success: boolean;
+      message: string;
+      data: {
+        properties: Array<{
+          id: string;
+          title: string;
+          city: string;
+          district?: string;
+          reraId?: string;
+          totalUnits?: number | null;
+          reraStartDate?: string | null;
+          createdAt: string;
+          status: string;
+        }>;
+        pagination: { currentPage: number; totalPages: number; totalItems: number };
+      };
+    }>(`/insights/new-flats?${qs.toString()}`);
+  }
+
+  async getBuyerIntent(days: number = 60) {
+    return this.request(`/insights/buyer-intent?days=${days}`);
   }
 
 }

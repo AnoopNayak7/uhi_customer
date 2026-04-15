@@ -5,6 +5,8 @@ export const APP_CONFIG = {
   api: {
     baseUrl: 'https://g82q9hlk9h.execute-api.ap-south-1.amazonaws.com/prod/api'
   },
+  // API Gateway WebSocket endpoint (configure via NEXT_PUBLIC_WS_URL for per-env overrides)
+  wsUrl: (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_WS_URL) || 'wss://example.execute-api.ap-south-1.amazonaws.com/prod',
   features: {
     compare: {
       maxProperties: 3
