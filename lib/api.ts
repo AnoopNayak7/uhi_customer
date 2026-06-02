@@ -11,7 +11,9 @@ const BYPASS_AUTH_ENDPOINTS = [
   '/area-insights',
   '/tools',
   '/business-partnerships',
-  '/interior/inquiries'
+  '/interior/inquiries',
+  '/leads/document-download',
+  '/leads/signup-prompt'
 ];
 
 class ApiClient {
@@ -401,6 +403,20 @@ class ApiClient {
     return this.request(`/auth/book-visits/${id}/status`, {
       method: 'PUT',
       body: JSON.stringify({ status }),
+    });
+  }
+
+  // Document download request
+  async requestDocumentDownload(data: {
+    propertyId: string;
+    documentType: 'brochure' | 'floor_plan';
+    name: string;
+    phone: string;
+    email?: string;
+  }) {
+    return this.request('/leads/document-download', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   }
 

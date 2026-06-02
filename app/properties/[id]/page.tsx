@@ -57,6 +57,7 @@ import { BuilderInfo } from "@/components/property/BuilderInfo";
 import { ContactAgent } from "@/components/property/ContactAgent";
 import { PropertyInsights } from "@/components/property/PropertyInsights";
 import { PropertySEO } from "@/components/seo/PropertySEO";
+import { PropertyMobileNav } from "@/components/property/PropertyMobileNav";
 import { toast } from "sonner";
 
 // Dynamically import the Map and NearbyPlaces components to avoid SSR issues with Leaflet
@@ -1521,7 +1522,7 @@ export default function PropertyDetailPage() {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
 
-      <main className="flex-1">
+      <main className="flex-1 pb-20 md:pb-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
           <ImageGallery
             property={property}
@@ -1697,8 +1698,11 @@ export default function PropertyDetailPage() {
         </div>
       </main>
 
-      {/* Floating Book Visit Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* Mobile Bottom Navigation Bar for Downloads */}
+      <PropertyMobileNav property={property} />
+
+      {/* Floating Book Visit Button - Hidden on mobile when nav bar is present */}
+      <div className={`fixed bottom-6 right-6 z-50 ${(property.brochureUrl || property.floorPlanPdfUrl) ? 'hidden md:block' : 'block'}`}>
         <Dialog open={showBookingModal} onOpenChange={setShowBookingModal}>
           <DialogTrigger asChild>
             <Button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-2xl hover:shadow-red-500/25 transition-all duration-300 transform hover:scale-105 active:scale-95 px-6 py-3 rounded-full font-semibold text-sm flex items-center space-x-2 group">
