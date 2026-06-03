@@ -19,6 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Mail, ArrowLeft } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { getOtpErrorMessage } from "@/lib/auth-errors";
 import { useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
 
@@ -88,10 +89,9 @@ export default function LoginPage() {
         toast.success("Login successful!");
         router.push("/dashboard");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("OTP verification error:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Invalid OTP. Please try again.";
-      toast.error(errorMessage);
+      toast.error(getOtpErrorMessage(error));
     } finally {
       setLoading(false);
     }

@@ -13,7 +13,8 @@ const BYPASS_AUTH_ENDPOINTS = [
   '/business-partnerships',
   '/interior/inquiries',
   '/leads/document-download',
-  '/leads/signup-prompt'
+  '/leads/signup-prompt',
+  '/rera-check',
 ];
 
 class ApiClient {
@@ -59,6 +60,10 @@ class ApiClient {
       return true;
     }
 
+    if (endpoint.startsWith('/rera-check')) {
+      return true;
+    }
+
     return false;
   }
 
@@ -96,18 +101,12 @@ class ApiClient {
         throw new Error('Session expired. Please login again.');
       }
 
-      // Try to get the error response body
-      try {
-        const errorData = await response.json();
-        const error = new Error(errorData.message || `API Error: ${response.status}`);
-        (error as any).response = { data: errorData, status: response.status };
-        throw error;
-      } catch (parseError) {
-        // If we can't parse the error response, throw a generic error
-        const error = new Error(`API Error: ${response.status}`);
-        (error as any).response = { status: response.status };
-        throw error;
-      }
+      const errorData = await response.json().catch(() => null);
+      const message =
+        errorData?.message || `API Error: ${response.status}`;
+      const error = new Error(message);
+      (error as any).response = { data: errorData, status: response.status };
+      throw error;
     }
 
     return response.json();
@@ -117,7 +116,7 @@ class ApiClient {
     email: string;
     firstName: string;
     lastName?: string;
-    phone?: string;
+    phone: string;
     role: string;
   }) {
     return this.request('/auth/signup', {
@@ -144,6 +143,14 @@ class ApiClient {
     return this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ identifier }),
+    });
+  }
+
+  async lookupReraCheck(reraId: string, forceRefresh = false) {
+    const qs = forceRefresh ? '?forceRefresh=true' : '';
+    return this.request(`/rera-check/lookup${qs}`, {
+      method: 'POST',
+      body: JSON.stringify({ reraId }),
     });
   }
 

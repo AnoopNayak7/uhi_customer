@@ -18,8 +18,9 @@ import { Logo } from "@/components/ui/logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Mail, User, ArrowLeft } from "lucide-react";
+import { Mail, User, Phone, ArrowLeft } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { getOtpErrorMessage } from "@/lib/auth-errors";
 import { useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
 
@@ -27,6 +28,23 @@ const signupSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().optional(),
   email: z.string().email("Please enter a valid email address"),
+  phone: z
+    .string()
+    .min(1, "Phone number is required")
+    .transform((val) => {
+      let digits = val.replace(/\D/g, "");
+      if (digits.length === 12 && digits.startsWith("91")) digits = digits.slice(2);
+      if (digits.length === 11 && digits.startsWith("0")) digits = digits.slice(1);
+      return digits;
+    })
+    .pipe(
+      z
+        .string()
+        .regex(
+          /^[6-9]\d{9}$/,
+          "Enter a valid 10-digit Indian mobile number"
+        )
+    ),
   role: z.enum(["user", "builder"]).default("user"),
 });
 
@@ -42,6 +60,7 @@ export default function SignupPage() {
   const { login } = useAuthStore();
   const [step, setStep] = useState<"signup" | "otp">("signup");
   const [signupData, setSignupData] = useState<SignupForm | null>(null);
+  const [otpChannel, setOtpChannel] = useState<"whatsapp" | "email">("whatsapp");
   const [loading, setLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
@@ -65,8 +84,14 @@ export default function SignupPage() {
       }
       
       setSignupData(data);
+      // Show WhatsApp messaging in UI; backend delivers OTP via email until WA is live
+      setOtpChannel(data.phone ? "whatsapp" : "email");
       setStep("otp");
-      toast.success("Account created! OTP sent to your email");
+      toast.success(
+        data.phone
+          ? "Account created! OTP sent to your WhatsApp"
+          : res.message || "Account created! OTP sent to your email"
+      );
     } catch (error: any) {
       console.log("Signup error:", error);
       console.log("Error response:", error.response);
@@ -97,7 +122,11 @@ export default function SignupPage() {
 
       // Special handling for 409 status (conflict)
       if (error.response?.status === 409) {
-        errorMessage = "Email is already registered. Please login instead.";
+        const field = error.response?.data?.data?.field;
+        errorMessage =
+          field === "phone"
+            ? "This phone number is already registered. Please login instead."
+            : "Email is already registered. Please login instead.";
         setShowLoginPrompt(true);
       }
 
@@ -123,10 +152,9 @@ export default function SignupPage() {
         toast.success("Account verified successfully!");
         router.push("/dashboard");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("OTP verification error:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Invalid OTP. Please try again.";
-      toast.error(errorMessage);
+      toast.error(getOtpErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -146,7 +174,9 @@ export default function SignupPage() {
             <CardDescription className="text-xs">
               {step === "signup"
                 ? "Join Urbanhousein to find your perfect property"
-                : `We've sent a verification code to your email ${signupData?.email}`}
+                : otpChannel === "whatsapp"
+                  ? `We've sent a verification code to WhatsApp (+91 ${signupData?.phone})`
+                  : `We've sent a verification code to ${signupData?.email}`}
             </CardDescription>
           </div>
         </CardHeader>
@@ -207,6 +237,32 @@ export default function SignupPage() {
                 {signupForm.formState.errors.email && (
                   <p className="text-xs text-destructive">
                     {signupForm.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium">
+                  Phone Number
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    {...signupForm.register("phone")}
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    placeholder="9876543210"
+                    className="pl-10 h-10 text-sm"
+                    style={{ fontSize: "16px" }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  10-digit Indian mobile number (OTP sent on WhatsApp)
+                </p>
+                {signupForm.formState.errors.phone && (
+                  <p className="text-xs text-destructive">
+                    {signupForm.formState.errors.phone.message}
                   </p>
                 )}
               </div>

@@ -32,6 +32,7 @@ import {
   Crown,
   ArrowRight,
   Loader2,
+  Scale,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -94,6 +95,14 @@ export function RealEstateTools() {
       href: "/tools/home-affordability",
       color: "text-orange-500",
       bgColor: "bg-orange-50",
+    },
+    {
+      icon: Scale,
+      title: "RERA Check",
+      description: "Litigations & details by RERA ID",
+      href: "/tools/rera-check",
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
     },
   ];
 

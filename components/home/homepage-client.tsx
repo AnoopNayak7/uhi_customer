@@ -9,6 +9,7 @@ import { TrendingProperties } from "@/components/home/trending-properties";
 import { PropertyListings } from "@/components/home/property-listings";
 import { CTASection } from "@/components/home/cta-section";
 import { InteriorsSection } from "@/components/home/interiors-section";
+import { ReraCheckSection } from "@/components/home/rera-check-section";
 import { PageContent } from "@/components/animations/layout-wrapper";
 import { SectionReveal } from "@/components/animations/page-transitions";
 
@@ -32,6 +33,9 @@ export function HomepageClient() {
         </SectionReveal>
         <SectionReveal>
           <RealEstateTools />
+        </SectionReveal>
+        <SectionReveal>
+          <ReraCheckSection />
         </SectionReveal>
         <SectionReveal>
           <TrendingProperties />

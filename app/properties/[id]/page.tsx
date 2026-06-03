@@ -157,16 +157,18 @@ const ImageGallery = ({
             className="transition-transform duration-300"
           />
 
-          {/* Mobile Navigation Dots */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {/* Mobile Navigation Dots — min-h/min-w-0 overrides global 44px touch-target on buttons */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
             {propertyImages.slice(0, 5).map((_: any, index: number) => (
               <button
                 key={index}
+                type="button"
+                aria-label={`Go to image ${index + 1}`}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-200 active:scale-125 ${
+                className={`shrink-0 min-h-0 min-w-0 p-0 rounded-full transition-colors duration-200 ${
                   currentImageIndex === index
-                    ? "bg-white scale-110"
-                    : "bg-white/50 hover:bg-white/75"
+                    ? "h-2 w-2 bg-white"
+                    : "h-1.5 w-1.5 bg-white/50 hover:bg-white/75"
                 }`}
               />
             ))}

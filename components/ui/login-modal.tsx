@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { X, Heart, Building, Search, BarChart3, MapPin, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/store";
+import { getOtpErrorMessage } from "@/lib/auth-errors";
 import { toast } from "sonner";
 
 interface LoginModalProps {
@@ -107,8 +108,8 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
       toast.success("Login successful!");
       onSuccess?.();
       onClose();
-    } catch (error) {
-      setOtpError("Invalid OTP. Please try again.");
+    } catch (error: unknown) {
+      setOtpError(getOtpErrorMessage(error));
       setOtp("");
       // Focus first input
       otpInputRefs.current[0]?.focus();
