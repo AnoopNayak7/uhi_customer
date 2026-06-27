@@ -281,29 +281,40 @@ export function Footer() {
               India&apos;s most trusted real estate platform. Find your perfect
               home with our comprehensive property listings and expert guidance.
             </p>
-            <div className="flex space-x-4">
-              <Facebook className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
-              <Link
-                href="https://www.youtube.com/@urbanhousein"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Youtube className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
-              </Link>
-              <Link
-                href="https://www.instagram.com/urbanhousein/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Instagram className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
-              </Link>
-              <Link
-                href="https://www.linkedin.com/company/urbanhousein"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Linkedin className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
-              </Link>
+            <div className="flex space-x-1">
+              {[
+                {
+                  label: "Facebook",
+                  href: "https://www.facebook.com/urbanhousein",
+                  Icon: Facebook,
+                },
+                {
+                  label: "YouTube",
+                  href: "https://www.youtube.com/@urbanhousein",
+                  Icon: Youtube,
+                },
+                {
+                  label: "Instagram",
+                  href: "https://www.instagram.com/urbanhousein/",
+                  Icon: Instagram,
+                },
+                {
+                  label: "LinkedIn",
+                  href: "https://www.linkedin.com/company/urbanhousein",
+                  Icon: Linkedin,
+                },
+              ].map(({ label, href, Icon }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <Icon className="w-5 h-5" aria-hidden="true" />
+                </Link>
+              ))}
             </div>
           </div>
 

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 
 import { Logo } from "@/components/ui/logo";
+import { FieldError } from "@/components/ui/field-error";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -194,31 +195,43 @@ export default function SignupPage() {
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       {...signupForm.register("firstName")}
+                      id="firstName"
                       placeholder="John"
+                      aria-invalid={!!signupForm.formState.errors.firstName}
+                      aria-describedby={
+                        signupForm.formState.errors.firstName
+                          ? "firstName-error"
+                          : undefined
+                      }
                       className="pl-10 h-10 text-sm"
                       style={{ fontSize: '16px' }} // Prevent zoom on mobile
                     />
                   </div>
-                  {signupForm.formState.errors.firstName && (
-                    <p className="text-xs text-destructive">
-                      {signupForm.formState.errors.firstName.message}
-                    </p>
-                  )}
+                  <FieldError
+                    id="firstName-error"
+                    message={signupForm.formState.errors.firstName?.message}
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="lastName" className="text-sm font-medium">Last Name (Optional)</Label>
                   <Input
                     {...signupForm.register("lastName")}
+                    id="lastName"
                     placeholder="Doe"
+                    aria-invalid={!!signupForm.formState.errors.lastName}
+                    aria-describedby={
+                      signupForm.formState.errors.lastName
+                        ? "lastName-error"
+                        : undefined
+                    }
                     className="h-10 text-sm"
                     style={{ fontSize: '16px' }} // Prevent zoom on mobile
                   />
-                  {signupForm.formState.errors.lastName && (
-                    <p className="text-xs text-destructive">
-                      {signupForm.formState.errors.lastName.message}
-                    </p>
-                  )}
+                  <FieldError
+                    id="lastName-error"
+                    message={signupForm.formState.errors.lastName?.message}
+                  />
                 </div>
               </div>
 
@@ -228,17 +241,21 @@ export default function SignupPage() {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     {...signupForm.register("email")}
+                    id="email"
                     type="email"
                     placeholder="john@example.com"
+                    aria-invalid={!!signupForm.formState.errors.email}
+                    aria-describedby={
+                      signupForm.formState.errors.email ? "email-error" : undefined
+                    }
                     className="pl-10 h-10 text-sm"
                     style={{ fontSize: '16px' }} // Prevent zoom on mobile
                   />
                 </div>
-                {signupForm.formState.errors.email && (
-                  <p className="text-xs text-destructive">
-                    {signupForm.formState.errors.email.message}
-                  </p>
-                )}
+                <FieldError
+                  id="email-error"
+                  message={signupForm.formState.errors.email?.message}
+                />
               </div>
 
               <div className="space-y-2">
@@ -249,27 +266,33 @@ export default function SignupPage() {
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     {...signupForm.register("phone")}
+                    id="phone"
                     type="tel"
                     inputMode="numeric"
                     autoComplete="tel"
                     placeholder="9876543210"
+                    aria-invalid={!!signupForm.formState.errors.phone}
+                    aria-describedby={
+                      signupForm.formState.errors.phone
+                        ? "phone-error phone-hint"
+                        : "phone-hint"
+                    }
                     className="pl-10 h-10 text-sm"
                     style={{ fontSize: "16px" }}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p id="phone-hint" className="text-xs text-muted-foreground">
                   10-digit Indian mobile number (OTP sent on WhatsApp)
                 </p>
-                {signupForm.formState.errors.phone && (
-                  <p className="text-xs text-destructive">
-                    {signupForm.formState.errors.phone.message}
-                  </p>
-                )}
+                <FieldError
+                  id="phone-error"
+                  message={signupForm.formState.errors.phone?.message}
+                />
               </div>
 
               <Button
                 type="submit"
-                className="w-full h-10 text-sm bg-red-500 hover:bg-red-600"
+                className="w-full h-10 text-sm bg-primary hover:bg-primary/90"
                 disabled={loading}
               >
                 {loading ? "Creating Account..." : "Create Account"}
@@ -317,22 +340,27 @@ export default function SignupPage() {
                   <Label htmlFor="otp" className="text-sm font-medium">Enter Verification Code</Label>
                   <Input
                     {...otpForm.register("otp")}
+                    id="otp"
                     type="text"
+                    inputMode="numeric"
                     placeholder="000000"
                     maxLength={6}
+                    aria-invalid={!!otpForm.formState.errors.otp}
+                    aria-describedby={
+                      otpForm.formState.errors.otp ? "otp-error" : undefined
+                    }
                     className="text-center text-base tracking-widest h-10"
                     style={{ fontSize: '16px' }} // Prevent zoom on mobile
                   />
-                  {otpForm.formState.errors.otp && (
-                    <p className="text-xs text-destructive">
-                      {otpForm.formState.errors.otp.message}
-                    </p>
-                  )}
+                  <FieldError
+                    id="otp-error"
+                    message={otpForm.formState.errors.otp?.message}
+                  />
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full h-10 text-sm bg-red-500 hover:bg-red-600"
+                  className="w-full h-10 text-sm bg-primary hover:bg-primary/90"
                   disabled={loading}
                 >
                   {loading ? "Verifying..." : "Verify & Complete"}

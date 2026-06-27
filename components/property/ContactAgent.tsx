@@ -115,7 +115,7 @@ export const ContactAgent = ({ property }: ContactAgentProps) => {
         <div className="space-y-3 mb-4">
           <Button
             variant="default"
-            className="w-full flex items-center justify-center bg-red-500 hover:bg-red-600"
+            className="w-full flex items-center justify-center bg-primary hover:bg-primary/90"
             onClick={handleCallAgent}
           >
             <Phone className="w-4 h-4 mr-2" />

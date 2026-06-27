@@ -30,7 +30,8 @@ export function MobileSearchTrigger() {
               {/* Search Button */}
               <button
                 onClick={() => setShowMobileSearch(true)}
-                className="w-full h-14 pl-16 pr-20 text-left text-gray-600 bg-white hover:bg-gray-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2"
+                aria-label="Search for properties by city, locality or project"
+                className="w-full h-14 pl-16 pr-20 text-left text-gray-600 bg-white hover:bg-gray-50 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-400 mb-1">Search for properties</span>

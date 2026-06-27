@@ -30,7 +30,7 @@ export function CTASection() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <Button size="lg" className="bg-red-500 hover:bg-red-600" asChild>
+              <Button size="lg" className="bg-primary hover:bg-primary/90" asChild>
                 <Link href="/properties">
                   Search Properties
                   <ArrowRight className="w-4 h-4 ml-2" />

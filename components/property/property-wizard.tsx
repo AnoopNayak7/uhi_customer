@@ -213,7 +213,11 @@ export function PropertyWizard() {
       case 1:
         return formData.propertyType && formData.category;
       case 2:
-        return formData.title && formData.description;
+        // Match the displayed requirement: title present + description ≥ 50 chars.
+        return (
+          formData.title.trim().length > 0 &&
+          formData.description.trim().length >= 50
+        );
       case 3:
         return formData.address && formData.city && formData.state && formData.zipCode;
       case 4:
@@ -317,7 +321,7 @@ export function PropertyWizard() {
             <Button
               onClick={nextStep}
               disabled={!isStepValid() || loading}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-primary hover:bg-primary/90"
             >
               Next Step
             </Button>

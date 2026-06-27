@@ -208,7 +208,7 @@ export function Header() {
                   <Link href="/auth/login">Sign In</Link>
                 </Button>
                 <Button 
-                  className="bg-red-500 hover:bg-red-600 shadow-lg hover:shadow-xl transition-all duration-300 font-medium px-6 py-2.5 rounded-lg" 
+                  className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 font-medium px-6 py-2.5 rounded-lg" 
                   asChild
                 >
                   <Link href="/auth/signup">Sign Up</Link>
@@ -315,7 +315,7 @@ export function Header() {
                     </motion.div>
                     <motion.div variants={menuItemVariants}>
                       <Button
-                        className="w-full bg-red-500 hover:bg-red-600 px-4 py-3 h-auto rounded-xl shadow-lg transition-all duration-300"
+                        className="w-full bg-primary hover:bg-primary/90 px-4 py-3 h-auto rounded-xl shadow-lg transition-all duration-300"
                         asChild
                       >
                         <Link

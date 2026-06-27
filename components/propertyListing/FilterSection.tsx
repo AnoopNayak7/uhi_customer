@@ -61,7 +61,7 @@ export function FilterSection({
           showFilters ? "block" : "hidden"
         } lg:block lg:w-72 flex-shrink-0`}
       >
-        <Card className="p-4 sm:p-6 h-full overflow-y-auto mx-0 lg:mx-0 rounded-lg lg:rounded-lg border-0 lg:border shadow-lg lg:shadow-sm">
+        <Card className="p-4 sm:p-6 h-full overflow-y-auto show-scrollbar mx-0 lg:mx-0 rounded-lg lg:rounded-lg border-0 lg:border shadow-lg lg:shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl sm:text-lg font-semibold">
               Filter Properties

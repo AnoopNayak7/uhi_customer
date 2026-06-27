@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Logo } from "@/components/ui/logo";
+import { FieldError } from "@/components/ui/field-error";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -128,22 +129,28 @@ export default function LoginPage() {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     {...identifierForm.register("identifier")}
+                    id="identifier"
                     type="email"
                     placeholder="Enter your email address"
+                    aria-invalid={!!identifierForm.formState.errors.identifier}
+                    aria-describedby={
+                      identifierForm.formState.errors.identifier
+                        ? "identifier-error"
+                        : undefined
+                    }
                     className="pl-10 h-10 text-sm"
                     style={{ fontSize: '16px' }} // Prevent zoom on mobile
                   />
                 </div>
-                {identifierForm.formState.errors.identifier && (
-                  <p className="text-xs text-destructive">
-                    {identifierForm.formState.errors.identifier.message}
-                  </p>
-                )}
+                <FieldError
+                  id="identifier-error"
+                  message={identifierForm.formState.errors.identifier?.message}
+                />
               </div>
 
               <Button
                 type="submit"
-                className="w-full h-10 text-sm bg-red-500 hover:bg-red-600"
+                className="w-full h-10 text-sm bg-primary hover:bg-primary/90"
                 disabled={loading}
               >
                 {loading ? "Sending OTP..." : "Send OTP"}
@@ -169,22 +176,27 @@ export default function LoginPage() {
                   <Label htmlFor="otp" className="text-sm font-medium">Enter OTP</Label>
                   <Input
                     {...otpForm.register("otp")}
+                    id="otp"
                     type="text"
+                    inputMode="numeric"
                     placeholder="000000"
                     maxLength={6}
+                    aria-invalid={!!otpForm.formState.errors.otp}
+                    aria-describedby={
+                      otpForm.formState.errors.otp ? "otp-error" : undefined
+                    }
                     className="text-center text-base tracking-widest h-10"
                     style={{ fontSize: '16px' }} // Prevent zoom on mobile
                   />
-                  {otpForm.formState.errors.otp && (
-                    <p className="text-xs text-destructive">
-                      {otpForm.formState.errors.otp.message}
-                    </p>
-                  )}
+                  <FieldError
+                    id="otp-error"
+                    message={otpForm.formState.errors.otp?.message}
+                  />
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full h-10 text-sm bg-red-500 hover:bg-red-600"
+                  className="w-full h-10 text-sm bg-primary hover:bg-primary/90"
                   disabled={loading}
                 >
                   {loading ? "Verifying..." : "Verify & Sign In"}

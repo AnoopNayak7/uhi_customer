@@ -22,6 +22,7 @@ import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
 import { useHoverPreloader } from "@/hooks/use-image-preloader";
 import { openWhatsAppChat } from "@/lib/whatsapp";
+import { formatPrice } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -29,16 +30,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-// Helper function to format price
-const formatPrice = (price: number) => {
-  if (price >= 10000000) {
-    return `₹${(price / 10000000).toFixed(1)} Cr`;
-  } else if (price >= 100000) {
-    return `₹${(price / 100000).toFixed(1)} L`;
-  }
-  return `₹${price.toLocaleString()}`;
-};
 
 // Property Card Skeleton Component
 export const PropertyCardSkeleton = () => {

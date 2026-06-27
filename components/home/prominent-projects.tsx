@@ -22,6 +22,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
 import { usePropertyStore, useAuthStore } from "@/lib/store";
+import { PLACEHOLDER_PROPERTY_IMAGE } from "@/lib/images";
 import { useLocationData } from "@/hooks/use-location-data";
 import { toast } from "sonner";
 
@@ -278,7 +279,7 @@ function PropertyCard({
 }) {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
-  const defaultImage = `https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=Property+Image`;
+  const defaultImage = PLACEHOLDER_PROPERTY_IMAGE;
 
   const formatPrice = (price: number) => {
     if (price >= 10000000) {
@@ -320,7 +321,7 @@ function PropertyCard({
       onClick={handleCardClick}
     >
       <div className="relative">
-        <div className="relative h-[160px] overflow-hidden m-[4px] rounded-t-md">
+        <div className="relative aspect-[4/3] overflow-hidden m-1 rounded-t-md">
           <Image
             src={property.images?.[0] || defaultImage}
             alt={property.title}
@@ -332,7 +333,7 @@ function PropertyCard({
 
         {/* Property Type Badge */}
         <div className="absolute top-3 left-3">
-          <Badge className="bg-white/90 text-gray-700 border-0 text-[10px] font-normal px-2 py-1 rounded shadow-sm">
+          <Badge className="bg-white/90 text-gray-700 border-0 text-xs font-normal px-2 py-1 rounded shadow-sm">
             {property.category?.toUpperCase() || "APARTMENTS"}
           </Badge>
         </div>
@@ -340,13 +341,13 @@ function PropertyCard({
         {/* Prominent/Hot Selling Badge */}
         {/* <div className="absolute top-3 right-3">
           {property.isProminent && (
-            <Badge className="bg-blue-500 text-white text-[10px] font-normal px-2 py-1 rounded shadow-sm mr-2">
+            <Badge className="bg-blue-500 text-white text-xs font-normal px-2 py-1 rounded shadow-sm mr-2">
               <Star className="w-3 h-3 mr-1" />
               PROMINENT
             </Badge>
           )}
           {property.isHotSelling && (
-            <Badge className="bg-red-500 text-white text-[10px] font-normal px-2 py-1 rounded shadow-sm">
+            <Badge className="bg-red-500 text-white text-xs font-normal px-2 py-1 rounded shadow-sm">
               <Flame className="w-3 h-3 mr-1" />
               HOT SELLING
             </Badge>
@@ -409,7 +410,7 @@ function PropertyCard({
           )}
           <div className="flex items-center">
             <Square className="w-3 h-3 mr-1" />
-            <span className="text-[13px]">
+            <span className="text-sm">
               {Array.isArray(property.area) ? property.area[0] : property.area}{" "}
               {property.areaUnit}
             </span>

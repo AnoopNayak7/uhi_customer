@@ -1,6 +1,12 @@
 // Production-ready image configurations and constants
 // Centralized image management for better performance and maintainability
 
+// Self-contained local placeholder used when a property has no image.
+// Inline SVG data URI — no external dependency (the old https://via.placeholder.com
+// fallback rendered blank cards whenever that third-party host was slow/blocked).
+export const PLACEHOLDER_PROPERTY_IMAGE =
+  "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='800'%20height='600'%3E%3Crect%20width='800'%20height='600'%20fill='%23e5e7eb'/%3E%3Cg%20fill='%239ca3af'%3E%3Cpath%20d='M360%20250h80a12%2012%200%200%201%2012%2012v76a12%2012%200%200%201-12%2012h-80a12%2012%200%200%201-12-12v-76a12%2012%200%200%201%2012-12z'%20fill='none'%20stroke='%239ca3af'%20stroke-width='6'/%3E%3Ccircle%20cx='384'%20cy='284'%20r='10'/%3E%3Cpath%20d='M356%20336l28-28%2020%2020%2016-16%2024%2024z'/%3E%3C/g%3E%3Ctext%20x='400'%20y='390'%20font-family='sans-serif'%20font-size='24'%20fill='%239ca3af'%20text-anchor='middle'%3EProperty%20image%3C/text%3E%3C/svg%3E";
+
 // Optimized Unsplash URLs with proper parameters for production
 export const PROPERTY_IMAGES = {
   // High-quality property images with optimized parameters

@@ -65,8 +65,11 @@ export default function HomeAffordabilityPage() {
     });
 
     const income = monthlyIncome[0];
-    const expenses = monthlyExpenses[0];
-    const existingEMI = existingEMIs[0];
+    // Defensive clamps: expenses + existing EMIs can never exceed income, so the
+    // model always leaves non-negative disposable income (the sliders can drift
+    // out of range when income is lowered after expenses were set).
+    const expenses = Math.min(monthlyExpenses[0], income * 0.8);
+    const existingEMI = Math.min(existingEMIs[0], Math.max(0, income - expenses));
     const savings = downPaymentSavings[0];
     const rate = interestRate[0] / (12 * 100);
     const tenure = loanTenure[0] * 12;
@@ -476,7 +479,7 @@ export default function HomeAffordabilityPage() {
                             <Slider
                               value={monthlyExpenses}
                               onValueChange={setMonthlyExpenses}
-                              max={monthlyIncome[0]}
+                              max={Math.round(monthlyIncome[0] * 0.8)}
                               min={monthlyIncome[0] * 0.2}
                               step={2000}
                               className="mb-3"
@@ -492,7 +495,10 @@ export default function HomeAffordabilityPage() {
                                 ₹{monthlyExpenses[0].toLocaleString()}
                               </span>
                               <span className="text-gray-500">
-                                ₹{monthlyIncome[0].toLocaleString()}
+                                ₹
+                                {Math.round(
+                                  monthlyIncome[0] * 0.8
+                                ).toLocaleString()}
                               </span>
                             </div>
                           </div>

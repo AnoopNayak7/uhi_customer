@@ -132,7 +132,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
             <Button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-primary hover:bg-primary/90"
             >
               <Upload className="w-4 h-4 mr-2" />
               Choose Images

@@ -270,7 +270,7 @@ export function RealEstateTools() {
                     onOpenChange={setConsultationOpen}
                   >
                     <DialogTrigger asChild>
-                      <Button className="bg-red-500 hover:bg-red-600">
+                      <Button className="bg-primary hover:bg-primary/90">
                         <Phone className="w-4 h-4 mr-2" />
                         Speak to Consultant
                       </Button>
@@ -358,7 +358,7 @@ export function RealEstateTools() {
                           </Button>
                           <Button
                             type="submit"
-                            className="flex-1 bg-red-500 hover:bg-red-600"
+                            className="flex-1 bg-primary hover:bg-primary/90"
                           >
                             Submit Request
                           </Button>
@@ -381,7 +381,7 @@ export function RealEstateTools() {
                   {/* Partnership Dialog */}
                   <Dialog open={partnerOpen} onOpenChange={setPartnerOpen}>
                     <DialogTrigger asChild>
-                      <Button className="bg-red-500 hover:bg-red-600 text-white">
+                      <Button className="bg-primary hover:bg-primary/90 text-white">
                         <Building className="w-4 h-4 mr-2" />
                         Become Partner
                       </Button>
@@ -671,7 +671,7 @@ export function RealEstateTools() {
                           >
                             Cancel
                           </Button>
-                          <Button type="submit" className="flex-1 bg-red-500 hover:bg-red-600 h-11" disabled={isSubmitting}>
+                          <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 h-11" disabled={isSubmitting}>
                             {isSubmitting ? (
                               <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

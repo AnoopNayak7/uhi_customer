@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FieldError } from "@/components/ui/field-error";
 import {
   Select,
   SelectContent,
@@ -189,58 +190,110 @@ export default function ContactPage() {
                     >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <Label htmlFor="name">Full Name *</Label>
+                          <Label htmlFor="name">
+                            Full Name{" "}
+                            <span className="text-destructive" aria-hidden="true">
+                              *
+                            </span>
+                          </Label>
                           <Input
                             {...form.register("name")}
+                            id="name"
+                            aria-required="true"
+                            aria-invalid={!!form.formState.errors.name}
+                            aria-describedby={
+                              form.formState.errors.name ? "name-error" : undefined
+                            }
                             placeholder="Your full name"
                             className="mt-1"
                           />
-                          {form.formState.errors.name && (
-                            <p className="text-sm text-red-500 mt-1">
-                              {form.formState.errors.name.message}
-                            </p>
-                          )}
+                          <FieldError
+                            id="name-error"
+                            message={form.formState.errors.name?.message}
+                            className="mt-1"
+                          />
                         </div>
 
                         <div>
-                          <Label htmlFor="email">Email Address *</Label>
+                          <Label htmlFor="email">
+                            Email Address{" "}
+                            <span className="text-destructive" aria-hidden="true">
+                              *
+                            </span>
+                          </Label>
                           <Input
                             {...form.register("email")}
+                            id="email"
                             type="email"
+                            aria-required="true"
+                            aria-invalid={!!form.formState.errors.email}
+                            aria-describedby={
+                              form.formState.errors.email ? "email-error" : undefined
+                            }
                             placeholder="your.email@example.com"
                             className="mt-1"
                           />
-                          {form.formState.errors.email && (
-                            <p className="text-sm text-red-500 mt-1">
-                              {form.formState.errors.email.message}
-                            </p>
-                          )}
+                          <FieldError
+                            id="email-error"
+                            message={form.formState.errors.email?.message}
+                            className="mt-1"
+                          />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <Label htmlFor="phone">Phone Number *</Label>
+                          <Label htmlFor="phone">
+                            Phone Number{" "}
+                            <span className="text-destructive" aria-hidden="true">
+                              *
+                            </span>
+                          </Label>
                           <Input
                             {...form.register("phone")}
+                            id="phone"
+                            type="tel"
+                            inputMode="numeric"
+                            aria-required="true"
+                            aria-invalid={!!form.formState.errors.phone}
+                            aria-describedby={
+                              form.formState.errors.phone ? "phone-error" : undefined
+                            }
                             placeholder="+91 9876543210"
                             className="mt-1"
                           />
-                          {form.formState.errors.phone && (
-                            <p className="text-sm text-red-500 mt-1">
-                              {form.formState.errors.phone.message}
-                            </p>
-                          )}
+                          <FieldError
+                            id="phone-error"
+                            message={form.formState.errors.phone?.message}
+                            className="mt-1"
+                          />
                         </div>
 
                         <div>
-                          <Label htmlFor="category">Category *</Label>
+                          <Label htmlFor="category">
+                            Category{" "}
+                            <span className="text-destructive" aria-hidden="true">
+                              *
+                            </span>
+                          </Label>
                           <Select
                             onValueChange={(value) =>
-                              form.setValue("category", value)
+                              form.setValue("category", value, {
+                                shouldValidate: true,
+                              })
                             }
                           >
-                            <SelectTrigger className="mt-1">
+                            <SelectTrigger
+                              id="category"
+                              aria-required="true"
+                              aria-invalid={!!form.formState.errors.category}
+                              aria-describedby={
+                                form.formState.errors.category
+                                  ? "category-error"
+                                  : undefined
+                              }
+                              className="mt-1 aria-[invalid=true]:border-destructive"
+                            >
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent>
@@ -254,46 +307,68 @@ export default function ContactPage() {
                               ))}
                             </SelectContent>
                           </Select>
-                          {form.formState.errors.category && (
-                            <p className="text-sm text-red-500 mt-1">
-                              {form.formState.errors.category.message}
-                            </p>
-                          )}
+                          <FieldError
+                            id="category-error"
+                            message={form.formState.errors.category?.message}
+                            className="mt-1"
+                          />
                         </div>
                       </div>
 
                       <div>
-                        <Label htmlFor="subject">Subject *</Label>
+                        <Label htmlFor="subject">
+                          Subject{" "}
+                          <span className="text-destructive" aria-hidden="true">
+                            *
+                          </span>
+                        </Label>
                         <Input
                           {...form.register("subject")}
+                          id="subject"
+                          aria-required="true"
+                          aria-invalid={!!form.formState.errors.subject}
+                          aria-describedby={
+                            form.formState.errors.subject ? "subject-error" : undefined
+                          }
                           placeholder="Brief subject of your inquiry"
                           className="mt-1"
                         />
-                        {form.formState.errors.subject && (
-                          <p className="text-sm text-red-500 mt-1">
-                            {form.formState.errors.subject.message}
-                          </p>
-                        )}
+                        <FieldError
+                          id="subject-error"
+                          message={form.formState.errors.subject?.message}
+                          className="mt-1"
+                        />
                       </div>
 
                       <div>
-                        <Label htmlFor="message">Message *</Label>
+                        <Label htmlFor="message">
+                          Message{" "}
+                          <span className="text-destructive" aria-hidden="true">
+                            *
+                          </span>
+                        </Label>
                         <Textarea
                           {...form.register("message")}
+                          id="message"
+                          aria-required="true"
+                          aria-invalid={!!form.formState.errors.message}
+                          aria-describedby={
+                            form.formState.errors.message ? "message-error" : undefined
+                          }
                           placeholder="Please describe your inquiry in detail..."
                           rows={6}
                           className="mt-1"
                         />
-                        {form.formState.errors.message && (
-                          <p className="text-sm text-red-500 mt-1">
-                            {form.formState.errors.message.message}
-                          </p>
-                        )}
+                        <FieldError
+                          id="message-error"
+                          message={form.formState.errors.message?.message}
+                          className="mt-1"
+                        />
                       </div>
 
                       <Button
                         type="submit"
-                        className="w-full bg-red-500 hover:bg-red-600"
+                        className="w-full bg-primary hover:bg-primary/90"
                         disabled={loading}
                       >
                         {loading ? (

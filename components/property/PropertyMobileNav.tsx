@@ -210,10 +210,20 @@ export function PropertyMobileNav({ property }: PropertyMobileNavProps) {
     </Dialog>
   );
 
+  // If there are no downloadable documents, render nothing: an all-disabled
+  // bar wastes space and collides with the floating "Book Visit" button, which
+  // is only shown on mobile when no documents exist.
+  if (!hasBrochure && !hasFloorPlan) {
+    return null;
+  }
+
   return (
     <>
-      {/* Mobile Bottom Navigation Bar - Always show on mobile */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 shadow-lg">
+      {/* Mobile Bottom Navigation Bar (shown when at least one document exists) */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 shadow-lg"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
         <div className="flex items-center justify-around px-2 py-3">
           <Button
             variant="ghost"

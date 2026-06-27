@@ -161,7 +161,7 @@ export function MobileFilterDrawer({
                             handleFilterChange("type", "");
                           }
                         }}
-                        className="data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
+                        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       <label
                         htmlFor={`mobile-type-${type.value}`}
@@ -305,7 +305,7 @@ export function MobileFilterDrawer({
                         onCheckedChange={(checked) => {
                           handleFilterChange("bedrooms", checked ? bhk.value : "");
                         }}
-                        className="data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
+                        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       <label
                         htmlFor={`mobile-bedroom-${bhk.value}`}
@@ -330,7 +330,7 @@ export function MobileFilterDrawer({
                         onCheckedChange={(checked) => {
                           handleFilterChange("furnishingStatus", checked ? status.value : "");
                         }}
-                        className="data-[state=checked]:bg-indigo-500 data-[state=checked]:border-indigo-500"
+                        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       <label
                         htmlFor={`mobile-furnishing-${status.value}`}
@@ -355,7 +355,7 @@ export function MobileFilterDrawer({
                         onCheckedChange={(checked) => {
                           handleFilterChange("possessionStatus", checked ? status.value : "");
                         }}
-                        className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
+                        className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       <label
                         htmlFor={`mobile-possession-${status.value}`}

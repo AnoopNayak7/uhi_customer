@@ -15,7 +15,7 @@ import {
   BarChart3,
   GitCompareArrows,
 } from "lucide-react";
-import { BLUR_DATA_URLS } from "@/lib/images";
+import { BLUR_DATA_URLS, PLACEHOLDER_PROPERTY_IMAGE } from "@/lib/images";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
@@ -189,18 +189,20 @@ export function FeaturedProperties() {
               size="sm"
               onClick={prevSlide}
               disabled={properties.length <= 4}
+              aria-label="Previous properties"
               className="h-8 w-8 p-0"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={nextSlide}
               disabled={properties.length <= 4}
+              aria-label="Next properties"
               className="h-8 w-8 p-0"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -265,7 +267,7 @@ function PropertyCard({
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const defaultImage = `https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=Property+Image`;
+  const defaultImage = PLACEHOLDER_PROPERTY_IMAGE;
 
   const formatPrice = (price: number) => {
     if (price >= 10000000) {
@@ -308,7 +310,7 @@ function PropertyCard({
         onClick={handleCardClick}
       >
         <div className="relative">
-          <div className="relative h-[160px] overflow-hidden m-[4px] rounded-t-md">
+          <div className="relative aspect-[4/3] overflow-hidden m-1 rounded-t-md">
             <Image
               src={property.images?.[0] || defaultImage}
               alt={property.title}
@@ -319,7 +321,7 @@ function PropertyCard({
           </div>
 
           <div className="absolute top-3 left-3">
-            <Badge className="bg-white/90 text-gray-700 border-0 text-[10px] font-normal px-2 py-1 rounded shadow-sm">
+            <Badge className="bg-white/90 text-gray-700 border-0 text-xs font-normal px-2 py-1 rounded shadow-sm">
               {property.category?.toUpperCase() || "APARTMENTS"}
             </Badge>
           </div>
@@ -383,7 +385,7 @@ function PropertyCard({
             )}
             <div className="flex items-center">
               <Square className="w-3 h-3 mr-1" />
-              <span className="text-[13px]">
+              <span className="text-sm">
                 {Array.isArray(property.area)
                   ? property.area[0]
                   : property.area}{" "}

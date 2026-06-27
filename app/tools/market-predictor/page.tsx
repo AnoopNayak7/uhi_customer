@@ -292,7 +292,7 @@ export default function MarketPredictorPage() {
                     <Button 
                       onClick={generatePredictions}
                       disabled={!selectedArea || loading}
-                      className="w-full bg-red-500 hover:bg-red-600"
+                      className="w-full bg-primary hover:bg-primary/90"
                     >
                       {loading ? (
                         <>

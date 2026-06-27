@@ -134,7 +134,7 @@ export function AmenitiesStep({ formData, updateFormData }: AmenitiesStepProps) 
                   variant={isSelected(amenity.id) ? "default" : "outline"}
                   className={`h-auto p-3 flex flex-col items-center space-y-2 ${
                     isSelected(amenity.id) 
-                      ? 'bg-red-500 hover:bg-red-600 text-white' 
+                      ? 'bg-primary hover:bg-primary/90 text-white' 
                       : 'hover:border-red-300'
                   }`}
                   onClick={() => toggleAmenity(amenity.id)}

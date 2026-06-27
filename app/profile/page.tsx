@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FieldError } from "@/components/ui/field-error";
 import {
   Select,
   SelectContent,
@@ -259,22 +260,21 @@ export default function ProfilePage() {
                             </Label>
                             <Input
                               {...form.register("firstName")}
+                              id="firstName"
                               disabled={!editing}
-                              className="h-11 border-gray-200 focus:border-red-500 focus:ring-red-500 focus:ring-2 transition-colors duration-200"
+                              className="h-11 transition-colors duration-200"
                               placeholder="Enter first name"
+                              aria-invalid={!!form.formState.errors.firstName}
                               aria-describedby={
-                                editing ? "firstName-error" : undefined
+                                form.formState.errors.firstName
+                                  ? "firstName-error"
+                                  : undefined
                               }
                             />
-                            {form.formState.errors.firstName && (
-                              <p
-                                id="firstName-error"
-                                className="text-sm text-red-500 flex items-center mt-2 p-2 bg-red-50 border border-red-200 rounded-md"
-                              >
-                                <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                                {form.formState.errors.firstName.message}
-                              </p>
-                            )}
+                            <FieldError
+                              id="firstName-error"
+                              message={form.formState.errors.firstName?.message}
+                            />
                           </div>
 
                           <div className="space-y-3">
@@ -286,16 +286,21 @@ export default function ProfilePage() {
                             </Label>
                             <Input
                               {...form.register("lastName")}
+                              id="lastName"
                               disabled={!editing}
-                              className="h-11 border-gray-200 focus:border-red-500 focus:ring-red-500 focus:ring-2 transition-colors duration-200"
+                              className="h-11 transition-colors duration-200"
                               placeholder="Enter last name"
+                              aria-invalid={!!form.formState.errors.lastName}
+                              aria-describedby={
+                                form.formState.errors.lastName
+                                  ? "lastName-error"
+                                  : undefined
+                              }
                             />
-                            {form.formState.errors.lastName && (
-                              <p className="text-sm text-red-500 flex items-center">
-                                <AlertCircle className="w-4 h-4 mr-1" />
-                                {form.formState.errors.lastName.message}
-                              </p>
-                            )}
+                            <FieldError
+                              id="lastName-error"
+                              message={form.formState.errors.lastName?.message}
+                            />
                           </div>
                         </div>
 
@@ -310,17 +315,20 @@ export default function ProfilePage() {
                             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <Input
                               {...form.register("email")}
+                              id="email"
                               disabled={!editing}
-                              className="h-11 pl-10 border-gray-200 focus:border-red-500 focus:ring-red-500 focus:ring-2 transition-colors duration-200"
+                              className="h-11 pl-10 transition-colors duration-200"
                               placeholder="Enter email address"
+                              aria-invalid={!!form.formState.errors.email}
+                              aria-describedby={
+                                form.formState.errors.email ? "email-error" : undefined
+                              }
                             />
                           </div>
-                          {form.formState.errors.email && (
-                            <p className="text-sm text-red-500 flex items-center">
-                              <AlertCircle className="w-4 h-4 mr-1" />
-                              {form.formState.errors.email.message}
-                            </p>
-                          )}
+                          <FieldError
+                            id="email-error"
+                            message={form.formState.errors.email?.message}
+                          />
                         </div>
 
                         <div className="space-y-3">
@@ -334,17 +342,20 @@ export default function ProfilePage() {
                             <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <Input
                               {...form.register("phone")}
+                              id="phone"
                               disabled={!editing}
-                              className="h-11 pl-10 border-gray-200 focus:border-red-500 focus:ring-red-500 focus:ring-2 transition-colors duration-200"
+                              className="h-11 pl-10 transition-colors duration-200"
                               placeholder="Enter phone number"
+                              aria-invalid={!!form.formState.errors.phone}
+                              aria-describedby={
+                                form.formState.errors.phone ? "phone-error" : undefined
+                              }
                             />
                           </div>
-                          {form.formState.errors.phone && (
-                            <p className="text-sm text-red-500 flex items-center">
-                              <AlertCircle className="w-4 h-4 mr-1" />
-                              {form.formState.errors.phone.message}
-                            </p>
-                          )}
+                          <FieldError
+                            id="phone-error"
+                            message={form.formState.errors.phone?.message}
+                          />
                           {!editing && !form.getValues("phone") && (
                             <p className="text-sm text-amber-600 flex items-center">
                               <AlertCircle className="w-4 h-4 mr-1" />
@@ -359,7 +370,7 @@ export default function ProfilePage() {
                             <Button
                               type="submit"
                               disabled={loading}
-                              className="w-full sm:w-auto bg-red-500 hover:bg-red-600 h-11 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full sm:w-auto bg-primary hover:bg-primary/90 h-11 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <Save className="w-4 h-4 mr-2" />
                               {loading ? "Saving..." : "Save Changes"}
@@ -594,7 +605,7 @@ export default function ProfilePage() {
                   <div className="pt-4 border-t border-gray-200">
                     <Button
                       onClick={saveSettings}
-                      className="bg-red-500 hover:bg-red-600"
+                      className="bg-primary hover:bg-primary/90"
                       disabled={savingSettings}
                     >
                       {savingSettings
@@ -711,7 +722,7 @@ export default function ProfilePage() {
                   <div className="pt-4 border-t border-gray-200">
                     <Button
                       onClick={saveSettings}
-                      className="bg-red-500 hover:bg-red-600 w-full sm:w-auto"
+                      className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
                       disabled={savingSettings}
                     >
                       {savingSettings ? "Saving..." : "Save Privacy Settings"}

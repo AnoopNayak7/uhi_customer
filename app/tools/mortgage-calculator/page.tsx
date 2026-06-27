@@ -40,6 +40,67 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 
+// Controlled numeric field that mirrors a slider value. Shows exactly what the
+// user types, then parses + clamps to [min, max] on blur / Enter. Replaces the
+// previous uncontrolled input that used a no-op onChange and a key-remount hack.
+function NumericField({
+  value,
+  min,
+  max,
+  onCommit,
+  allowDecimal = false,
+  className,
+  placeholder,
+  ariaLabel,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  onCommit: (value: number) => void;
+  allowDecimal?: boolean;
+  className?: string;
+  placeholder?: string;
+  ariaLabel?: string;
+}) {
+  const [text, setText] = useState(String(value));
+
+  // Re-sync when the value changes elsewhere (e.g. dragging the slider).
+  useEffect(() => {
+    setText(String(value));
+  }, [value]);
+
+  const commit = () => {
+    const parsed = allowDecimal ? parseFloat(text) : parseInt(text, 10);
+    if (isNaN(parsed)) {
+      setText(String(value));
+      return;
+    }
+    const clamped = Math.max(min, Math.min(max, parsed));
+    onCommit(clamped);
+    setText(String(clamped));
+  };
+
+  return (
+    <Input
+      type="text"
+      inputMode={allowDecimal ? "decimal" : "numeric"}
+      aria-label={ariaLabel}
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          commit();
+          (e.target as HTMLInputElement).blur();
+        }
+      }}
+      className={className}
+      placeholder={placeholder}
+    />
+  );
+}
+
 export default function MortgageCalculatorPage() {
   const { user } = useAuthStore();
   const [loanAmount, setLoanAmount] = useState([5000000]); // 50L
@@ -272,47 +333,12 @@ export default function MortgageCalculatorPage() {
                             </span>
                             <span>₹5Cr</span>
                           </div>
-                          <Input
-                            type="text"
-                            defaultValue={loanAmount[0]}
-                            key={loanAmount[0]}
-                            onChange={() => {}}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                const value = parseInt(e.currentTarget.value);
-                                if (!isNaN(value)) {
-                                  const clampedValue = Math.max(
-                                    100000,
-                                    Math.min(50000000, value)
-                                  );
-                                  setLoanAmount([clampedValue]);
-                                  e.currentTarget.value =
-                                    clampedValue.toString();
-                                } else {
-                                  e.currentTarget.value =
-                                    loanAmount[0].toString();
-                                }
-                              }
-                            }}
-                            onBlur={(e) => {
-                              const value = e.target.value;
-                              if (value.trim() === "") {
-                                setLoanAmount([100000]);
-                                e.target.value = "100000";
-                              } else {
-                                const numValue = parseInt(value);
-                                if (!isNaN(numValue)) {
-                                  const clampedValue = Math.max(
-                                    100000,
-                                    Math.min(50000000, numValue)
-                                  );
-                                  setLoanAmount([clampedValue]);
-                                  e.target.value = clampedValue.toString();
-                                } else {
-                                  e.target.value = loanAmount[0].toString();
-                                }
-                              }
-                            }}
+                          <NumericField
+                            value={loanAmount[0]}
+                            min={100000}
+                            max={50000000}
+                            onCommit={(v) => setLoanAmount([v])}
+                            ariaLabel="Loan amount in rupees"
                             className="text-center font-medium bg-white border-2 border-gray-200 rounded-xl h-12"
                             placeholder="Enter loan amount (₹1L - ₹5Cr)"
                           />
@@ -343,47 +369,13 @@ export default function MortgageCalculatorPage() {
                             </span>
                             <span>15%</span>
                           </div>
-                          <Input
-                            type="text"
-                            defaultValue={interestRate[0]}
-                            key={interestRate[0]}
-                            onChange={() => {}}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                const value = parseFloat(e.currentTarget.value);
-                                if (!isNaN(value)) {
-                                  const clampedValue = Math.max(
-                                    6,
-                                    Math.min(15, value)
-                                  );
-                                  setInterestRate([clampedValue]);
-                                  e.currentTarget.value =
-                                    clampedValue.toString();
-                                } else {
-                                  e.currentTarget.value =
-                                    interestRate[0].toString();
-                                }
-                              }
-                            }}
-                            onBlur={(e) => {
-                              const value = e.target.value;
-                              if (value.trim() === "") {
-                                setInterestRate([6]);
-                                e.target.value = "6";
-                              } else {
-                                const numValue = parseFloat(value);
-                                if (!isNaN(numValue)) {
-                                  const clampedValue = Math.max(
-                                    6,
-                                    Math.min(15, numValue)
-                                  );
-                                  setInterestRate([clampedValue]);
-                                  e.target.value = clampedValue.toString();
-                                } else {
-                                  e.target.value = interestRate[0].toString();
-                                }
-                              }
-                            }}
+                          <NumericField
+                            value={interestRate[0]}
+                            min={6}
+                            max={15}
+                            allowDecimal
+                            onCommit={(v) => setInterestRate([v])}
+                            ariaLabel="Interest rate percent per annum"
                             className="text-center font-medium bg-white border-2 border-gray-200 rounded-xl h-12"
                             placeholder="Enter interest rate (6% - 15%)"
                           />
@@ -414,47 +406,12 @@ export default function MortgageCalculatorPage() {
                             </span>
                             <span>30 years</span>
                           </div>
-                          <Input
-                            type="text"
-                            defaultValue={loanTenure[0]}
-                            key={loanTenure[0]}
-                            onChange={() => {}}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                const value = parseInt(e.currentTarget.value);
-                                if (!isNaN(value)) {
-                                  const clampedValue = Math.max(
-                                    5,
-                                    Math.min(30, value)
-                                  );
-                                  setLoanTenure([clampedValue]);
-                                  e.currentTarget.value =
-                                    clampedValue.toString();
-                                } else {
-                                  e.currentTarget.value =
-                                    loanTenure[0].toString();
-                                }
-                              }
-                            }}
-                            onBlur={(e) => {
-                              const value = e.target.value;
-                              if (value.trim() === "") {
-                                setLoanTenure([5]);
-                                e.target.value = "5";
-                              } else {
-                                const numValue = parseInt(value);
-                                if (!isNaN(numValue)) {
-                                  const clampedValue = Math.max(
-                                    5,
-                                    Math.min(30, numValue)
-                                  );
-                                  setLoanTenure([clampedValue]);
-                                  e.target.value = clampedValue.toString();
-                                } else {
-                                  e.target.value = loanTenure[0].toString();
-                                }
-                              }
-                            }}
+                          <NumericField
+                            value={loanTenure[0]}
+                            min={5}
+                            max={30}
+                            onCommit={(v) => setLoanTenure([v])}
+                            ariaLabel="Loan tenure in years"
                             className="text-center font-medium bg-white border-2 border-gray-200 rounded-xl h-12"
                             placeholder="Enter tenure (5-30 years)"
                           />
@@ -485,47 +442,12 @@ export default function MortgageCalculatorPage() {
                             </span>
                             <span>₹1Cr</span>
                           </div>
-                          <Input
-                            type="text"
-                            defaultValue={downPayment[0]}
-                            key={downPayment[0]}
-                            onChange={() => {}}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                const value = parseInt(e.currentTarget.value);
-                                if (!isNaN(value)) {
-                                  const clampedValue = Math.max(
-                                    0,
-                                    Math.min(10000000, value)
-                                  );
-                                  setDownPayment([clampedValue]);
-                                  e.currentTarget.value =
-                                    clampedValue.toString();
-                                } else {
-                                  e.currentTarget.value =
-                                    downPayment[0].toString();
-                                }
-                              }
-                            }}
-                            onBlur={(e) => {
-                              const value = e.target.value;
-                              if (value.trim() === "") {
-                                setDownPayment([0]);
-                                e.target.value = "0";
-                              } else {
-                                const numValue = parseInt(value);
-                                if (!isNaN(numValue)) {
-                                  const clampedValue = Math.max(
-                                    0,
-                                    Math.min(10000000, numValue)
-                                  );
-                                  setDownPayment([clampedValue]);
-                                  e.target.value = clampedValue.toString();
-                                } else {
-                                  e.target.value = downPayment[0].toString();
-                                }
-                              }
-                            }}
+                          <NumericField
+                            value={downPayment[0]}
+                            min={0}
+                            max={10000000}
+                            onCommit={(v) => setDownPayment([v])}
+                            ariaLabel="Down payment in rupees"
                             className="text-center font-medium bg-white border-2 border-gray-200 rounded-xl h-12"
                             placeholder="Enter down payment (₹0 - ₹1Cr)"
                           />

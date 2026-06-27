@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Header } from "@/components/layout/header";
+import { PLACEHOLDER_PROPERTY_IMAGE } from "@/lib/images";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -33,7 +34,7 @@ export function PropertiesPageClient() {
   const searchParams: any = useSearchParams();
   const router = useRouter();
   const { user } = useAuthStore();
-  const { searchFilters, updateSearchFilters } = useSearchStore();
+  const { searchFilters, updateSearchFilters, clearFilters } = useSearchStore();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -103,12 +104,8 @@ export function PropertiesPageClient() {
           // Ensure all properties have images
           const propertiesWithImages = response.data.map((property: any) => {
             if (!property.images || property.images.length === 0) {
-              // Add default images if none exist - using more reliable URLs
-              property.images = [
-                "https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=Property+Image",
-                "https://via.placeholder.com/800x600/10B981/FFFFFF?text=Property+Image",
-                "https://via.placeholder.com/800x600/F59E0B/FFFFFF?text=Property+Image",
-              ];
+              // Use the self-contained local placeholder if no images exist.
+              property.images = [PLACEHOLDER_PROPERTY_IMAGE];
               console.log(
                 `Added default images to property ${property.id}:`,
                 property.images
@@ -385,14 +382,28 @@ export function PropertiesPageClient() {
     );
   };
 
+  // Reset all filters and return to the unfiltered listing.
+  const handleClearFilters = () => {
+    clearFilters();
+    router.push("/properties");
+  };
+
   const handleFavorite = async (property: any) => {
     if (!user) {
       toast.error("Please login to add favourites");
       return;
     }
 
+    const isFavorite = property.isFavourite;
+    // Optimistic update: flip the heart immediately so the UI feels responsive,
+    // then reconcile (or revert) once the API call settles.
+    setProperties((prev) =>
+      prev.map((p) =>
+        p.id === property.id ? { ...p, isFavourite: !isFavorite } : p
+      )
+    );
+
     try {
-      const isFavorite = property.isFavourite;
       if (isFavorite) {
         await apiClient.removeFromFavourites(property.id);
         toast.success("Property removed from favourites");
@@ -400,15 +411,15 @@ export function PropertiesPageClient() {
         await apiClient.addToFavourites(property.id);
         toast.success("Property added to favourites");
       }
-      // Update the property's favourite status
-      setProperties((prev) =>
-        prev.map((p) =>
-          p.id === property.id ? { ...p, isFavourite: !isFavorite } : p
-        )
-      );
     } catch (error) {
       console.error("Error updating favourite:", error);
       toast.error("Failed to update favourite");
+      // Revert the optimistic change on failure.
+      setProperties((prev) =>
+        prev.map((p) =>
+          p.id === property.id ? { ...p, isFavourite: isFavorite } : p
+        )
+      );
     }
   };
 
@@ -440,7 +451,7 @@ export function PropertiesPageClient() {
                 {/* Search Button beside search bar */}
                 <Button
                   onClick={handleSearch}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 bg-red-500 hover:bg-red-600 text-white rounded-md transition-all duration-300"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 bg-primary hover:bg-primary/90 text-white rounded-md transition-all duration-300"
                 >
                   <Search className="w-4 h-4" />
                 </Button>
@@ -546,7 +557,7 @@ export function PropertiesPageClient() {
 
                 <Button
                   onClick={handleSearch}
-                  className="h-12 px-6 text-sm bg-red-500 hover:bg-red-600 text-white"
+                  className="h-12 px-6 text-sm bg-primary hover:bg-primary/90 text-white"
                 >
                   Search
                 </Button>
@@ -629,6 +640,7 @@ export function PropertiesPageClient() {
                     viewMode="grid"
                     setViewMode={setViewMode}
                     onFavorite={handleFavorite}
+                    onClearFilters={handleClearFilters}
                   />
                 )}
                 {/* Infinite scroll trigger for mobile */}
@@ -667,6 +679,7 @@ export function PropertiesPageClient() {
                         viewMode={viewMode}
                         setViewMode={setViewMode}
                         onFavorite={handleFavorite}
+                        onClearFilters={handleClearFilters}
                       />
                     )}
                     {/* Infinite scroll trigger for desktop */}

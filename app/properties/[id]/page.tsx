@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiClient } from "@/lib/api";
 import { usePropertyStore, useAuthStore } from "@/lib/store";
+import { formatPrice } from "@/lib/utils";
 import { usePropertyImagePreloader } from "@/hooks/use-image-preloader";
 import {
   Heart,
@@ -75,7 +76,14 @@ const ImageGallery = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState<any>({});
   const [showMobileGallery, setShowMobileGallery] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
   const [thumbnailPage, setThumbnailPage] = useState(0);
+
+  // Open the full-screen lightbox at a specific image (used by the desktop grid tiles).
+  const openGalleryAt = (index: number) => {
+    setCurrentImageIndex(index);
+    setGalleryOpen(true);
+  };
 
   // Use actual property images or fallback to placeholders
   const propertyImages =
@@ -108,6 +116,25 @@ const ImageGallery = ({
 
   const handleImageError = (index: any) => {
     setImageErrors((prev: any) => ({ ...prev, [index]: true }));
+  };
+
+  const goToPrevImage = () =>
+    setCurrentImageIndex((i: number) =>
+      i === 0 ? propertyImages.length - 1 : i - 1
+    );
+  const goToNextImage = () =>
+    setCurrentImageIndex((i: number) =>
+      i === propertyImages.length - 1 ? 0 : i + 1
+    );
+  // Arrow-key navigation for the full-screen lightbox (Esc is handled by Radix Dialog).
+  const handleGalleryKeyDown = (e: any) => {
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      goToPrevImage();
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      goToNextImage();
+    }
   };
 
   const ImageWithFallback = ({
@@ -157,20 +184,27 @@ const ImageGallery = ({
             className="transition-transform duration-300"
           />
 
-          {/* Mobile Navigation Dots — min-h/min-w-0 overrides global 44px touch-target on buttons */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+          {/* Mobile Navigation Dots — each button keeps a 24px hit area
+              (WCAG 2.2 SC 2.5.8) with a small visual dot inside. min-h/w
+              overrides the global 44px button rule so the row stays compact. */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center">
             {propertyImages.slice(0, 5).map((_: any, index: number) => (
               <button
                 key={index}
                 type="button"
                 aria-label={`Go to image ${index + 1}`}
+                aria-current={currentImageIndex === index ? "true" : undefined}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`shrink-0 min-h-0 min-w-0 p-0 rounded-full transition-colors duration-200 ${
-                  currentImageIndex === index
-                    ? "h-2 w-2 bg-white"
-                    : "h-1.5 w-1.5 bg-white/50 hover:bg-white/75"
-                }`}
-              />
+                className="inline-flex h-6 w-6 min-h-[24px] min-w-[24px] items-center justify-center p-0"
+              >
+                <span
+                  className={`block rounded-full transition-all duration-200 ${
+                    currentImageIndex === index
+                      ? "h-2 w-2 bg-white"
+                      : "h-1.5 w-1.5 bg-white/50"
+                  }`}
+                />
+              </button>
             ))}
           </div>
 
@@ -187,7 +221,10 @@ const ImageGallery = ({
                   {propertyImages.length}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-[95vw] max-h-[95vh] p-0">
+              <DialogContent
+                className="max-w-[95vw] max-h-[95vh] p-0"
+                onKeyDown={handleGalleryKeyDown}
+              >
                 <div className="relative">
                   {/* Header */}
                   <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -216,28 +253,18 @@ const ImageGallery = ({
                       {propertyImages.length > 1 && (
                         <>
                           <button
-                            onClick={() =>
-                              setCurrentImageIndex(
-                                currentImageIndex === 0
-                                  ? propertyImages.length - 1
-                                  : currentImageIndex - 1
-                              )
-                            }
+                            onClick={goToPrevImage}
+                            aria-label="Previous photo"
                             className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 hover:bg-white active:scale-95"
                           >
-                            <ChevronRight className="w-5 h-5 rotate-180" />
+                            <ChevronRight className="w-5 h-5 rotate-180" aria-hidden="true" />
                           </button>
                           <button
-                            onClick={() =>
-                              setCurrentImageIndex(
-                                currentImageIndex === propertyImages.length - 1
-                                  ? 0
-                                  : currentImageIndex + 1
-                              )
-                            }
+                            onClick={goToNextImage}
+                            aria-label="Next photo"
                             className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 hover:bg-white active:scale-95"
                           >
-                            <ChevronRight className="w-5 h-5" />
+                            <ChevronRight className="w-5 h-5" aria-hidden="true" />
                           </button>
                         </>
                       )}
@@ -256,11 +283,12 @@ const ImageGallery = ({
                               setCurrentImageIndex(newPage * thumbnailsPerPage);
                             }}
                             disabled={thumbnailPage === 0}
+                            aria-label="Previous thumbnails"
                             className={`flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg transition-all duration-200 hover:bg-white active:scale-95 z-10 ${
                               thumbnailPage === 0 ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                           >
-                            <ChevronRight className="w-4 h-4 rotate-180" />
+                            <ChevronRight className="w-4 h-4 rotate-180" aria-hidden="true" />
                           </button>
                         )}
                         
@@ -301,11 +329,12 @@ const ImageGallery = ({
                               setCurrentImageIndex(newPage * thumbnailsPerPage);
                             }}
                             disabled={thumbnailPage === totalPages - 1}
+                            aria-label="Next thumbnails"
                             className={`flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg transition-all duration-200 hover:bg-white active:scale-95 z-10 ${
                               thumbnailPage === totalPages - 1 ? 'opacity-50 cursor-not-allowed' : ''
                             }`}
                           >
-                            <ChevronRight className="w-4 h-4" />
+                            <ChevronRight className="w-4 h-4" aria-hidden="true" />
                           </button>
                         )}
                       </div>
@@ -326,21 +355,25 @@ const ImageGallery = ({
               variant="secondary"
               size="sm"
               onClick={handleShare}
+              aria-label="Share this property"
               className="bg-white/90 backdrop-blur-sm h-8 w-8 p-0"
             >
-              <Share2 className="w-3 h-3" />
+              <Share2 className="w-3 h-3" aria-hidden="true" />
             </Button>
 
             <Button
               variant="secondary"
               size="sm"
               onClick={handleFavorite}
+              aria-label={isFavorite ? "Remove from favourites" : "Add to favourites"}
+              aria-pressed={isFavorite}
               className={`bg-white/90 backdrop-blur-sm h-8 w-8 p-0 ${
                 isFavorite ? "text-red-500" : ""
               }`}
             >
               <Heart
                 className={`w-3 h-3 ${isFavorite ? "fill-red-500" : ""}`}
+                aria-hidden="true"
               />
             </Button>
           </div>
@@ -359,12 +392,13 @@ const ImageGallery = ({
                 onClick={() =>
                   setCurrentImageIndex(Math.max(0, currentImageIndex - 1))
                 }
+                aria-label="Previous photo"
                 className={`absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 active:scale-95 ${
                   currentImageIndex === 0 ? "opacity-50" : "hover:bg-white/90"
                 }`}
                 disabled={currentImageIndex === 0}
               >
-                <ChevronRight className="w-4 h-4 rotate-180" />
+                <ChevronRight className="w-4 h-4 rotate-180" aria-hidden="true" />
               </button>
               <button
                 onClick={() =>
@@ -372,6 +406,7 @@ const ImageGallery = ({
                     Math.min(propertyImages.length - 1, currentImageIndex + 1)
                   )
                 }
+                aria-label="Next photo"
                 className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 active:scale-95 ${
                   currentImageIndex === propertyImages.length - 1
                     ? "opacity-50"
@@ -379,7 +414,7 @@ const ImageGallery = ({
                 }`}
                 disabled={currentImageIndex === propertyImages.length - 1}
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4" aria-hidden="true" />
               </button>
             </>
           )}
@@ -392,9 +427,11 @@ const ImageGallery = ({
           {/* Main Image Grid */}
           <div className="grid grid-cols-4 gap-2 h-[350px] lg:h-[400px]">
             {/* Large Main Image */}
-            <div
-              className="col-span-2 relative group cursor-pointer overflow-hidden rounded-l-lg"
-              onClick={() => setCurrentImageIndex(0)}
+            <button
+              type="button"
+              aria-label="View photo 1"
+              className="col-span-2 relative group cursor-pointer overflow-hidden rounded-l-lg text-left"
+              onClick={() => openGalleryAt(0)}
             >
               <ImageWithFallback
                 src={propertyImages[0]}
@@ -404,13 +441,15 @@ const ImageGallery = ({
                 className="transition-transform duration-300 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
-            </div>
+            </button>
 
             {/* Right Side Images */}
             <div className="col-span-2 grid grid-cols-2 gap-2">
-              <div
-                className="relative group cursor-pointer overflow-hidden"
-                onClick={() => setCurrentImageIndex(1)}
+              <button
+                type="button"
+                aria-label="View photo 2"
+                className="relative group cursor-pointer overflow-hidden text-left"
+                onClick={() => openGalleryAt(1)}
               >
                 <ImageWithFallback
                   src={propertyImages[1] || propertyImages[0]}
@@ -420,11 +459,13 @@ const ImageGallery = ({
                   className="transition-transform duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
-              </div>
+              </button>
 
-              <div
-                className="relative group cursor-pointer overflow-hidden rounded-tr-lg"
-                onClick={() => setCurrentImageIndex(2)}
+              <button
+                type="button"
+                aria-label="View photo 3"
+                className="relative group cursor-pointer overflow-hidden rounded-tr-lg text-left"
+                onClick={() => openGalleryAt(2)}
               >
                 <ImageWithFallback
                   src={propertyImages[2] || propertyImages[0]}
@@ -434,11 +475,13 @@ const ImageGallery = ({
                   className="transition-transform duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
-              </div>
+              </button>
 
-              <div
-                className="relative group cursor-pointer overflow-hidden"
-                onClick={() => setCurrentImageIndex(3)}
+              <button
+                type="button"
+                aria-label="View photo 4"
+                className="relative group cursor-pointer overflow-hidden text-left"
+                onClick={() => openGalleryAt(3)}
               >
                 <ImageWithFallback
                   src={propertyImages[3] || propertyImages[0]}
@@ -448,11 +491,15 @@ const ImageGallery = ({
                   className="transition-transform duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
-              </div>
+              </button>
 
-              <Dialog>
+              <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
                 <DialogTrigger asChild>
-                  <div className="relative group cursor-pointer overflow-hidden rounded-br-lg">
+                  <button
+                    type="button"
+                    aria-label="View all photos"
+                    className="relative group cursor-pointer overflow-hidden rounded-br-lg text-left"
+                  >
                     <ImageWithFallback
                       src={propertyImages[4] || propertyImages[0]}
                       alt={`${property.title} - Image 5`}
@@ -471,9 +518,12 @@ const ImageGallery = ({
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 </DialogTrigger>
-                <DialogContent className="max-w-6xl max-h-[90vh] p-0">
+                <DialogContent
+                  className="max-w-6xl max-h-[90vh] p-0"
+                  onKeyDown={handleGalleryKeyDown}
+                >
                   <div className="relative">
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -504,29 +554,18 @@ const ImageGallery = ({
                         {propertyImages.length > 1 && (
                           <>
                             <button
-                              onClick={() =>
-                                setCurrentImageIndex(
-                                  currentImageIndex === 0
-                                    ? propertyImages.length - 1
-                                    : currentImageIndex - 1
-                                )
-                              }
+                              onClick={goToPrevImage}
+                              aria-label="Previous photo"
                               className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 hover:bg-white active:scale-95"
                             >
-                              <ChevronRight className="w-6 h-6 rotate-180" />
+                              <ChevronRight className="w-6 h-6 rotate-180" aria-hidden="true" />
                             </button>
                             <button
-                              onClick={() =>
-                                setCurrentImageIndex(
-                                  currentImageIndex ===
-                                    propertyImages.length - 1
-                                    ? 0
-                                    : currentImageIndex + 1
-                                )
-                              }
+                              onClick={goToNextImage}
+                              aria-label="Next photo"
                               className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg transition-all duration-200 hover:bg-white active:scale-95"
                             >
-                              <ChevronRight className="w-6 h-6" />
+                              <ChevronRight className="w-6 h-6" aria-hidden="true" />
                             </button>
                           </>
                         )}
@@ -545,11 +584,12 @@ const ImageGallery = ({
                                 setCurrentImageIndex(newPage * thumbnailsPerPage);
                               }}
                               disabled={thumbnailPage === 0}
+                              aria-label="Previous thumbnails"
                               className={`flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg transition-all duration-200 hover:bg-white active:scale-95 z-10 ${
                                 thumbnailPage === 0 ? 'opacity-50 cursor-not-allowed' : ''
                               }`}
                             >
-                              <ChevronRight className="w-4 h-4 rotate-180" />
+                              <ChevronRight className="w-4 h-4 rotate-180" aria-hidden="true" />
                             </button>
                           )}
                           
@@ -590,11 +630,12 @@ const ImageGallery = ({
                                 setCurrentImageIndex(newPage * thumbnailsPerPage);
                               }}
                               disabled={thumbnailPage === totalPages - 1}
+                              aria-label="Next thumbnails"
                               className={`flex-shrink-0 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg transition-all duration-200 hover:bg-white active:scale-95 z-10 ${
                                 thumbnailPage === totalPages - 1 ? 'opacity-50 cursor-not-allowed' : ''
                               }`}
                             >
-                              <ChevronRight className="w-4 h-4" />
+                              <ChevronRight className="w-4 h-4" aria-hidden="true" />
                             </button>
                           )}
                         </div>
@@ -719,21 +760,25 @@ const ImageGallery = ({
               variant="secondary"
               size="sm"
               onClick={handleShare}
+              aria-label="Share this property"
               className="bg-white/90 backdrop-blur-sm h-8 w-8 p-0"
             >
-              <Share2 className="w-3 h-3" />
+              <Share2 className="w-3 h-3" aria-hidden="true" />
             </Button>
 
             <Button
               variant="secondary"
               size="sm"
               onClick={handleFavorite}
+              aria-label={isFavorite ? "Remove from favourites" : "Add to favourites"}
+              aria-pressed={isFavorite}
               className={`bg-white/90 backdrop-blur-sm h-8 w-8 p-0 ${
                 isFavorite ? "text-red-500" : ""
               }`}
             >
               <Heart
                 className={`w-3 h-3 ${isFavorite ? "fill-red-500" : ""}`}
+                aria-hidden="true"
               />
             </Button>
           </div>
@@ -802,15 +847,6 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
   const monthlyEMI = calculateEMI();
   const totalAmount = monthlyEMI * tenure * 12;
   const totalInterest = totalAmount - loanAmount;
-
-  const formatPrice = (price: number) => {
-    if (price >= 10000000) {
-      return `₹${(price / 10000000).toFixed(1)} Cr`;
-    } else if (price >= 100000) {
-      return `₹${(price / 100000).toFixed(1)} L`;
-    }
-    return `₹${Math.round(price).toLocaleString()}`;
-  };
 
   const formatEMI = (emi: number) => {
     return `₹${Math.round(emi).toLocaleString()}`;
@@ -1005,7 +1041,7 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
               <Calendar className="w-3 h-3 mr-2" />
               Schedule
             </Button>
-            <Button className="py-2 text-xs font-medium bg-red-500 hover:bg-red-600">
+            <Button className="py-2 text-xs font-medium bg-primary hover:bg-primary/90">
               Apply Loan
             </Button>
           </div> */}
@@ -1276,15 +1312,6 @@ export default function PropertyDetailPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const formatPrice = (price: number) => {
-    if (price >= 10000000) {
-      return `₹${(price / 10000000).toFixed(1)} Cr`;
-    } else if (price >= 100000) {
-      return `₹${(price / 100000).toFixed(1)} L`;
-    }
-    return `₹${price?.toLocaleString() || ""}`;
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -1524,7 +1551,7 @@ export default function PropertyDetailPage() {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
 
-      <main className="flex-1 pb-20 md:pb-0">
+      <main className="flex-1 pb-24 md:pb-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
           <ImageGallery
             property={property}

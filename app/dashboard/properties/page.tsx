@@ -130,7 +130,7 @@ export default function PropertiesPage() {
                 <p className="text-gray-600">Manage your property listings</p>
               </div>
 
-              <Button className="bg-red-500 hover:bg-red-600" asChild>
+              <Button className="bg-primary hover:bg-primary/90" asChild>
                 <Link href="/dashboard/property/create">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Property
@@ -306,7 +306,7 @@ export default function PropertiesPage() {
               <p className="text-gray-600 mb-6">
                 Start by creating your first property listing.
               </p>
-              <Button className="bg-red-500 hover:bg-red-600" asChild>
+              <Button className="bg-primary hover:bg-primary/90" asChild>
                 <Link href="/dashboard/property/create">
                   <Plus className="w-4 h-4 mr-2" />
                   Create Property

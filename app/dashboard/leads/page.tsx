@@ -225,7 +225,7 @@ export default function LeadsPage() {
                       </div>
                       
                       <div className="flex flex-col space-y-2">
-                        <Button size="sm" className="bg-red-500 hover:bg-red-600">
+                        <Button size="sm" className="bg-primary hover:bg-primary/90">
                           <Phone className="w-4 h-4 mr-2" />
                           Call
                         </Button>

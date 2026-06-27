@@ -219,7 +219,7 @@ export function HeroSection() {
                       onValueChange={handleCityChange}
                       disabled
                     >
-                      <SelectTrigger className="h-14 pl-12 pr-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl text-left focus:ring-0 focus:border focus:border-gray-300 search-trigger">
+                      <SelectTrigger className="h-14 pl-12 pr-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl text-left search-trigger">
                         <SelectValue placeholder="Select City" />
                       </SelectTrigger>
                       <SelectContent>
@@ -244,7 +244,7 @@ export function HeroSection() {
                       placeholder="Location, landmark, project..."
                       value={searchForm.area}
                       onChange={(e) => handleLocationChange(e.target.value)}
-                      className="h-14 pl-12 pr-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl placeholder:text-gray-500 focus:ring-0 focus:border focus:border-gray-300 search-input"
+                      className="h-14 pl-12 pr-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl placeholder:text-gray-500 search-input"
                     />
                   </div>
                 </div>
@@ -260,7 +260,7 @@ export function HeroSection() {
                       setSearchForm((prev) => ({ ...prev, bhk: value }))
                     }
                   >
-                    <SelectTrigger className="h-14 px-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl text-left focus:ring-0 focus:border focus:border-gray-300 search-trigger">
+                    <SelectTrigger className="h-14 px-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl text-left search-trigger">
                       <SelectValue placeholder="BHK" />
                     </SelectTrigger>
                     <SelectContent>
@@ -287,7 +287,7 @@ export function HeroSection() {
                       }))
                     }
                   >
-                    <SelectTrigger className="h-14 px-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl text-left focus:ring-0 focus:border focus:border-gray-300 search-trigger">
+                    <SelectTrigger className="h-14 px-4 bg-transparent border-0 hover:bg-gray-50 rounded-xl text-left search-trigger">
                       <SelectValue placeholder="Property Type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -304,7 +304,7 @@ export function HeroSection() {
                 <ButtonAnimation>
                   <Button
                     onClick={handleSearch}
-                    className="h-14 w-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-shrink-0 focus:ring-0"
+                    className="h-14 w-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-shrink-0"
                   >
                     <Search className="w-5 h-5" />
                   </Button>
