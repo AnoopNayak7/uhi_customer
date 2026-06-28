@@ -12,6 +12,9 @@ const BYPASS_AUTH_ENDPOINTS = [
   '/tools',
   '/business-partnerships',
   '/interior/inquiries',
+  '/site-visit-requests',
+  '/location-marks/public',
+  '/developers',
   '/leads/document-download',
   '/leads/signup-prompt',
   '/rera-check',
@@ -61,6 +64,10 @@ class ApiClient {
     }
 
     if (endpoint.startsWith('/rera-check')) {
+      return true;
+    }
+
+    if (method === 'GET' && endpoint.startsWith('/developers')) {
       return true;
     }
 
@@ -179,6 +186,32 @@ class ApiClient {
 
     const searchParams = new URLSearchParams(params);
     return this.request(`/properties?${searchParams}`);
+  }
+
+  async getDevelopers(params: { limit?: number; status?: string; search?: string } = {}) {
+    const searchParams = new URLSearchParams();
+    if (params.limit) searchParams.set('limit', String(params.limit));
+    if (params.status) searchParams.set('status', params.status);
+    if (params.search) searchParams.set('search', params.search);
+    const query = searchParams.toString();
+    return this.request(`/developers${query ? `?${query}` : ''}`);
+  }
+
+  async getPropertyMapMarkers(params: any = {}) {
+    const markerParams = { ...params };
+    delete markerParams.page;
+    delete markerParams.limit;
+    delete markerParams.offset;
+
+    if (markerParams.propertyCategory) {
+      if (markerParams.propertyCategory === 'flat') {
+        markerParams.propertyCategory = 'apartment';
+      }
+      markerParams.category = markerParams.propertyCategory;
+    }
+
+    const searchParams = new URLSearchParams(markerParams);
+    return this.request(`/properties/map-markers?${searchParams}`);
   }
 
   async getLocationBasedProperties(location: { city: string; area?: string }, params: any = {}) {
@@ -413,6 +446,53 @@ class ApiClient {
     });
   }
 
+  async updateBookVisitDetails(
+    id: string,
+    data: {
+      transportMode?: 'own_vehicle' | 'pick_drop';
+      pickupLocation?: string;
+      dropoffLocation?: string;
+      locationMarkToken?: string;
+      message?: string;
+    }
+  ) {
+    return this.request(`/auth/book-visits/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async createLocationMarkLink() {
+    return this.request('/location-marks/my-link', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+  }
+
+  async getPublicLocationMark(token: string) {
+    return this.request(`/location-marks/public/${encodeURIComponent(token)}`);
+  }
+
+  async submitLocationMark(
+    token: string,
+    data: {
+      areaMode: 'circle' | 'freehand';
+      center: { lat: number; lng: number };
+      radiusMeters: number;
+      polygonPath?: { lat: number; lng: number }[];
+      addressLabel?: string;
+      note?: string;
+    }
+  ) {
+    return this.request(
+      `/location-marks/public/${encodeURIComponent(token)}/submit`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
   // Document download request
   async requestDocumentDownload(data: {
     propertyId: string;
@@ -489,6 +569,27 @@ class ApiClient {
     message?: string;
   }) {
     return this.request('/interior/inquiries', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async submitSiteVisitRequest(data: {
+    name: string;
+    phone: string;
+    email?: string;
+    preferredAreas?: string;
+    budget?: string;
+    preferredDate?: string;
+    preferredTime?: string;
+    pickupLocation?: string;
+    dropoffLocation?: string;
+    transportMode?: 'own_vehicle' | 'pick_drop';
+    locationMarkToken?: string;
+    message?: string;
+    city?: string;
+  }) {
+    return this.request('/site-visit-requests', {
       method: 'POST',
       body: JSON.stringify(data),
     });

@@ -1,7 +1,6 @@
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { MapPin, Info } from "lucide-react";
+import { MapPin, ShieldCheck } from "lucide-react";
 import PropertyDetailsGrid from "./PropertyDetailsGrid";
+import { ReraDetailsDialog } from "./ReraDetailsDialog";
 
 interface PropertyHeaderProps {
   property: any;
@@ -12,64 +11,61 @@ export const PropertyHeader = ({
   property,
   formatPrice,
 }: PropertyHeaderProps) => {
-  return (
-    <div className="mb-6">
-      <h1 className="text-xl font-bold mb-2">{property.title}</h1>
+  const listingLabel =
+    property.propertyType === "rent"
+      ? "For rent"
+      : property.propertyType === "commercial"
+        ? "Commercial"
+        : "For sale";
 
-      <div className="flex items-center text-[12px] text-gray-600 mb-4">
-        <MapPin className="w-4 h-4 mr-1" />
-        <span>
-          {property.address}, {property.city}
+  return (
+    <div className="space-y-5">
+      <div className="space-y-3">
+        <span className="property-badge-listing uppercase tracking-[0.08em]">
+          {property.category || "Property"} · {listingLabel}
         </span>
+
+        <h1 className="font-manrope text-xl font-semibold tracking-[-0.02em] text-[#1A1A1A] sm:text-2xl">
+          {property.title}
+        </h1>
+
+        <div className="flex items-center font-manrope text-sm text-[#5C5C5C]">
+          <MapPin className="mr-1.5 size-4 shrink-0" strokeWidth={1.5} />
+          <span>
+            {property.address}, {property.city}
+          </span>
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between mb-4">
-        <div className="flex items-center">
-          <h2 className="text-xl font-bold text-primary mr-2">
-            {formatPrice(property.priceRangeStart)} -{" "}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <p className="font-manrope text-[1.65rem] font-bold tracking-[-0.03em] text-[#1A1A1A] sm:text-[2rem]">
+            {formatPrice(property.priceRangeStart)} –{" "}
             {formatPrice(property.priceRangeEnd)}
-          </h2>
-          {property.pricePerSqFt && (
-            <span className="text-sm text-gray-500">
+          </p>
+          {property.pricePerSqFt ? (
+            <span className="font-manrope text-sm text-[#5C5C5C]">
               ({formatPrice(property.pricePerSqFt)}/sq.ft)
             </span>
-          )}
+          ) : null}
         </div>
 
-        {property.reraApproved && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Badge
-                variant="outline"
-                className="flex items-center cursor-pointer border-green-500 text-green-600 hover:bg-green-50"
+        {(property.reraApproved ||
+          property.rera?.registrationNumber ||
+          property.reraNumber) ? (
+          <ReraDetailsDialog
+            property={property}
+            trigger={
+              <button
+                type="button"
+                className="property-badge-rera cursor-pointer uppercase tracking-[0.08em]"
               >
-                <Info className="w-3 h-3 mr-1" />
-                RERA Approved
-              </Badge>
-            </DialogTrigger>
-            <DialogContent>
-              <div className="p-4">
-                <h3 className="text-lg font-semibold mb-2">RERA Details</h3>
-                <p className="text-sm mb-4">
-                  This property is approved by the Real Estate Regulatory
-                  Authority.
-                </p>
-                <div className="bg-gray-50 p-3 rounded-md">
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className="text-gray-600">RERA Number:</div>
-                    <div className="font-medium">
-                      {property.reraNumber || "RERA123456789"}
-                    </div>
-                    <div className="text-gray-600">Valid Until:</div>
-                    <div className="font-medium">
-                      {property.reraValidUntil || "31 Dec 2025"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+                <ShieldCheck className="size-3 shrink-0" strokeWidth={2} />
+                RERA verified
+              </button>
+            }
+          />
+        ) : null}
       </div>
 
       <PropertyDetailsGrid property={property} />

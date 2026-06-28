@@ -12,6 +12,11 @@ export const APP_CONFIG = {
   }
 };
 
+/** Same API base URL the client uses (prod). Avoids .env.local dev URL breaking SSR SEO. */
+export function getApiBaseUrl(): string {
+  return APP_CONFIG.api.baseUrl;
+}
+
 export const PROPERTY_TYPES = [
   { value: 'sell', label: 'Buy' },
   { value: 'rent', label: 'Rent' },

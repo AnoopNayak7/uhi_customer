@@ -1,12 +1,8 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Grid3X3, Map as MapIcon } from "lucide-react";
-import { PropertyCard } from "./PropertyCard";
+import { HomePropertyCard } from "@/components/home/home-property-card";
 import { usePropertyStore } from "@/lib/store";
 import { AnimatedPropertyGrid } from "@/components/animations/animated-property-list";
-import { MotionWrapper } from "@/components/animations/motion-wrapper";
 
 interface PropertyListProps {
   properties: any[];
@@ -19,62 +15,72 @@ interface PropertyListProps {
 export function PropertyList({
   properties,
   loading,
-  viewMode,
-  setViewMode,
   onFavorite,
 }: PropertyListProps) {
-  const { favourites } = usePropertyStore();
+  const {
+    favourites,
+    compareList,
+    addToFavourites,
+    removeFromFavourites,
+    addToCompare,
+    removeFromCompare,
+  } = usePropertyStore();
 
-  const handleFavorite = (property: any) => {
+  const handleFavourite = (property: any) => {
     if (onFavorite) {
       onFavorite(property);
+      return;
+    }
+
+    const isFavorite = favourites.some((p) => p.id === property.id);
+    if (isFavorite) {
+      removeFromFavourites(property.id);
     } else {
-      // Fallback to local store if no onFavorite prop provided
-      const { addToFavourites, removeFromFavourites } = usePropertyStore.getState();
-      const isFavorite = favourites.some((p) => p.id === property.id);
-      if (isFavorite) {
-        removeFromFavourites(property.id);
-      } else {
-        addToFavourites(property);
-      }
+      addToFavourites(property);
+    }
+  };
+
+  const toggleCompare = (property: any) => {
+    if (compareList.some((p) => p.id === property.id)) {
+      removeFromCompare(property.id);
+    } else {
+      addToCompare(property);
     }
   };
 
   return (
     <div className="flex-1 overflow-x-hidden">
-
-      {viewMode === "grid" ? (
-        <AnimatedPropertyGrid
-          loading={loading}
-          className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-4 sm:gap-6"
-        >
-          {properties.length > 0
-            ? properties.map((property) => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  onFavorite={() => handleFavorite(property)}
-                  isFavorite={favourites.some((p) => p.id === property.id)}
-                  compact={true}
-                />
-              ))
-            : !loading
+      <AnimatedPropertyGrid
+        loading={loading}
+        className="grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+      >
+        {properties.length > 0
+          ? properties.map((property) => (
+              <HomePropertyCard
+                key={property.id}
+                property={property}
+                onFavourite={() => handleFavourite(property)}
+                isFavourite={favourites.some((p) => p.id === property.id)}
+                onCompare={() => toggleCompare(property)}
+                isInCompare={compareList.some((p) => p.id === property.id)}
+              />
+            ))
+          : !loading
             ? [
-                <Card
+                <div
                   key="no-results"
-                  className="p-6 sm:p-8 text-center col-span-full"
+                  className="col-span-full rounded-[20px] border border-[#EBEBEB] bg-white px-6 py-12 text-center"
                 >
-                  <p className="text-gray-500 text-base sm:text-base">
+                  <p className="font-manrope text-base font-medium text-[#222222]">
                     No properties found matching your criteria.
                   </p>
-                  <p className="text-gray-500 text-sm mt-2">
-                    Try adjusting your filters.
+                  <p className="mt-2 font-manrope text-sm text-[#5C5C5C]">
+                    Try adjusting your filters or search in a different area.
                   </p>
-                </Card>,
+                </div>,
               ]
             : []}
-        </AnimatedPropertyGrid>
-      ) : null}
+      </AnimatedPropertyGrid>
     </div>
   );
 }

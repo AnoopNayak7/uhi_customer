@@ -10,8 +10,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Download, FileText, Layout, MessageCircle, CheckCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  FileText,
+  Layout,
+  Loader2,
+  MessageCircle,
+} from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface PropertyMobileNavProps {
@@ -37,8 +44,17 @@ export function PropertyMobileNav({ property }: PropertyMobileNavProps) {
   const hasBrochure = !!property.brochureUrl;
   const hasFloorPlan = !!property.floorPlanPdfUrl;
 
+  if (!hasBrochure && !hasFloorPlan) {
+    return null;
+  }
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const resetDialog = () => {
+    setSuccess(false);
+    setFormData({ name: "", phone: "", email: "" });
   };
 
   const handleSubmit = async (documentType: "brochure" | "floor_plan") => {
@@ -59,198 +75,227 @@ export function PropertyMobileNav({ property }: PropertyMobileNavProps) {
 
       if (response.success) {
         setSuccess(true);
-        toast.success("Request submitted! The document will be sent to your WhatsApp shortly.");
-        
-        // Reset form and close dialog after 3 seconds
+        toast.success("Request submitted! We'll send it on WhatsApp shortly.");
+
         setTimeout(() => {
-          setSuccess(false);
-          setFormData({ name: "", phone: "", email: "" });
+          resetDialog();
           if (documentType === "brochure") {
             setBrochureDialogOpen(false);
           } else {
             setFloorPlanDialogOpen(false);
           }
-        }, 3000);
+        }, 2500);
       } else {
         throw new Error(response.message || "Failed to submit request");
       }
     } catch (error: any) {
       console.error("Error requesting document:", error);
-      toast.error(error.message || "Failed to submit request. Please try again.");
+      toast.error(
+        error.message || "Failed to submit request. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // Always show the nav bar on mobile, even if documents aren't available yet
-  // Users can still request documents
 
   const DownloadDialog = ({
     open,
     onOpenChange,
     documentType,
     documentName,
+    icon: Icon,
   }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     documentType: "brochure" | "floor_plan";
     documentName: string;
+    icon: typeof FileText;
   }) => (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md mx-auto bg-white rounded-2xl shadow-2xl border-0 p-0 overflow-hidden">
-        {!success ? (
-          <>
-            <DialogHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 pb-8">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <Download className="w-6 h-6" />
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        onOpenChange(next);
+        if (!next) resetDialog();
+      }}
+    >
+      <DialogContent className="max-h-[90vh] max-w-md gap-0 overflow-hidden overflow-y-auto rounded-[20px] border-[#EBEBEB] p-0">
+        <div className="p-6 sm:p-7">
+          {success ? (
+            <div className="py-6 text-center">
+              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full border border-[#EBEBEB] bg-[#FAFAFA]">
+                <CheckCircle2
+                  className="size-7 text-green-600"
+                  strokeWidth={1.5}
+                />
+              </div>
+              <h3 className="font-manrope text-lg font-semibold text-[#222222]">
+                Request received
+              </h3>
+              <p className="mt-2 font-manrope text-sm text-[#717171]">
+                The {documentName.toLowerCase()} will be sent to your WhatsApp
+                number shortly.
+              </p>
+            </div>
+          ) : (
+            <>
+              <DialogHeader className="space-y-3 pb-5 text-left">
+                <div className="flex items-start gap-3">
+                  <span className="property-icon-pill size-11 shrink-0">
+                    <Icon className="size-4" strokeWidth={1.5} />
+                  </span>
+                  <div className="min-w-0">
+                    <DialogTitle className="font-manrope text-lg font-semibold text-[#222222]">
+                      Get {documentName.toLowerCase()}
+                    </DialogTitle>
+                    <p className="mt-1 line-clamp-2 font-manrope text-sm text-[#717171]">
+                      {property.title}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <DialogTitle className="text-xl font-bold">
-                    Download {documentName}
-                  </DialogTitle>
-                  <p className="text-blue-100 text-sm mt-1">
-                    We'll send it to your WhatsApp
+              </DialogHeader>
+
+              <div className="mb-5 rounded-xl border border-[#E8F4FD] bg-[#F7FBFF] p-3.5">
+                <div className="flex gap-2.5">
+                  <MessageCircle
+                    className="mt-0.5 size-4 shrink-0 text-[#2563EB]"
+                    strokeWidth={1.5}
+                  />
+                  <p className="font-manrope text-xs leading-relaxed text-[#484848]">
+                    We&apos;ll send the {documentName.toLowerCase()} directly to
+                    your WhatsApp — no download link on this page.
                   </p>
                 </div>
               </div>
-            </DialogHeader>
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit(documentType);
-              }}
-              className="p-6 space-y-4"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                  Full Name *
-                </Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
-                  required
-                />
-              </div>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSubmit(documentType);
+                }}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`${documentType}-name`}
+                    className="font-manrope text-sm text-[#484848]"
+                  >
+                    Full name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id={`${documentType}-name`}
+                    type="text"
+                    placeholder="Your name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    className="h-11 rounded-xl border-[#DDDDDD] font-manrope"
+                    required
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                  Phone Number *
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+91 98765 43210"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
-                  required
-                />
-                <p className="text-xs text-gray-500">
-                  The document will be sent to this WhatsApp number
-                </p>
-              </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`${documentType}-phone`}
+                    className="font-manrope text-sm text-[#484848]"
+                  >
+                    WhatsApp number <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id={`${documentType}-phone`}
+                    type="tel"
+                    placeholder="+91 98765 43210"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    className="h-11 rounded-xl border-[#DDDDDD] font-manrope"
+                    required
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                  Email (Optional)
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`${documentType}-email`}
+                    className="font-manrope text-sm text-[#484848]"
+                  >
+                    Email (optional)
+                  </Label>
+                  <Input
+                    id={`${documentType}-email`}
+                    type="email"
+                    placeholder="you@email.com"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    className="h-11 rounded-xl border-[#DDDDDD] font-manrope"
+                  />
+                </div>
 
-              <div className="pt-4">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="property-btn-pill mt-1 h-11 w-full rounded-full bg-[#303030] text-white hover:bg-[#1a1a1a]"
                 >
                   {isSubmitting ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Submitting...</span>
-                    </div>
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Submitting…
+                    </>
                   ) : (
-                    <div className="flex items-center justify-center space-x-2">
-                      <MessageCircle className="w-4 h-4" />
-                      <span>Send to WhatsApp</span>
-                    </div>
+                    <>
+                      <MessageCircle className="mr-2 size-4" strokeWidth={1.5} />
+                      Send to WhatsApp
+                    </>
                   )}
                 </Button>
-              </div>
-            </form>
-          </>
-        ) : (
-          <div className="p-8 text-center">
-            <div className="mb-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Request Submitted!
-              </h3>
-              <p className="text-gray-600">
-                The {documentName} will be sent to your WhatsApp number shortly.
-              </p>
-            </div>
-          </div>
-        )}
+              </form>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
 
   return (
     <>
-      {/* Mobile Bottom Navigation Bar - Always show on mobile */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 shadow-lg">
-        <div className="flex items-center justify-around px-2 py-3">
-          <Button
-            variant="ghost"
-            className={`flex flex-col items-center gap-1 h-auto py-2 px-4 flex-1 ${
-              !hasBrochure ? 'opacity-50' : ''
-            }`}
-            onClick={() => setBrochureDialogOpen(true)}
-            disabled={!hasBrochure}
-          >
-            <FileText className={`w-5 h-5 ${hasBrochure ? 'text-blue-600' : 'text-gray-400'}`} />
-            <span className={`text-xs font-medium ${hasBrochure ? 'text-gray-700' : 'text-gray-400'}`}>
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+        <div className="border-t border-[#EBEBEB] bg-white/95 px-3 pt-2 backdrop-blur-md pb-[max(0.625rem,env(safe-area-inset-bottom))]">
+          <div className="mx-auto flex max-w-lg gap-2">
+            <button
+              type="button"
+              disabled={!hasBrochure}
+              onClick={() => setBrochureDialogOpen(true)}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-2 rounded-full border py-3 font-manrope text-sm font-medium transition-colors",
+                hasBrochure
+                  ? "border-[#E8E8E8] bg-[#FAFAFA] text-[#303030] active:bg-[#F0F0F0]"
+                  : "cursor-not-allowed border-[#F0F0F0] bg-[#FAFAFA] text-[#B0B0B0]"
+              )}
+            >
+              <FileText className="size-4 shrink-0" strokeWidth={1.5} />
               Brochure
-            </span>
-          </Button>
-          
-          <Button
-            variant="ghost"
-            className={`flex flex-col items-center gap-1 h-auto py-2 px-4 flex-1 ${
-              !hasFloorPlan ? 'opacity-50' : ''
-            }`}
-            onClick={() => setFloorPlanDialogOpen(true)}
-            disabled={!hasFloorPlan}
-          >
-            <Layout className={`w-5 h-5 ${hasFloorPlan ? 'text-purple-600' : 'text-gray-400'}`} />
-            <span className={`text-xs font-medium ${hasFloorPlan ? 'text-gray-700' : 'text-gray-400'}`}>
-              Floor Plan
-            </span>
-          </Button>
+            </button>
+
+            <button
+              type="button"
+              disabled={!hasFloorPlan}
+              onClick={() => setFloorPlanDialogOpen(true)}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-2 rounded-full border py-3 font-manrope text-sm font-medium transition-colors",
+                hasFloorPlan
+                  ? "border-[#303030] bg-[#303030] text-white active:bg-[#1a1a1a]"
+                  : "cursor-not-allowed border-[#F0F0F0] bg-[#FAFAFA] text-[#B0B0B0]"
+              )}
+            >
+              <Layout className="size-4 shrink-0" strokeWidth={1.5} />
+              Floor plan
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Download Dialogs */}
       <DownloadDialog
         open={brochureDialogOpen}
         onOpenChange={setBrochureDialogOpen}
         documentType="brochure"
         documentName="Brochure"
+        icon={FileText}
       />
 
       <DownloadDialog
@@ -258,6 +303,7 @@ export function PropertyMobileNav({ property }: PropertyMobileNavProps) {
         onOpenChange={setFloorPlanDialogOpen}
         documentType="floor_plan"
         documentName="Floor Plan"
+        icon={Layout}
       />
     </>
   );

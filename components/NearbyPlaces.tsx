@@ -1029,15 +1029,24 @@ const NearbyPlaces = ({
 interface EnhancedNearbyPlacesProps {
   propertyCoordinates?: [number, number];
   propertyAddress?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 const EnhancedNearbyPlaces = ({
-  propertyCoordinates = [12.9716, 77.5946], // Fallback to Bangalore Central
+  propertyCoordinates,
   propertyAddress = "Property Location",
+  latitude,
+  longitude,
 }: EnhancedNearbyPlacesProps) => {
-  // Use property coordinates directly, not state with default fallback
+  const resolvedCoordinates = useMemo<[number, number]>(() => {
+    if (propertyCoordinates) return propertyCoordinates;
+    if (latitude != null && longitude != null) return [latitude, longitude];
+    return [12.9716, 77.5946];
+  }, [propertyCoordinates, latitude, longitude]);
+
   const [location, setLocation] =
-    useState<[number, number]>(propertyCoordinates);
+    useState<[number, number]>(resolvedCoordinates);
   const [locationName, setLocationName] = useState(propertyAddress);
   const [locationInfo, setLocationInfo] = useState<LocationInfo>({
     city: "Loading...",
@@ -1167,18 +1176,15 @@ const EnhancedNearbyPlaces = ({
 
   // Update location when property coordinates change
   useEffect(() => {
-    console.log("Property coordinates changed:", propertyCoordinates);
-
-    // Debounce the coordinate updates to prevent excessive API calls
     const timeoutId = setTimeout(() => {
-      setLocation(propertyCoordinates);
+      setLocation(resolvedCoordinates);
       setLocationName(propertyAddress);
       setIsLocationLoading(true);
-      getNearbyRoads(propertyCoordinates[0], propertyCoordinates[1]);
-    }, 300); // 300ms debounce
+      getNearbyRoads(resolvedCoordinates[0], resolvedCoordinates[1]);
+    }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [propertyCoordinates, propertyAddress, getNearbyRoads]);
+  }, [resolvedCoordinates, propertyAddress, getNearbyRoads]);
 
   // Handle location info updates from NearbyPlaces component
   const handleLocationInfoUpdate = (info: LocationInfo) => {
@@ -1407,154 +1413,54 @@ const EnhancedNearbyPlaces = ({
   }, []);
 
   return (
-    <div className="sm:p-4 sm:max-w-6xl mx-auto space-y-6">
-      {/* Header */}
-      <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30">
-        <div className="p-3 md:p-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-          <div className="flex items-center gap-2 md:gap-4">
-            <div className="w-10 h-10 md:w-16 md:h-16 bg-white/20 backdrop-blur-sm rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg hidden md:flex">
-              {isLocationLoading ? (
-                <Loader2 className="w-5 h-5 md:w-8 md:h-8 text-white animate-spin" />
-              ) : (
-                <Building className="w-5 h-5 md:w-8 md:h-8 text-white" />
-              )}
-            </div>
-            <div className="flex-1">
-              <h1 className="text-sm md:text-2xl font-bold text-white mb-1">
-                {isLocationLoading ? "Detecting Location..." : locationName}
-              </h1>
-              <p className="text-blue-100 text-xs md:text-base">
-                {isLocationLoading
-                  ? "Fetching address details..."
-                  : `${locationInfo.area}, ${locationInfo.city}`}
-              </p>
-              <p className="text-blue-200 text-xs md:text-sm">
-                {isLocationLoading
-                  ? "Please wait..."
-                  : `${locationInfo.state}, ${locationInfo.country}`}
-              </p>
-            </div>
-            <Button
-              onClick={setCoordinatesManually}
-              variant="secondary"
-              size="sm"
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm text-xs md:text-sm h-7 md:h-9 px-2 md:px-3"
-            >
-              <Navigation className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-              <span className="hidden md:inline">Change Location</span>
-              <span className="md:hidden">Change</span>
-            </Button>
+    <div className="space-y-5">
+      {/* Travel Times */}
+      <div className="overflow-hidden rounded-[16px] border border-[#EBEBEB] bg-white">
+        <div className="flex items-center gap-3 border-b border-[#F0F0F0] px-4 py-4 sm:px-5">
+          <div className="property-icon-pill">
+            <Clock className="size-4" strokeWidth={1.5} />
+          </div>
+          <div>
+            <h3 className="font-manrope text-sm font-semibold text-[#1A1A1A]">
+              Travel times
+            </h3>
+            <p className="font-manrope text-xs text-[#5C5C5C]">
+              Calculate commute times to {locationName}
+            </p>
           </div>
         </div>
 
-        <div className="p-3 md:p-6 space-y-3 md:space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
-            <div className="space-y-2 md:space-y-3">
-              <label className="text-xs md:text-sm font-medium text-gray-700">
-                Search Radius
-              </label>
-              <Select
-                value={radius.toString()}
-                onValueChange={(value) => setRadius(parseInt(value))}
-              >
-                <SelectTrigger className="h-8 md:h-10 rounded-lg border-gray-200 focus:ring-2 focus:ring-blue-500/20 text-xs md:text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 km radius</SelectItem>
-                  <SelectItem value="2">2 km radius</SelectItem>
-                  <SelectItem value="3">3 km radius</SelectItem>
-                  <SelectItem value="5">5 km radius</SelectItem>
-                  <SelectItem value="10">10 km radius</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Status Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
-              <div className="flex items-center gap-3">
-                <MapPin className="w-5 h-5 text-gray-600" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    Coordinates
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    {location[0].toFixed(6)}, {location[1].toFixed(6)}
-                  </p>
-                </div>
-              </div>
-            </div> */}
-
-            {/* {!isLocationLoading && (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-green-900">Status</p>
-                    <p className="text-xs text-green-700">Location Detected</p>
-                  </div>
-                </div>
-              </div>
-            )} */}
-          </div>
-        </div>
-      </Card>
-
-      {/* Travel Time Section */}
-      <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50">
-        <div className="p-3 md:p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-b border-blue-100/50">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg hidden md:flex">
-              <Clock className="w-3 h-3 md:w-5 md:h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-sm md:text-lg font-semibold text-gray-900 mb-1">
-                Travel Times
-              </h2>
-              <p className="text-xs md:text-sm text-gray-600">
-                Calculate commute times to {locationName}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-3 md:p-6 space-y-3 md:space-y-6">
-          {/* Search Input Section */}
-          <div className="space-y-2 md:space-y-4">
+        <div className="space-y-5 p-4 sm:p-5">
+          <div className="space-y-4">
             <div className="relative">
-              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                <MapPin className="w-4 h-4 text-gray-400" />
+              <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                <MapPin className="size-4 text-[#8A8A8A]" strokeWidth={1.5} />
               </div>
               <Input
                 type="text"
                 value={newDestination}
                 onChange={(e) => handleLocationSearch(e.target.value)}
-                className="pl-10 pr-4 h-9 md:h-12 text-xs md:text-sm border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="h-11 rounded-[12px] border-[#EBEBEB] bg-[#FAFAFA] pl-10 font-manrope text-sm text-[#1A1A1A] placeholder:text-[#8A8A8A] focus-visible:border-[#303030] focus-visible:ring-[#303030]/10"
                 placeholder="Enter starting point (home, office, school...)"
                 disabled={preferredDestinations.length >= 3}
               />
 
-              {/* Search Results Dropdown */}
               {suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-20 max-h-64 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 z-20 mt-2 max-h-64 overflow-y-auto rounded-[12px] border border-[#EBEBEB] bg-white shadow-lg">
                   {suggestions.map((suggestion) => (
                     <button
                       key={suggestion.place_id}
                       onClick={() => addTravelDestination(suggestion)}
-                      className="w-full text-left p-4 hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0 first:rounded-t-xl last:rounded-b-xl"
+                      className="w-full border-b border-[#F0F0F0] p-3 text-left transition-colors last:border-b-0 hover:bg-[#FAFAFA]"
                       disabled={preferredDestinations.length >= 3}
                     >
                       <div className="flex items-start gap-3">
-                        <MapPin className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900 truncate">
+                        <MapPin className="mt-0.5 size-4 shrink-0 text-[#484848]" strokeWidth={1.5} />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate font-manrope text-sm font-medium text-[#1A1A1A]">
                             {suggestion.display_name.split(",")[0]}
                           </div>
-                          <div className="text-xs text-gray-500 mt-1 line-clamp-1">
+                          <div className="mt-0.5 line-clamp-1 font-manrope text-xs text-[#5C5C5C]">
                             {suggestion.display_name}
                           </div>
                         </div>
@@ -1564,67 +1470,65 @@ const EnhancedNearbyPlaces = ({
                 </div>
               )}
 
-              {/* Loading State */}
               {isSearching && newDestination.length >= 3 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-20 p-4">
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                <div className="absolute top-full left-0 right-0 z-20 mt-2 rounded-[12px] border border-[#EBEBEB] bg-white p-4 shadow-lg">
+                  <div className="flex items-center gap-3 font-manrope text-sm text-[#5C5C5C]">
+                    <Loader2 className="size-4 animate-spin text-[#484848]" />
                     <span>Searching locations...</span>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Route Visualization */}
-            <div className="flex items-center justify-center gap-2 md:gap-4 py-3 md:py-4">
-              <div className="flex flex-col items-center gap-1 md:gap-2">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <MapPin className="w-3 h-3 md:w-4 md:h-4 text-green-600" />
+            <div className="flex items-center justify-center gap-3 py-2">
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="flex size-8 items-center justify-center rounded-full border border-[#EBEBEB] bg-[#FAFAFA]">
+                  <MapPin className="size-3.5 text-[#484848]" strokeWidth={1.5} />
                 </div>
-                <span className="text-xs text-gray-600 font-medium">From</span>
+                <span className="font-manrope text-[11px] font-medium text-[#5C5C5C]">
+                  From
+                </span>
               </div>
 
-              <div className="flex-1 relative">
-                <div className="h-[2px] bg-gradient-to-r from-green-200 via-blue-200 to-purple-200"></div>
+              <div className="relative flex-1">
+                <div className="h-px bg-[#E0E0E0]" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-white border-2 border-blue-300 rounded-full p-1">
-                    <Car className="w-2 h-2 md:w-3 md:h-3 text-blue-600" />
+                  <div className="flex size-7 items-center justify-center rounded-full border border-[#EBEBEB] bg-white">
+                    <Car className="size-3.5 text-[#484848]" strokeWidth={1.5} />
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col items-center gap-1 md:gap-2">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
-                  <Building className="w-3 h-3 md:w-4 md:h-4 text-white" />
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="flex size-8 items-center justify-center rounded-full border border-[#EBEBEB] bg-[#303030]">
+                  <Building className="size-3.5 text-white" strokeWidth={1.5} />
                 </div>
-                <span className="text-xs text-gray-600 font-medium">
-                  To Property
+                <span className="font-manrope text-[11px] font-medium text-[#5C5C5C]">
+                  To property
                 </span>
               </div>
             </div>
 
-            {/* Limit Message */}
             {preferredDestinations.length >= 3 && (
-              <div className="text-center p-2 md:p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-xs md:text-sm text-amber-700">
+              <div className="rounded-[12px] border border-[#F0E6D6] bg-[#FFFBF5] p-3 text-center">
+                <p className="font-manrope text-xs text-[#8A6B3D] sm:text-sm">
                   You&apos;ve reached the maximum of 3 saved locations
                 </p>
               </div>
             )}
           </div>
 
-          {/* Travel Times List */}
           {preferredDestinations.length > 0 && (
-            <div className="space-y-3 md:space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 md:gap-3">
-                  <h3 className="text-sm md:text-base font-semibold text-gray-900">
-                    Saved Locations ({preferredDestinations.length})
-                  </h3>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-manrope text-sm font-semibold text-[#1A1A1A]">
+                    Saved locations ({preferredDestinations.length})
+                  </h4>
                   {isRecalculatingTravelTimes && (
-                    <div className="flex items-center gap-2 text-xs md:text-sm text-blue-600">
-                      <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
-                      <span>Updating distances...</span>
+                    <div className="flex items-center gap-2 font-manrope text-xs text-[#5C5C5C]">
+                      <Loader2 className="size-3.5 animate-spin" />
+                      <span>Updating...</span>
                     </div>
                   )}
                 </div>
@@ -1632,11 +1536,11 @@ const EnhancedNearbyPlaces = ({
                   onClick={() => setShowTravelTime(!showTravelTime)}
                   variant="ghost"
                   size="sm"
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs"
+                  className="font-manrope text-xs text-[#484848] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]"
                 >
-                  {showTravelTime ? "Hide" : "Show"} Details
+                  {showTravelTime ? "Hide" : "Show"} details
                   <ChevronDown
-                    className={`w-3 h-3 md:w-4 md:h-4 ml-1 transition-transform ${
+                    className={`ml-1 size-3.5 transition-transform ${
                       showTravelTime ? "rotate-180" : ""
                     }`}
                   />
@@ -1644,64 +1548,57 @@ const EnhancedNearbyPlaces = ({
               </div>
 
               {showTravelTime && (
-                <div className="grid gap-2 md:gap-3">
-                  {preferredDestinations.map((dest, index) => (
+                <div className="grid gap-3">
+                  {preferredDestinations.map((dest) => (
                     <div key={dest.id} className="group relative">
-                      <div className="bg-white border border-gray-200 rounded-xl p-3 md:p-4 hover:shadow-md transition-all duration-200 hover:border-blue-300">
-                        <div className="flex items-start gap-3 md:gap-4">
-                          {/* Location Icon */}
-                          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <MapPin className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
+                      <div className="rounded-[12px] border border-[#F0F0F0] bg-[#FAFAFA] p-4 transition-colors hover:border-[#EBEBEB]">
+                        <div className="flex items-start gap-3">
+                          <div className="property-icon-pill !h-8 !w-8">
+                            <MapPin className="size-3.5" strokeWidth={1.5} />
                           </div>
-
-                          {/* Location Details */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2 md:gap-4">
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-gray-900 mb-1 truncate text-sm md:text-base">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <h5 className="truncate font-manrope text-sm font-semibold text-[#1A1A1A]">
                                   {dest.name}
-                                </h4>
-                                <p className="text-xs md:text-sm text-gray-600 line-clamp-2 mb-2 md:mb-3">
+                                </h5>
+                                <p className="mt-0.5 line-clamp-2 font-manrope text-xs text-[#5C5C5C]">
                                   {dest.address}
                                 </p>
-
-                                {/* Travel Info */}
-                                <div className="flex items-center gap-2 md:gap-4">
+                                <div className="mt-2 flex flex-wrap items-center gap-3">
                                   {dest.travelTime ? (
                                     <>
-                                      <div className="flex items-center gap-1 md:gap-2">
-                                        <Clock className="w-3 h-3 md:w-4 md:h-4 text-blue-500" />
-                                        <span className="font-medium text-gray-900 text-xs md:text-sm">
+                                      <div className="flex items-center gap-1.5">
+                                        <Clock className="size-3.5 text-[#484848]" strokeWidth={1.5} />
+                                        <span className="font-manrope text-xs font-medium text-[#1A1A1A]">
                                           {dest.travelTime}
                                         </span>
                                       </div>
                                       {dest.distance && (
-                                        <div className="flex items-center gap-1 md:gap-2">
-                                          <Navigation className="w-3 h-3 md:w-4 md:h-4 text-green-500" />
-                                          <span className="text-xs md:text-sm text-gray-600">
+                                        <div className="flex items-center gap-1.5">
+                                          <Navigation className="size-3.5 text-[#484848]" strokeWidth={1.5} />
+                                          <span className="font-manrope text-xs text-[#5C5C5C]">
                                             {dest.distance} km
                                           </span>
                                         </div>
                                       )}
                                     </>
                                   ) : (
-                                    <div className="flex items-center gap-1 md:gap-2">
-                                      <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin text-blue-500" />
-                                      <span className="text-xs md:text-sm text-gray-600">
+                                    <div className="flex items-center gap-1.5">
+                                      <Loader2 className="size-3.5 animate-spin text-[#484848]" />
+                                      <span className="font-manrope text-xs text-[#5C5C5C]">
                                         Calculating route...
                                       </span>
                                     </div>
                                   )}
                                 </div>
                               </div>
-
-                              {/* Remove Button */}
                               <button
                                 onClick={() => removeTravelDestination(dest.id)}
-                                className="opacity-0 group-hover:opacity-100 p-1 md:p-2 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                className="rounded-lg p-1.5 opacity-0 transition-all hover:bg-[#FFF0F0] group-hover:opacity-100"
                                 title="Remove location"
                               >
-                                <X className="w-3 h-3 md:w-4 md:h-4 text-red-400 hover:text-red-600" />
+                                <X className="size-3.5 text-[#C44]" strokeWidth={1.5} />
                               </button>
                             </div>
                           </div>
@@ -1714,92 +1611,90 @@ const EnhancedNearbyPlaces = ({
             </div>
           )}
 
-          {/* Empty State */}
           {preferredDestinations.length === 0 && (
-            <div className="text-center py-6 md:py-8">
-              <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                <MapPin className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
+            <div className="py-6 text-center">
+              <div className="property-icon-pill mx-auto mb-3 !h-12 !w-12">
+                <MapPin className="size-5 text-[#8A8A8A]" strokeWidth={1.5} />
               </div>
-              <h3 className="text-sm md:text-lg font-medium text-gray-900 mb-2">
+              <h4 className="mb-1.5 font-manrope text-sm font-semibold text-[#1A1A1A]">
                 No saved locations yet
-              </h3>
-              <p className="text-gray-600 text-xs md:text-sm max-w-sm mx-auto">
+              </h4>
+              <p className="mx-auto max-w-sm font-manrope text-xs text-[#5C5C5C] sm:text-sm">
                 Add your frequently visited places to see travel times and plan
                 your commute
               </p>
             </div>
           )}
         </div>
-      </Card>
+      </div>
 
-      {/* Connecting Roads */}
+      {/* Road connectivity */}
       {connectingRoads.length > 0 && (
-        <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-green-50/30">
-          <div className="p-3 md:p-6 bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 border-b border-green-100/50">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg hidden md:flex">
-                <Navigation className="w-3 h-3 md:w-5 md:h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-sm md:text-lg font-semibold text-gray-900 mb-1">
-                  Road Connectivity
-                </h2>
-                <p className="text-xs md:text-sm text-gray-600">
-                  Major roads and highways near this location
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-3 md:p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-              {connectingRoads.map((road, index) => (
-                <div
-                  key={index}
-                  className="group relative bg-white border border-gray-200 rounded-xl p-2 md:p-4 hover:shadow-md hover:border-green-300 transition-all duration-200"
-                >
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <div className="w-4 h-4 md:w-8 md:h-8 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0 hidden md:flex">
-                      <div className="w-1 h-1 md:w-3 md:h-3 bg-green-500 rounded-full"></div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium md:font-semibold text-gray-900 truncate mb-1 text-xs md:text-base">
-                        {road.name}
-                      </h3>
-                      <div className="flex items-center gap-1 md:gap-2">
-                        <span className="text-xs text-gray-500">Distance:</span>
-                        <span className="text-xs md:text-sm font-medium text-green-600">
-                          {road.distance}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Nearby Places Component */}
-      <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-indigo-50/30">
-        <div className="p-3 md:p-6 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border-b border-indigo-100/50">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-6 h-6 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg hidden md:flex">
-              <MapPin className="w-3 h-3 md:w-5 md:h-5 text-white" />
+        <div className="overflow-hidden rounded-[16px] border border-[#EBEBEB] bg-white">
+          <div className="flex items-center gap-3 border-b border-[#F0F0F0] px-4 py-4 sm:px-5">
+            <div className="property-icon-pill">
+              <Navigation className="size-4" strokeWidth={1.5} />
             </div>
             <div>
-              <h2 className="text-sm md:text-lg font-semibold text-gray-900 mb-1">
-                Nearby Places
-              </h2>
-              <p className="text-xs md:text-sm text-gray-600">
-                Discover schools, hospitals, malls, and transport options around
-                your location
+              <h3 className="font-manrope text-sm font-semibold text-[#1A1A1A]">
+                Road connectivity
+              </h3>
+              <p className="font-manrope text-xs text-[#5C5C5C]">
+                Major roads and highways near this location
               </p>
             </div>
           </div>
+          <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:p-5">
+            {connectingRoads.map((road, index) => (
+              <div
+                key={index}
+                className="rounded-[12px] border border-[#F0F0F0] bg-[#FAFAFA] p-3 sm:p-4"
+              >
+                <h4 className="truncate font-manrope text-sm font-medium text-[#1A1A1A]">
+                  {road.name}
+                </h4>
+                <p className="mt-1 font-manrope text-xs text-[#5C5C5C]">
+                  {road.distance} away
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="p-3 md:p-6">
+      )}
+
+      {/* Nearby places */}
+      <div className="overflow-hidden rounded-[16px] border border-[#EBEBEB] bg-white">
+        <div className="flex flex-col gap-3 border-b border-[#F0F0F0] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="flex items-center gap-3">
+            <div className="property-icon-pill">
+              <MapPin className="size-4" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h3 className="font-manrope text-sm font-semibold text-[#1A1A1A]">
+                Nearby places
+              </h3>
+              <p className="font-manrope text-xs text-[#5C5C5C]">
+                Schools, hospitals, malls, and transport nearby
+              </p>
+            </div>
+          </div>
+          <Select
+            value={radius.toString()}
+            onValueChange={(value) => setRadius(parseInt(value))}
+          >
+            <SelectTrigger className="h-9 w-full rounded-full border-[#EBEBEB] bg-[#FAFAFA] font-manrope text-xs text-[#484848] sm:w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 km radius</SelectItem>
+              <SelectItem value="2">2 km radius</SelectItem>
+              <SelectItem value="3">3 km radius</SelectItem>
+              <SelectItem value="5">5 km radius</SelectItem>
+              <SelectItem value="10">10 km radius</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="p-4 sm:p-5">
           <NearbyPlaces
             center={location}
             locationName={locationName}
@@ -1807,7 +1702,7 @@ const EnhancedNearbyPlaces = ({
             onLocationInfoUpdate={handleLocationInfoUpdate}
           />
         </div>
-      </Card>
+      </div>
     </div>
   );
 };

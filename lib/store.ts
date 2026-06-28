@@ -14,7 +14,7 @@ interface User {
   isVerified: boolean;
 }
 
-interface Property {
+export interface Property {
   id: string;
   slug?: string;
   title: string;
@@ -82,6 +82,7 @@ interface SearchState {
     possessionStatus: string;
     minArea: number;
     maxArea: number;
+    builderId: string;
   };
   updateSearchFilters: (filters: Partial<SearchState['searchFilters']>) => void;
   clearFilters: () => void;
@@ -255,7 +256,8 @@ export const useSearchStore = create<SearchState>((set) => ({
     furnishingStatus: '',
     possessionStatus: '',
     minArea: 0,
-    maxArea: 0
+    maxArea: 0,
+    builderId: '',
   },
   updateSearchFilters: (filters) => set((state) => ({
     searchFilters: { ...state.searchFilters, ...filters }
@@ -272,7 +274,8 @@ export const useSearchStore = create<SearchState>((set) => ({
       furnishingStatus: '',
       possessionStatus: '',
       minArea: 0,
-      maxArea: 0
+      maxArea: 0,
+      builderId: '',
     }
   })
 }));

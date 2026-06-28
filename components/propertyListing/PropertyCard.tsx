@@ -214,17 +214,18 @@ export const PropertyCard = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`h-10 w-10 sm:h-8 sm:w-8 p-0 rounded-full backdrop-blur-sm bg-white/20 hover:bg-white/30 ${
+                  className={`h-10 w-10 sm:h-8 sm:w-8 p-0 rounded-full backdrop-blur-sm ${
                     isFavorite
-                      ? "text-red-500"
-                      : "text-white hover:text-red-500"
+                      ? "bg-white/95 text-red-500 shadow-sm ring-1 ring-red-200 hover:bg-white"
+                      : "bg-white/20 text-white hover:bg-white/30 hover:text-red-500"
                   }`}
                   onClick={handleFavoriteClick}
                 >
                   <Heart
                     className={`w-5 h-5 sm:w-4 sm:h-4 ${
-                      isFavorite ? "fill-current" : ""
+                      isFavorite ? "fill-red-500 text-red-500" : ""
                     }`}
+                    strokeWidth={isFavorite ? 0 : 2}
                   />
                 </Button>
               </motion.div>

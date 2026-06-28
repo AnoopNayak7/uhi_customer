@@ -274,7 +274,7 @@ export default function HomePage() {
         }}
       />
       
-      <div className="min-h-screen flex flex-col">
+      <div className="flex min-h-screen flex-col bg-white">
         <Header />
         <HomepageClient />
         <Footer />

@@ -316,7 +316,10 @@ export const ImageGallery = ({
               isFavorite ? "text-red-500" : ""
             }`}
           >
-            <Heart className={`w-3 h-3 ${isFavorite ? "fill-red-500" : ""}`} />
+            <Heart
+              className={`w-3 h-3 ${isFavorite ? "fill-red-500 text-red-500" : ""}`}
+              strokeWidth={isFavorite ? 0 : 2}
+            />
           </Button>
         </div>
 

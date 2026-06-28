@@ -20,6 +20,8 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-manrope)', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         manrope: ['var(--font-manrope)', 'sans-serif'],
+        playfair: ['var(--font-playfair)', 'Georgia', 'Times New Roman', 'serif'],
+        montserrat: ['var(--font-montserrat)', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -98,12 +100,17 @@ const config: Config = {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
+        marquee: 'marquee 28s linear infinite',
         },
      
     },

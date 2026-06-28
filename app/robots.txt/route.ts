@@ -17,7 +17,7 @@ Allow: /tools/investment-guide
 
 # Main pages
 Allow: /
-Allow: /properties
+Allow: /properties/
 Allow: /about
 Allow: /contact
 Allow: /pricing
@@ -38,6 +38,7 @@ Disallow: /viewed-properties/
 
 # Sitemaps
 Sitemap: https://urbanhousein.com/sitemap.xml
+Sitemap: https://urbanhousein.com/sitemap-properties.xml
 Sitemap: https://urbanhousein.com/sitemap-tools.xml
 
 # Crawl delay for better server performance

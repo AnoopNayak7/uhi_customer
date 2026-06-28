@@ -298,8 +298,9 @@ export default function PropertyDetailClient({
                     >
                       <Heart
                         className={`w-4 h-4 ${
-                          isFavorite ? "fill-current" : ""
+                          isFavorite ? "fill-white text-white" : ""
                         }`}
+                        strokeWidth={isFavorite ? 0 : 2}
                       />
                     </Button>
                     <Button

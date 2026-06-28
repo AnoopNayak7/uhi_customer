@@ -264,68 +264,76 @@ export const FloorPlans = ({ floorPlans }: FloorPlansProps) => {
   const hasMorePlans = floorPlans.length > 3;
 
   return (
-    <section className="bg-white rounded-xl p-3 md:p-5 shadow-sm border border-gray-100">
-      <h2 className="text-sm md:text-base font-semibold mb-3 md:mb-4 text-gray-900">
-        Floor Plans
-      </h2>
+    <section className="property-surface p-5 sm:p-6">
+      <p className="property-section-eyebrow">Layouts</p>
+      <h2 className="property-section-title mb-5">floor plans</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-3 md:mb-4">
+      <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
         {visiblePlans.map((plan, index) => (
           <Card
             key={index}
-            className={`border border-gray-200 overflow-hidden transition-shadow ${
-              plan.isPlaceholder 
-                ? 'cursor-default' 
-                : 'cursor-pointer hover:shadow-md'
+            className={`overflow-hidden rounded-[16px] border border-[#EBEBEB] bg-white shadow-none transition-all ${
+              plan.isPlaceholder
+                ? "cursor-default"
+                : "cursor-pointer hover:border-[#D4D4D4] hover:shadow-sm"
             }`}
             onClick={() => !plan.isPlaceholder && setSelectedPlan(plan)}
           >
-            <div className="relative h-32 md:h-48 w-full bg-gray-100">
-              {plan.image && (Array.isArray(plan.image) ? plan.image[0] : plan.image) ? (
+            <div className="relative h-40 w-full bg-[#FAFAFA] md:h-48">
+              {plan.image &&
+              (Array.isArray(plan.image) ? plan.image[0] : plan.image) ? (
                 <Image
-                  src={Array.isArray(plan.image) ? plan.image[0] : plan.image}
+                  src={
+                    Array.isArray(plan.image) ? plan.image[0] : plan.image
+                  }
                   alt={plan.label}
                   fill
-                  className="object-contain"
+                  className="object-contain p-2"
                 />
               ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Square className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
+                <div className="flex h-full items-center justify-center">
+                  <Square
+                    className="size-8 text-[#C4C4C4]"
+                    strokeWidth={1.5}
+                  />
                 </div>
               )}
               {plan.isPlaceholder && (
-                <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-                  <div className="text-center text-white p-4">
-                    <Lock className="w-8 h-8 md:w-10 md:h-10 mx-auto mb-3 opacity-80" />
-                    <p className="text-sm md:text-base font-semibold leading-tight">
-                      You must login to view all floor plans
+                <div className="absolute inset-0 flex items-center justify-center bg-[#1A1A1A]/60">
+                  <div className="p-4 text-center text-white">
+                    <Lock className="mx-auto mb-3 size-8 opacity-80" />
+                    <p className="font-manrope text-sm font-medium leading-tight">
+                      Sign in to view all floor plans
                     </p>
                   </div>
                 </div>
               )}
             </div>
-            <CardContent className="p-2 md:p-3">
-              <h3 className="font-medium text-xs md:text-sm mb-2">
+            <CardContent className="p-4">
+              <h3 className="mb-3 font-manrope text-sm font-semibold text-[#1A1A1A]">
                 {plan.label}
               </h3>
               {!plan.isPlaceholder && (
-                <div className="grid grid-cols-3 gap-1 md:gap-2 text-xs">
-                  <div className="flex flex-col items-center p-1 md:p-2 bg-gray-50 rounded">
-                    <Bed className="w-2 h-2 md:w-3 md:h-3 mb-1" />
-                    <span className="text-[8px] md:text-[10px] whitespace-nowrap">
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="flex flex-col items-center rounded-[12px] border border-[#F0F0F0] bg-[#FAFAFA] px-2 py-2.5">
+                    <Bed className="mb-1 size-3.5 text-[#484848]" strokeWidth={1.5} />
+                    <span className="font-manrope text-[11px] font-medium text-[#3A3A3A]">
                       {plan.bedrooms} BHK
                     </span>
                   </div>
-                  <div className="flex flex-col items-center p-1 md:p-2 bg-gray-50 rounded">
-                    <Bath className="w-2 h-2 md:w-3 md:h-3 mb-1" />
-                    <span className="text-[8px] md:text-[10px] whitespace-nowrap">
+                  <div className="flex flex-col items-center rounded-[12px] border border-[#F0F0F0] bg-[#FAFAFA] px-2 py-2.5">
+                    <Bath className="mb-1 size-3.5 text-[#484848]" strokeWidth={1.5} />
+                    <span className="font-manrope text-[11px] font-medium text-[#3A3A3A]">
                       {plan.bathrooms} Bath
                     </span>
                   </div>
-                  <div className="flex flex-col items-center p-1 md:p-2 bg-gray-50 rounded">
-                    <Square className="w-2 h-2 md:w-3 md:h-3 mb-1" />
-                    <span className="text-[8px] md:text-[10px] whitespace-nowrap">
-                      {Array.isArray(plan.builtUpArea) ? plan.builtUpArea[0] : plan.builtUpArea} sqft
+                  <div className="flex flex-col items-center rounded-[12px] border border-[#F0F0F0] bg-[#FAFAFA] px-2 py-2.5">
+                    <Square className="mb-1 size-3.5 text-[#484848]" strokeWidth={1.5} />
+                    <span className="font-manrope text-[11px] font-medium text-[#3A3A3A]">
+                      {Array.isArray(plan.builtUpArea)
+                        ? plan.builtUpArea[0]
+                        : plan.builtUpArea}{" "}
+                      sqft
                     </span>
                   </div>
                 </div>
@@ -339,9 +347,8 @@ export const FloorPlans = ({ floorPlans }: FloorPlansProps) => {
         <div className="text-center">
           <Button
             variant="outline"
-            size="sm"
             onClick={() => setShowAll(!showAll)}
-            className="text-xs"
+            className="property-btn-pill h-10 border-[#EBEBEB] bg-white px-6 font-manrope text-sm font-medium text-[#303030] hover:bg-[#FAFAFA]"
           >
             {showAll ? (
               <>

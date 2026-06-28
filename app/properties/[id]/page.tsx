@@ -19,6 +19,7 @@ import {
   Building,
   ChevronRight,
   ImageIcon,
+  ArrowLeft,
   Wifi,
   Trees,
   Waves,
@@ -47,6 +48,7 @@ import "leaflet/dist/leaflet.css";
 import dynamic from "next/dynamic";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { PageContent } from "@/components/animations/layout-wrapper";
 import { PropertyHeader } from "@/components/property/PropertyHeader";
 import { PropertyAmenities } from "@/components/property/PropertyAmenities";
 import { PropertyDetails } from "@/components/property/PropertyDetails";
@@ -56,8 +58,8 @@ import { FloorPlans } from "@/components/property/FloorPlans";
 import { BuilderInfo } from "@/components/property/BuilderInfo";
 import { ContactAgent } from "@/components/property/ContactAgent";
 import { PropertyInsights } from "@/components/property/PropertyInsights";
-import { PropertySEO } from "@/components/seo/PropertySEO";
 import { PropertyMobileNav } from "@/components/property/PropertyMobileNav";
+import { ReraDetailsDialog } from "@/components/property/ReraDetailsDialog";
 import { toast } from "sonner";
 
 // Dynamically import the Map and NearbyPlaces components to avoid SSR issues with Leaflet
@@ -148,7 +150,7 @@ const ImageGallery = ({
     <div className="mb-4 sm:mb-6">
       {/* Mobile Image Gallery */}
       <div className="block md:hidden">
-        <div className="relative h-[280px] sm:h-[320px] bg-white rounded-xl overflow-hidden shadow-sm">
+        <div className="relative h-[280px] sm:h-[320px] overflow-hidden rounded-[20px] border border-[#EBEBEB] bg-white">
           <ImageWithFallback
             src={propertyImages[currentImageIndex]}
             alt={`${property.title} - Image ${currentImageIndex + 1}`}
@@ -175,18 +177,18 @@ const ImageGallery = ({
           </div>
 
           {/* Mobile Action Buttons */}
-          <div className="absolute top-4 right-4 flex space-x-2">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="bg-white/90 backdrop-blur-sm text-xs h-8 px-3"
-                >
-                  <ImageIcon className="w-3 h-3 mr-1" />
-                  {propertyImages.length}
-                </Button>
-              </DialogTrigger>
+          <div className="absolute top-4 right-4">
+            <div className="liquid-glass-cluster liquid-glass-cluster--compact">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="liquid-glass-action gap-1 px-2.5 text-xs font-manrope"
+                  >
+                    <ImageIcon className="size-3.5" strokeWidth={1.5} />
+                    {propertyImages.length}
+                  </button>
+                </DialogTrigger>
               <DialogContent className="max-w-[95vw] max-h-[95vh] p-0">
                 <div className="relative">
                   {/* Header */}
@@ -273,7 +275,7 @@ const ImageGallery = ({
                                 onClick={() => setCurrentImageIndex(actualIndex)}
                                 className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                                   currentImageIndex === actualIndex
-                                    ? "border-red-500 scale-105"
+                                    ? "border-[#303030] scale-105"
                                     : "border-white/30 hover:border-white/50"
                                 }`}
                               >
@@ -322,34 +324,41 @@ const ImageGallery = ({
               </DialogContent>
             </Dialog>
 
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleShare}
-              className="bg-white/90 backdrop-blur-sm h-8 w-8 p-0"
-            >
-              <Share2 className="w-3 h-3" />
-            </Button>
+              <span className="liquid-glass-divider" />
 
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleFavorite}
-              className={`bg-white/90 backdrop-blur-sm h-8 w-8 p-0 ${
-                isFavorite ? "text-red-500" : ""
-              }`}
-            >
-              <Heart
-                className={`w-3 h-3 ${isFavorite ? "fill-red-500" : ""}`}
-              />
-            </Button>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="liquid-glass-action"
+                aria-label="Share property"
+              >
+                <Share2 className="size-3.5" strokeWidth={1.5} />
+              </button>
+
+              <span className="liquid-glass-divider" />
+
+              <button
+                type="button"
+                onClick={handleFavorite}
+                className={`liquid-glass-action ${
+                  isFavorite ? "liquid-glass-action-favourite" : ""
+                }`}
+                aria-label="Favourite property"
+              >
+                <Heart
+                  className={`size-3.5 ${
+                    isFavorite ? "fill-red-500 text-red-500" : ""
+                  }`}
+                  strokeWidth={isFavorite ? 0 : 1.5}
+                />
+              </button>
+            </div>
           </div>
 
-          {/* Property Status Badge */}
           <div className="absolute top-4 left-4">
-            <Badge className="bg-green-500 text-white border-0 px-2 py-1 text-xs">
+            <span className="property-badge-listing uppercase tracking-[0.08em]">
               For {property.propertyType === "sell" ? "Sale" : "Rent"}
-            </Badge>
+            </span>
           </div>
 
           {/* Mobile Swipe Navigation */}
@@ -387,7 +396,7 @@ const ImageGallery = ({
       </div>
 
       {/* Desktop Image Gallery */}
-      <div className="hidden md:block bg-white rounded-xl overflow-hidden shadow-sm">
+      <div className="hidden md:block overflow-hidden rounded-[20px] border border-[#EBEBEB] bg-white">
         <div className="relative">
           {/* Main Image Grid */}
           <div className="grid grid-cols-4 gap-2 h-[350px] lg:h-[400px]">
@@ -562,7 +571,7 @@ const ImageGallery = ({
                                   onClick={() => setCurrentImageIndex(actualIndex)}
                                   className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                                     currentImageIndex === actualIndex
-                                      ? "border-red-500 scale-105"
+                                      ? "border-[#303030] scale-105"
                                       : "border-white/30 hover:border-white/50"
                                   }`}
                                 >
@@ -692,7 +701,7 @@ const ImageGallery = ({
                               onClick={() => setCurrentImageIndex(index)}
                               className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                                 currentImageIndex === index
-                                  ? "border-red-500 scale-105"
+                                  ? "border-[#303030] scale-105"
                                   : "border-white/30 hover:border-white/50"
                               }`}
                             >
@@ -817,10 +826,10 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
   };
 
   return (
-    <Card className="border border-gray-200 shadow-sm">
-      <CardContent className="p-3 sm:p-4">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h3 className="text-sm sm:text-base font-semibold text-gray-900">
+    <Card className="property-surface shadow-none">
+      <CardContent className="p-4 sm:p-5">
+        <div className="mb-3 flex items-center justify-between sm:mb-4">
+          <h3 className="property-section-title text-base sm:text-lg">
             EMI Calculator
           </h3>
           <Button
@@ -835,9 +844,9 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
 
         <div className="space-y-3 sm:space-y-4">
           {/* Property Price Display */}
-          <div className="p-2 sm:p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-xs text-blue-700 mb-1">Property Price</div>
-            <div className="text-base sm:text-lg font-bold text-blue-800">
+          <div className="rounded-lg border border-gray-100 bg-gray-50 p-2 sm:p-3">
+            <div className="mb-1 text-xs text-gray-500">Property Price</div>
+            <div className="text-base font-bold text-gray-900 sm:text-lg">
               {formatPrice(propertyPrice)}
             </div>
           </div>
@@ -893,9 +902,9 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
           </div>
 
           {/* Loan Amount Display */}
-          <div className="p-2 sm:p-3 bg-orange-50 rounded-lg border border-orange-200">
-            <div className="text-xs text-orange-700 mb-1">Loan Amount</div>
-            <div className="text-base sm:text-lg font-bold text-orange-800">
+          <div className="rounded-lg border border-gray-100 bg-gray-50 p-2 sm:p-3">
+            <div className="mb-1 text-xs text-gray-500">Loan Amount</div>
+            <div className="text-base font-bold text-gray-900 sm:text-lg">
               {formatPrice(loanAmount)}
             </div>
           </div>
@@ -972,11 +981,11 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
           )}
 
           {/* EMI Result */}
-          <div className="p-3 bg-gradient-to-r from-red-50 to-red-100 rounded-lg border border-red-200">
-            <div className="text-xs text-red-700 mb-1 font-medium">
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <div className="mb-1 text-xs font-medium text-gray-500">
               Monthly EMI
             </div>
-            <div className="text-lg sm:text-xl font-bold text-red-600">
+            <div className="text-lg font-bold text-red-500 sm:text-xl">
               {formatEMI(monthlyEMI)}
             </div>
           </div>
@@ -1017,7 +1026,7 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
             height: 18px;
             width: 18px;
             border-radius: 50%;
-            background: #ef4444;
+            background: #303030;
             cursor: pointer;
             border: 2px solid white;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -1031,7 +1040,7 @@ const EMICalculator = ({ propertyPrice }: { propertyPrice: number }) => {
             height: 18px;
             width: 18px;
             border-radius: 50%;
-            background: #ef4444;
+            background: #303030;
             cursor: pointer;
             border: 2px solid white;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -1287,7 +1296,7 @@ export default function PropertyDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-white">
         <Header />
         <main className="flex-1">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
@@ -1521,11 +1530,21 @@ export default function PropertyDetailPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
 
       <main className="flex-1 pb-20 md:pb-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
+        <PageContent>
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="mb-4 inline-flex items-center gap-2 font-manrope text-sm text-[#5C5C5C] transition-colors hover:text-[#1A1A1A]"
+          >
+            <ArrowLeft className="size-4" strokeWidth={1.5} />
+            Back to properties
+          </button>
+
           <ImageGallery
             property={property}
             isFavorite={isFavorite}
@@ -1533,101 +1552,62 @@ export default function PropertyDetailPage() {
             handleFavorite={handleFavorite}
           />
 
-          <PropertySEO property={property} />
-
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <div className="xl:col-span-2 space-y-4 sm:space-y-6">
               <PropertyHeader property={property} formatPrice={formatPrice} />
 
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Shield className="w-5 h-5 text-green-600 mr-3" />
+              <div className="property-surface p-5 sm:p-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="property-icon-pill">
+                      <Shield className="size-4" strokeWidth={1.5} />
+                    </div>
                     <div>
-                      <span className="font-medium text-gray-900 text-sm sm:text-base">
+                      <span className="font-manrope text-sm font-semibold text-[#1A1A1A] sm:text-base">
                         RERA Registered
                       </span>
-                      <p className="text-xs sm:text-sm text-gray-600">
+                      <p className="font-manrope text-xs text-[#5C5C5C] sm:text-sm">
                         Government approved project
                       </p>
                     </div>
                   </div>
-                  <Dialog
+                  <ReraDetailsDialog
+                    property={property}
                     open={showReraDialog}
                     onOpenChange={setShowReraDialog}
-                  >
-                    <DialogTrigger asChild>
+                    trigger={
                       <Button
                         variant="outline"
-                        size="sm"
-                        className="text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
+                        className="property-btn-pill h-10 rounded-full border-[#DDDDDD] px-5 font-manrope text-sm text-[#3A3A3A] hover:bg-[#FAFAFA]"
                       >
-                        View Details
+                        View details
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <div className="p-1">
-                        <h3 className="text-base font-semibold mb-3">
-                          RERA Details
-                        </h3>
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="text-xs text-gray-600">
-                              RERA Number:
-                            </div>
-                            <div className="text-[10px] font-medium">
-                              {property.rera?.registrationNumber ||
-                                "RERA Not received or not applied"}
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="text-xs text-gray-600">Status:</div>
-                            <div className="text-xs font-medium text-green-600">
-                              {property.reraStatus || "Approved"}
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="text-xs text-gray-600">
-                              Validity:
-                            </div>
-                            <div className="text-xs font-medium">
-                              31 Dec, 2025
-                            </div>
-                          </div>
-                          <div className="mt-3 text-xs text-gray-500">
-                            RERA registration ensures that this property
-                            complies with all regulatory requirements and
-                            provides buyer protection.
-                          </div>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                    }
+                  />
                 </div>
               </div>
 
               {/* Responsive Navigation Tabs */}
               <div
                 ref={tabsRef}
-                className="sticky top-16 sm:top-20 z-40 bg-white rounded-xl shadow-sm border border-gray-100 mb-4 sm:mb-6"
+                className="sticky top-16 z-30 mb-4 sm:top-20"
               >
-                <div className="px-3 sm:px-5 py-3">
-                  {/* Mobile Horizontal Scroll */}
-                  <div className="flex space-x-4 sm:space-x-6 overflow-x-auto scrollbar-hide">
+                <div className="property-surface px-3 py-3 sm:px-4">
+                  <div className="flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {[
                       { id: "overview", label: "Overview" },
                       { id: "amenities", label: "Amenities" },
                       { id: "details", label: "Details" },
                       { id: "location", label: "Location" },
-                      // { id: "price-trends", label: "Price Trends" },
                     ].map((tab) => (
                       <button
                         key={tab.id}
+                        type="button"
                         onClick={() => scrollToSection(tab.id)}
-                        className={`pb-2 px-1 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        className={`property-detail-tab ${
                           activeTab === tab.id
-                            ? "border-red-500 text-red-600"
-                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                            ? "property-detail-tab-active"
+                            : "property-detail-tab-inactive"
                         }`}
                       >
                         {tab.label}
@@ -1642,12 +1622,11 @@ export default function PropertyDetailPage() {
                 {/* Overview Section */}
                 <section
                   id="overview"
-                  className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100"
+                  className="property-surface relative p-5 sm:p-6"
                 >
-                  <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-gray-900">
-                    Overview
-                  </h2>
-                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                  <p className="property-section-eyebrow">About</p>
+                  <h2 className="property-section-title mb-4">overview</h2>
+                  <p className="font-manrope text-sm leading-relaxed text-[#484848] sm:text-base">
                     {property.description}
                   </p>
                 </section>
@@ -1676,11 +1655,9 @@ export default function PropertyDetailPage() {
             </div>
 
             {/* Mobile: Bottom Sheet Style Sidebar */}
-            <div className="xl:hidden">
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 space-y-4">
+            <div className="xl:hidden space-y-4">
                 <ContactAgent property={property} />
                 <EMICalculator propertyPrice={property.price} />
-              </div>
             </div>
 
             {/* Desktop: Traditional Sidebar */}
@@ -1698,6 +1675,7 @@ export default function PropertyDetailPage() {
             <PropertyInsights property={property} />
           </div>
         </div>
+        </PageContent>
       </main>
 
       {/* Mobile Bottom Navigation Bar for Downloads */}
@@ -1707,7 +1685,7 @@ export default function PropertyDetailPage() {
       <div className={`fixed bottom-6 right-6 z-50 ${(property.brochureUrl || property.floorPlanPdfUrl) ? 'hidden md:block' : 'block'}`}>
         <Dialog open={showBookingModal} onOpenChange={setShowBookingModal}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-2xl hover:shadow-red-500/25 transition-all duration-300 transform hover:scale-105 active:scale-95 px-6 py-3 rounded-full font-semibold text-sm flex items-center space-x-2 group">
+            <Button className="property-btn-pill flex items-center space-x-2 bg-[#303030] px-6 text-sm text-white shadow-lg hover:bg-[#1a1a1a]">
               <CalendarDays className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
               <span>Book Visit</span>
             </Button>
@@ -1716,7 +1694,7 @@ export default function PropertyDetailPage() {
           <DialogContent className="max-w-md mx-auto bg-white rounded-2xl shadow-2xl border-0 p-0 overflow-hidden">
             {!bookingSuccess ? (
               <>
-                <DialogHeader className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 pb-8">
+                <DialogHeader className="bg-[#303030] p-6 pb-8 text-white">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-white/20 rounded-lg">
@@ -1726,7 +1704,7 @@ export default function PropertyDetailPage() {
                         <DialogTitle className="text-xl font-bold">
                           Book a Visit
                         </DialogTitle>
-                        <p className="text-red-100 text-sm mt-1">
+                        <p className="mt-1 text-sm text-white/70">
                           Schedule your property tour
                         </p>
                       </div>
@@ -1761,7 +1739,7 @@ export default function PropertyDetailPage() {
                             handleInputChange("name", e.target.value)
                           }
                           onKeyDown={(e) => handleKeyDown(e, "email")}
-                          className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
+                          className="border-gray-200 focus:border-[#303030] focus:ring-red-500 rounded-lg transition-colors"
                           required
                         />
                       </div>
@@ -1783,7 +1761,7 @@ export default function PropertyDetailPage() {
                               handleInputChange("email", e.target.value)
                             }
                             onKeyDown={(e) => handleKeyDown(e, "phone")}
-                            className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
+                            className="border-gray-200 focus:border-[#303030] focus:ring-red-500 rounded-lg transition-colors"
                             required
                           />
                         </div>
@@ -1804,7 +1782,7 @@ export default function PropertyDetailPage() {
                               handleInputChange("phone", e.target.value)
                             }
                             onKeyDown={(e) => handleKeyDown(e, "date")}
-                            className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
+                            className="border-gray-200 focus:border-[#303030] focus:ring-red-500 rounded-lg transition-colors"
                             required
                           />
                         </div>
@@ -1838,7 +1816,7 @@ export default function PropertyDetailPage() {
                           }
                           onKeyDown={(e) => handleKeyDown(e, "time")}
                           min={new Date().toISOString().split("T")[0]}
-                          className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors"
+                          className="border-gray-200 focus:border-[#303030] focus:ring-red-500 rounded-lg transition-colors"
                           required
                         />
                       </div>
@@ -1857,7 +1835,7 @@ export default function PropertyDetailPage() {
                             handleInputChange("time", e.target.value)
                           }
                           onKeyDown={(e) => handleKeyDown(e, "message")}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-red-500 focus:ring-red-500 transition-colors bg-white"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-[#303030] focus:ring-red-500 transition-colors bg-white"
                           required
                         >
                           <option value="">Select time</option>
@@ -1891,7 +1869,7 @@ export default function PropertyDetailPage() {
                         handleInputChange("message", e.target.value)
                       }
                       onKeyDown={(e) => handleKeyDown(e)}
-                      className="border-gray-200 focus:border-red-500 focus:ring-red-500 rounded-lg transition-colors resize-none"
+                      className="border-gray-200 focus:border-[#303030] focus:ring-red-500 rounded-lg transition-colors resize-none"
                       rows={3}
                     />
                   </div>
@@ -1901,7 +1879,7 @@ export default function PropertyDetailPage() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      className="property-btn-pill w-full bg-red-500 text-white hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isSubmitting ? (
                         <div className="flex items-center justify-center space-x-2">

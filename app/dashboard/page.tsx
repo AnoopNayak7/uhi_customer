@@ -3,9 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useAuthStore, usePropertyStore } from "@/lib/store";
 import { apiClient } from "@/lib/api";
 import {
@@ -17,12 +15,23 @@ import {
   Plus,
   Calculator,
   Target,
-  Bookmark,
   Clock,
+  CalendarDays,
+  GitCompare,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { PropertyCard } from "@/components/propertyListing/PropertyCard";
-
+import { PageContent } from "@/components/animations/layout-wrapper";
+import {
+  DashboardEmptyState,
+  DashboardQuickAction,
+  DashboardSection,
+  DashboardSkeleton,
+  DashboardStatCard,
+} from "@/components/dashboard/dashboard-ui";
+import { DashboardCompareSection } from "@/components/dashboard/dashboard-compare-section";
+import { DashboardSiteVisitsSection } from "@/components/dashboard/dashboard-site-visits-section";
 import {
   LineChart,
   Line,
@@ -38,12 +47,13 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import Image from "next/image";
 import { toast } from "sonner";
+
+const CHART_COLORS = ["#303030", "#717171", "#484848", "#B0B0B0"];
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const { favourites, viewedProperties } = usePropertyStore();
+  const { favourites, viewedProperties, compareList } = usePropertyStore();
   const [analytics, setAnalytics] = useState<any>(null);
   const [properties, setProperties] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
@@ -75,15 +85,9 @@ export default function DashboardPage() {
               ? apiClient.getRecentlyViewedProperties(user.id, 5)
               : Promise.resolve({ data: [] }),
             user
-              ? apiClient.getUserBookVisits(5)
+              ? apiClient.getUserBookVisits(10)
               : Promise.resolve({ data: [] }),
           ]);
-
-        console.log("Dashboard API responses:", {
-          properties: propertiesRes,
-          recentlyViewed: recentlyViewedRes,
-          bookVisits: bookVisitsRes,
-        });
 
         setProperties(propertiesRes.data || []);
         setRecentlyViewedProperties(recentlyViewedRes.data || []);
@@ -104,39 +108,63 @@ export default function DashboardPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Please log in to view your dashboard.</p>
+      <div className="flex min-h-screen flex-col bg-[#FAFAFA]">
+        <Header />
+        <main className="flex flex-1 items-center justify-center px-4">
+          <div className="compare-surface max-w-md p-8 text-center">
+            <h1 className="property-section-title mb-2">sign in required</h1>
+            <p className="mb-6 font-manrope text-sm text-[#717171]">
+              Log in to view your dashboard, saved properties, and visit
+              bookings.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <Button
+                className="property-btn-pill h-10 bg-[#303030] px-5 text-white hover:bg-[#1a1a1a]"
+                asChild
+              >
+                <Link href="/auth/login">Sign in</Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="property-btn-pill h-10 border-[#D0D0D0] px-5"
+                asChild
+              >
+                <Link href="/auth/signup">Create account</Link>
+              </Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-[#FAFAFA]">
       <Header />
 
       <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Header Section */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
+        <PageContent>
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            {/* Page header */}
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">
-                  Dashboard
+                <p className="property-section-eyebrow">Account</p>
+                <h1 className="property-section-title">
+                  hello, {user.firstName?.toLowerCase()}
                 </h1>
-                <p className="text-gray-600 mt-1">
-                  Welcome back, {user.firstName}
+                <p className="mt-2 font-manrope text-sm text-[#717171]">
+                  {user.role === "builder"
+                    ? "Manage your listings, leads, and performance."
+                    : "Track saved homes, visits, and property tools."}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <Badge
-                  variant="secondary"
-                  className="bg-blue-50 text-blue-700 border-blue-200"
-                >
-                  {user.role === "builder" ? "Builder" : "User"}
-                </Badge>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="property-badge-listing uppercase tracking-[0.08em]">
+                  {user.role === "builder" ? "Builder" : "Buyer"}
+                </span>
                 <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="property-btn-pill h-10 bg-[#303030] px-5 font-manrope text-sm text-white hover:bg-[#1a1a1a]"
                   asChild
                 >
                   <Link
@@ -146,32 +174,34 @@ export default function DashboardPage() {
                         : "/properties"
                     }
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {user.role === "builder" ? "Add Property" : "Browse"}
+                    <Plus className="mr-2 size-4" strokeWidth={1.5} />
+                    {user.role === "builder" ? "Add property" : "Browse homes"}
                   </Link>
                 </Button>
               </div>
             </div>
-          </div>
 
-          {user.role === "builder" ? (
-            <BuilderDashboard
-              analytics={analytics}
-              properties={properties}
-              leads={leads}
-              loading={loading}
-            />
-          ) : (
-            <UserDashboard
-              properties={properties}
-              loading={loading}
-              recentlyViewedProperties={recentlyViewedProperties}
-              favourites={favourites}
-              viewedProperties={viewedProperties}
-              bookVisits={bookVisits}
-            />
-          )}
-        </div>
+            {user.role === "builder" ? (
+              <BuilderDashboard
+                analytics={analytics}
+                properties={properties}
+                leads={leads}
+                loading={loading}
+              />
+            ) : (
+              <UserDashboard
+                properties={properties}
+                loading={loading}
+                recentlyViewedProperties={recentlyViewedProperties}
+                favourites={favourites}
+                viewedProperties={viewedProperties}
+                bookVisits={bookVisits}
+                compareList={compareList}
+                onRefreshVisits={fetchDashboardData}
+              />
+            )}
+          </div>
+        </PageContent>
       </main>
 
       <Footer />
@@ -181,33 +211,12 @@ export default function DashboardPage() {
 
 function BuilderDashboard({ analytics, properties, leads, loading }: any) {
   const stats = [
-    {
-      title: "Properties",
-      value: analytics?.totalProperties || 0,
-      icon: Building,
-      color: "text-blue-600",
-    },
-    {
-      title: "Views",
-      value: analytics?.totalViews || 0,
-      icon: Eye,
-      color: "text-green-600",
-    },
-    {
-      title: "Leads",
-      value: analytics?.totalLeads || 0,
-      icon: Users,
-      color: "text-purple-600",
-    },
-    {
-      title: "Favourites",
-      value: analytics?.totalFavourites || 0,
-      icon: Heart,
-      color: "text-red-600",
-    },
+    { title: "Properties", value: analytics?.totalProperties || 0, icon: Building },
+    { title: "Views", value: analytics?.totalViews || 0, icon: Eye },
+    { title: "Leads", value: analytics?.totalLeads || 0, icon: Users },
+    { title: "Favourites", value: analytics?.totalFavourites || 0, icon: Heart },
   ];
 
-  // Fallback demo data
   const viewsTrend = analytics?.viewsTrend || [
     { date: "Mon", views: 120 },
     { date: "Tue", views: 200 },
@@ -219,108 +228,80 @@ function BuilderDashboard({ analytics, properties, leads, loading }: any) {
   const leadsByProperty =
     analytics?.leadsByProperty ||
     properties.map((p: any) => ({
-      property: p.title,
+      property: p.title?.slice(0, 12) || "Property",
       leads: Math.floor(Math.random() * 20),
     }));
 
   const statusBreakdown = analytics?.statusBreakdown || [
     { name: "Available", value: 10 },
     { name: "Sold", value: 5 },
-    { name: "Under Construction", value: 3 },
+    { name: "Under construction", value: 3 },
   ];
 
-  const statusColors = ["#2563eb", "#16a34a", "#f97316"];
+  if (loading) return <DashboardSkeleton count={4} />;
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[...Array(4)].map((_, i) => (
-          <div
-            key={i}
-            className="bg-white rounded-lg h-24 animate-pulse border"
+  return (
+    <div className="space-y-6 lg:space-y-8">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <DashboardStatCard
+            key={stat.title}
+            label={stat.title}
+            value={stat.value}
+            icon={stat.icon}
           />
         ))}
       </div>
-    );
-  }
 
-  return (
-    <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="border border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {stat.value.toLocaleString()}
-                  </p>
-                </div>
-                <stat.icon className={`w-5 h-5 ${stat.color}`} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Views Over Time */}
-        <Card className="border border-gray-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-medium">
-              Views Over Time
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-64">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <DashboardSection title="Views over time" subtitle="Last 5 days">
+          <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={viewsTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
+                <CartesianGrid stroke="#F0F0F0" strokeDasharray="3 3" />
+                <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#717171" }} />
+                <YAxis tick={{ fontSize: 12, fill: "#717171" }} />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid #D0D0D0",
+                    fontFamily: "var(--font-manrope)",
+                  }}
+                />
                 <Line
                   type="monotone"
                   dataKey="views"
-                  stroke="#2563eb"
+                  stroke="#303030"
                   strokeWidth={2}
+                  dot={{ fill: "#303030", r: 3 }}
                 />
               </LineChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </DashboardSection>
 
-        {/* Leads by Property */}
-        <Card className="border border-gray-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-medium">
-              Leads by Property
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-64">
+        <DashboardSection title="Leads by property">
+          <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={leadsByProperty}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="property" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="leads" fill="#7c3aed" />
+                <CartesianGrid stroke="#F0F0F0" strokeDasharray="3 3" />
+                <XAxis dataKey="property" tick={{ fontSize: 11, fill: "#717171" }} />
+                <YAxis tick={{ fontSize: 12, fill: "#717171" }} />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid #D0D0D0",
+                    fontFamily: "var(--font-manrope)",
+                  }}
+                />
+                <Bar dataKey="leads" fill="#484848" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </DashboardSection>
 
-        {/* Property Status Breakdown */}
-        <Card className="border border-gray-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-medium">
-              Property Status Breakdown
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-64 flex items-center justify-center">
+        <DashboardSection title="Property status">
+          <div className="flex h-56 items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -329,27 +310,145 @@ function BuilderDashboard({ analytics, properties, leads, loading }: any) {
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
-                  label
+                  innerRadius={50}
+                  outerRadius={80}
                 >
                   {statusBreakdown.map((_: any, index: number) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={statusColors[index % statusColors.length]}
+                      fill={CHART_COLORS[index % CHART_COLORS.length]}
                     />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid #D0D0D0",
+                    fontFamily: "var(--font-manrope)",
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </DashboardSection>
       </div>
 
-      {/* Recent Properties & Leads (existing code) */}
-      {/* Quick Actions (existing code) */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <DashboardSection
+          title="Recent properties"
+          action={
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 rounded-full border-[#D0D0D0] font-manrope text-xs"
+              asChild
+            >
+              <Link href="/dashboard/properties">
+                View all
+                <ArrowRight className="ml-1.5 size-3.5" />
+              </Link>
+            </Button>
+          }
+        >
+          {properties.length > 0 ? (
+            <div className="space-y-3">
+              {properties.map((property: any) => (
+                <Link
+                  key={property.id}
+                  href={`/properties/${property.slug || property.id}`}
+                  className="flex items-center gap-3 rounded-[12px] border border-[#E8E8E8] bg-[#FAFAFA] p-3 transition-colors hover:border-[#D0D0D0] hover:bg-white"
+                >
+                  <div className="property-icon-pill shrink-0">
+                    <Building className="size-4" strokeWidth={1.5} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-manrope text-sm font-medium text-[#1A1A1A]">
+                      {property.title}
+                    </p>
+                    <p className="truncate font-manrope text-xs text-[#717171]">
+                      {property.city}
+                    </p>
+                  </div>
+                  <ArrowRight className="size-4 shrink-0 text-[#B0B0B0]" />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <DashboardEmptyState
+              icon={Building}
+              title="No properties yet"
+              description="Add your first listing to start receiving leads."
+              actionHref="/dashboard/property/create"
+              actionLabel="Add property"
+            />
+          )}
+        </DashboardSection>
+
+        <DashboardSection
+          title="Recent leads"
+          action={
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 rounded-full border-[#D0D0D0] font-manrope text-xs"
+              asChild
+            >
+              <Link href="/dashboard/leads">
+                View all
+                <ArrowRight className="ml-1.5 size-3.5" />
+              </Link>
+            </Button>
+          }
+        >
+          {leads.length > 0 ? (
+            <div className="space-y-3">
+              {leads.map((lead: any, index: number) => (
+                <div
+                  key={lead.id || index}
+                  className="rounded-[12px] border border-[#E8E8E8] bg-[#FAFAFA] p-3"
+                >
+                  <p className="font-manrope text-sm font-medium text-[#1A1A1A]">
+                    {lead.name || lead.contactName || "New lead"}
+                  </p>
+                  <p className="mt-0.5 font-manrope text-xs text-[#717171]">
+                    {lead.email || lead.phone || "Contact details pending"}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <DashboardEmptyState
+              icon={Users}
+              title="No leads yet"
+              description="Leads from your listings will appear here."
+            />
+          )}
+        </DashboardSection>
+      </div>
+
+      <DashboardSection title="Quick actions">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <DashboardQuickAction
+            href="/dashboard/properties"
+            icon={Building}
+            label="Manage properties"
+            description="Edit, publish, and track listings"
+          />
+          <DashboardQuickAction
+            href="/dashboard/leads"
+            icon={Users}
+            label="View leads"
+            description="Follow up with interested buyers"
+          />
+          <DashboardQuickAction
+            href="/dashboard/analytics"
+            icon={BarChart3}
+            label="Analytics"
+            description="Deep dive into performance"
+          />
+        </div>
+      </DashboardSection>
     </div>
   );
 }
@@ -359,8 +458,9 @@ function UserDashboard({
   loading,
   recentlyViewedProperties,
   favourites,
-  viewedProperties,
   bookVisits,
+  compareList,
+  onRefreshVisits,
 }: any) {
   const { addToFavourites, removeFromFavourites } = usePropertyStore();
   const { user } = useAuthStore();
@@ -387,164 +487,141 @@ function UserDashboard({
       toast.error("Failed to update favourite");
     }
   };
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[...Array(3)].map((_, i) => (
-          <div
-            key={i}
-            className="bg-white rounded-lg h-24 animate-pulse border"
-          />
-        ))}
-      </div>
-    );
-  }
 
-  // User activity data
+  if (loading) return <DashboardSkeleton count={3} />;
+
   const userStats = [
+    { title: "Favourites", value: favourites?.length || 0, icon: Heart },
     {
-      title: "Favourites",
-      value: favourites?.length || 0,
-      icon: Heart,
-      color: "text-red-600",
-    },
-    {
-      title: "Recently Viewed",
+      title: "Recently viewed",
       value: recentlyViewedProperties?.length || 0,
       icon: Clock,
-      color: "text-blue-600",
     },
-    {
-      title: "Booked Visits",
-      value: bookVisits?.length || 0,
-      icon: Eye,
-      color: "text-green-600",
-    },
+    { title: "Compare list", value: compareList?.length || 0, icon: GitCompare },
+    { title: "Site visits", value: bookVisits?.length || 0, icon: CalendarDays },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* User Activity Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="space-y-6 lg:space-y-8">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {userStats.map((stat) => (
-          <Card
+          <DashboardStatCard
             key={stat.title}
-            className="border border-gray-200 hover:shadow-md transition-shadow"
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
-                  <p className="text-2xl font-semibold text-gray-900">
-                    {stat.value}
-                  </p>
-                </div>
-                <div className={`p-2 rounded-lg bg-gray-50`}>
-                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            label={stat.title}
+            value={stat.value}
+            icon={stat.icon}
+          />
         ))}
       </div>
 
-      <Card className="border border-gray-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Button variant="outline" className="justify-start h-12" asChild>
-              <Link href="/properties">
-                <Building className="w-4 h-4 mr-3" />
-                Browse Properties
-              </Link>
-            </Button>
+      <DashboardSection title="Quick actions">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <DashboardQuickAction
+            href="/properties"
+            icon={Building}
+            label="Browse properties"
+            description="Explore homes across Bengaluru"
+          />
+          <DashboardQuickAction
+            href="/favourites"
+            icon={Heart}
+            label="My favourites"
+            description="Saved properties in one place"
+          />
+          <DashboardQuickAction
+            href="/tools/mortgage-calculator"
+            icon={Calculator}
+            label="EMI calculator"
+            description="Estimate monthly payments"
+          />
+          <DashboardQuickAction
+            href="/tools/property-comparison"
+            icon={GitCompare}
+            label="Compare properties"
+            description="Side-by-side up to 3 homes"
+          />
+        </div>
+      </DashboardSection>
 
-            <Button variant="outline" className="justify-start h-12" asChild>
-              <Link href="/favourites">
-                <Heart className="w-4 h-4 mr-3" />
-                My Favourites
-              </Link>
-            </Button>
+      <DashboardCompareSection
+        properties={compareList || []}
+        onFavorite={handleFavorite}
+        isFavorite={(property) =>
+          favourites.some((p: any) => p.id === property.id)
+        }
+      />
 
-            <Button variant="outline" className="justify-start h-12" asChild>
-              <Link href="/tools/mortgage-calculator">
-                <Calculator className="w-4 h-4 mr-3" />
-                EMI Calculator
-              </Link>
-            </Button>
+      <DashboardSiteVisitsSection
+        visits={bookVisits || []}
+        onRefresh={onRefreshVisits}
+      />
 
-            <Button variant="outline" className="justify-start h-12" asChild>
-              <Link href="/tools/property-comparison">
-                <Target className="w-4 h-4 mr-3" />
-                Compare Properties
-              </Link>
-            </Button>
+      <DashboardSection
+        title="Recently viewed"
+        subtitle="Pick up where you left off"
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 rounded-full border-[#D0D0D0] font-manrope text-xs"
+            asChild
+          >
+            <Link href="/viewed-properties">
+              View all
+              <ArrowRight className="ml-1.5 size-3.5" />
+            </Link>
+          </Button>
+        }
+      >
+        {recentlyViewedProperties?.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {recentlyViewedProperties.map((property: any) => (
+              <PropertyCard
+                key={property.id}
+                property={property}
+                onFavorite={() => handleFavorite(property)}
+                isFavorite={favourites.some((p: any) => p.id === property.id)}
+                compact
+              />
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        ) : (
+          <DashboardEmptyState
+            icon={Eye}
+            title="No recently viewed properties"
+            description="Browse listings and they'll show up here."
+            actionHref="/properties"
+            actionLabel="Browse properties"
+          />
+        )}
+      </DashboardSection>
 
-      {/* Recently Viewed Properties */}
-      <Card className="border border-gray-200">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-medium">
-              Recently Viewed Properties
-            </CardTitle>
-            <Button size="sm" variant="outline" asChild>
-              <Link href="/viewed-properties">View All</Link>
-            </Button>
+      <DashboardSection
+        title="Recommended for you"
+        subtitle="Personalised picks based on your activity"
+      >
+        {properties?.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {properties.slice(0, 3).map((property: any) => (
+              <PropertyCard
+                key={property.id}
+                property={property}
+                onFavorite={() => handleFavorite(property)}
+                isFavorite={favourites.some((p: any) => p.id === property.id)}
+                compact
+              />
+            ))}
           </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentlyViewedProperties && recentlyViewedProperties.length > 0 ? (
-              recentlyViewedProperties.map((property: any) => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  onFavorite={() => handleFavorite(property)}
-                  isFavorite={favourites.some((p: any) => p.id === property.id)}
-                  compact={true}
-                />
-              ))
-            ) : (
-              <div className="col-span-3 text-center py-8 text-gray-500">
-                No recently viewed properties
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Personalized Recommendations */}
-      <Card className="border border-gray-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-medium">
-            Recommended for You
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Target className="w-8 h-8 text-blue-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              AI-Powered Recommendations
-            </h3>
-            <p className="text-gray-600 mb-4 max-w-md mx-auto">
-              Based on your search history and preferences, we&apos;ll show
-              personalized property recommendations here.
-            </p>
-            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
-              <Link href="/properties?recommended=true">
-                View Recommendations
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        ) : (
+          <DashboardEmptyState
+            icon={Target}
+            title="Recommendations coming soon"
+            description="Explore properties to get personalised suggestions."
+            actionHref="/properties"
+            actionLabel="Browse properties"
+          />
+        )}
+      </DashboardSection>
     </div>
   );
 }

@@ -1,18 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, ArrowLeft, X, Loader2 } from "lucide-react";
-import {
-  PROPERTY_CATEGORIES,
-  BHK_OPTIONS,
-  FURNISHING_STATUS,
-  POSSESSION_STATUS,
-} from "@/lib/config";
-import { useRouter } from "next/navigation";
-import { useSearchStore, useAuthStore } from "@/lib/store";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -21,34 +11,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { apiClient } from "@/lib/api";
+import {
+  PROPERTY_TYPES,
+  PROPERTY_CATEGORIES,
+  BHK_OPTIONS,
+  FURNISHING_STATUS,
+  POSSESSION_STATUS,
+} from "@/lib/config";
+import { useRouter } from "next/navigation";
+import { useSearchStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
+import { ArrowLeft, Search } from "lucide-react";
 
 interface MobileSearchProps {
   onClose: () => void;
 }
 
-interface LocationSuggestion {
-  display_name: string;
-  lat: string;
-  lon: string;
-  place_id: string;
+function countActiveFilters(filters: Record<string, unknown>) {
+  return Object.entries(filters).filter(([key, value]) => {
+    if (key === "city" && (value === "Bengaluru" || !value)) return false;
+    if (key === "type" && (value === "sell" || !value)) return false;
+    if (key === "maxPrice" && (value === 100000000 || value === 0)) return false;
+    if (
+      (key === "minPrice" || key === "minArea" || key === "maxArea") &&
+      (value === 0 || !value)
+    ) {
+      return false;
+    }
+    return value && value !== "" && value !== 0;
+  }).length;
 }
 
 export function MobileSearch({ onClose }: MobileSearchProps) {
   const router = useRouter();
-  const { updateSearchFilters } = useSearchStore();
-  const { user, token } = useAuthStore();
-  const [activeTab, setActiveTab] = useState("Buy");
-  const [showFilters, setShowFilters] = useState(false);
+  const { searchFilters, updateSearchFilters } = useSearchStore();
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLocalities, setSelectedLocalities] = useState<string[]>([]);
-  const [showLocalitySearch, setShowLocalitySearch] = useState(false);
-  const [localitySearchQuery, setLocalitySearchQuery] = useState("");
-  const [localitySuggestions, setLocalitySuggestions] = useState<
-    LocationSuggestion[]
-  >([]);
-  const [isSearchingLocalities, setIsSearchingLocalities] = useState(false);
   const [filters, setFilters] = useState({
+    type: "sell",
+    area: "",
     minPrice: "0",
     maxPrice: "0",
     propertyCategory: "",
@@ -59,137 +60,41 @@ export function MobileSearch({ onClose }: MobileSearchProps) {
     maxArea: "0",
   });
 
-  // Search localities function
-  const searchLocalities = async (query: string) => {
-    if (!query.trim()) {
-      setLocalitySuggestions([]);
-      return;
-    }
-
-    setIsSearchingLocalities(true);
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          query
-        )}&countrycodes=in&limit=10`
-      );
-      const data = await response.json();
-      setLocalitySuggestions(data);
-    } catch (error) {
-      console.error("Error searching localities:", error);
-    } finally {
-      setIsSearchingLocalities(false);
-    }
-  };
-
-  const handleLocalitySearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      searchLocalities(localitySearchQuery);
-    }
-  };
-
-  const handleLocalitySelect = (suggestion: LocationSuggestion) => {
-    const localityName = suggestion.display_name.split(",")[0].trim();
-    if (!selectedLocalities.includes(localityName)) {
-      setSelectedLocalities((prev) => [...prev, localityName]);
-    }
-    setLocalitySearchQuery("");
-    setLocalitySuggestions([]);
-    setShowLocalitySearch(false);
-  };
-
-  const removeLocality = (locality: string) => {
-    setSelectedLocalities((prev) => prev.filter((l) => l !== locality));
-  };
-
-  const saveUserSearchPreferences = async (searchData: any) => {
-    if (!user || !token) return;
-
-    try {
-      await apiClient.saveUserSearchPreferences({
-        userId: user.id,
-        searchPreferences: searchData,
-        lastSearchedAt: new Date().toISOString(),
-      });
-    } catch (error) {
-      console.error("Error saving search preferences:", error);
-    }
-  };
-
-  const handleSearch = async () => {
-    const params = new URLSearchParams();
-
-    // Add localities as area
-    if (selectedLocalities.length > 0) {
-      params.append("area", selectedLocalities.join(","));
-    }
-
-    // Add property type based on active tab
-    if (activeTab === "Buy") {
-      params.append("type", "sell");
-    } else if (activeTab === "Rent") {
-      params.append("type", "rent");
-    } else if (activeTab === "Plot") {
-      params.append("propertyCategory", "plot");
-    } else if (activeTab === "Commercial") {
-      params.append("propertyCategory", "office");
-    }
-
-    // Add filters (excluding "0" values which represent "no selection")
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value && value !== "0") {
-        params.append(key, value);
-      }
-    });
-
-    // Prepare search data for preferences
-    const searchData = {
-      type: activeTab === "Buy" ? "sell" : activeTab === "Rent" ? "rent" : "",
-      localities: selectedLocalities,
-      minPrice:
-        filters.minPrice && filters.minPrice !== "0"
-          ? parseInt(filters.minPrice)
-          : 0,
+  useEffect(() => {
+    setFilters({
+      type: searchFilters.type || "sell",
+      area: searchFilters.area || "",
+      minPrice: searchFilters.minPrice?.toString() || "0",
       maxPrice:
-        filters.maxPrice && filters.maxPrice !== "0"
-          ? parseInt(filters.maxPrice)
-          : 100000000,
-      bedrooms: filters.bedrooms,
-      propertyCategory: filters.propertyCategory,
-      furnishingStatus: filters.furnishingStatus,
-      possessionStatus: filters.possessionStatus,
-      minArea:
-        filters.minArea && filters.minArea !== "0"
-          ? parseInt(filters.minArea)
-          : 0,
-      maxArea:
-        filters.maxArea && filters.maxArea !== "0"
-          ? parseInt(filters.maxArea)
-          : 0,
-    };
-
-    // Update search store
-    updateSearchFilters({
-      type: searchData.type,
-      city: "",
-      area: selectedLocalities.join(","),
-      minPrice: searchData.minPrice,
-      maxPrice: searchData.maxPrice,
-      bedrooms: searchData.bedrooms,
-      propertyCategory: searchData.propertyCategory,
-      furnishingStatus: searchData.furnishingStatus,
-      possessionStatus: searchData.possessionStatus,
+        searchFilters.maxPrice && searchFilters.maxPrice !== 100000000
+          ? searchFilters.maxPrice.toString()
+          : "0",
+      propertyCategory: searchFilters.propertyCategory || "",
+      bedrooms: searchFilters.bedrooms || "",
+      furnishingStatus: searchFilters.furnishingStatus || "",
+      possessionStatus: searchFilters.possessionStatus || "",
+      minArea: searchFilters.minArea?.toString() || "0",
+      maxArea: searchFilters.maxArea?.toString() || "0",
     });
+  }, [searchFilters]);
 
-    // Save user preferences if logged in
-    await saveUserSearchPreferences(searchData);
-
-    router.push(`/properties?${params.toString()}`);
-    onClose();
-  };
+  const activeCount = useMemo(
+    () =>
+      countActiveFilters({
+        ...filters,
+        minPrice: parseInt(filters.minPrice) || 0,
+        maxPrice: parseInt(filters.maxPrice) || 0,
+        minArea: parseInt(filters.minArea) || 0,
+        maxArea: parseInt(filters.maxArea) || 0,
+      }) + (searchQuery.trim() ? 1 : 0),
+    [filters, searchQuery]
+  );
 
   const resetFilters = () => {
+    setSearchQuery("");
     setFilters({
+      type: "sell",
+      area: "",
       minPrice: "0",
       maxPrice: "0",
       propertyCategory: "",
@@ -199,121 +104,144 @@ export function MobileSearch({ onClose }: MobileSearchProps) {
       minArea: "0",
       maxArea: "0",
     });
-    setSelectedLocalities([]);
   };
 
-  const getActiveFilterCount = () => {
-    const filterCount = Object.values(filters).filter(
-      (value) => value !== "" && value !== "0"
-    ).length;
-    return filterCount + selectedLocalities.length;
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    const trimmed = searchQuery.trim();
+
+    if (trimmed) params.set("search", trimmed);
+    if (filters.type) params.set("type", filters.type);
+    if (filters.area.trim()) params.set("area", filters.area.trim());
+    if (filters.bedrooms) params.set("bedrooms", filters.bedrooms);
+    if (filters.propertyCategory) {
+      params.set("propertyCategory", filters.propertyCategory);
+    }
+    if (filters.furnishingStatus) {
+      params.set("furnishingStatus", filters.furnishingStatus);
+    }
+    if (filters.possessionStatus) {
+      params.set("possessionStatus", filters.possessionStatus);
+    }
+    if (filters.minPrice && filters.minPrice !== "0") {
+      params.set("minPrice", filters.minPrice);
+    }
+    if (filters.maxPrice && filters.maxPrice !== "0") {
+      params.set("maxPrice", filters.maxPrice);
+    }
+    if (filters.minArea && filters.minArea !== "0") {
+      params.set("minArea", filters.minArea);
+    }
+    if (filters.maxArea && filters.maxArea !== "0") {
+      params.set("maxArea", filters.maxArea);
+    }
+
+    updateSearchFilters({
+      type: filters.type,
+      city: "Bengaluru",
+      area: filters.area.trim(),
+      minPrice: parseInt(filters.minPrice) || 0,
+      maxPrice: parseInt(filters.maxPrice) || 100000000,
+      bedrooms: filters.bedrooms,
+      propertyCategory: filters.propertyCategory,
+      furnishingStatus: filters.furnishingStatus,
+      possessionStatus: filters.possessionStatus,
+      minArea: parseInt(filters.minArea) || 0,
+      maxArea: parseInt(filters.maxArea) || 0,
+    });
+
+    router.push(`/properties?${params.toString()}`);
+    onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-white flex flex-col">
-      {/* Enhanced Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white flex-shrink-0 shadow-sm">
-        <button 
-          onClick={onClose} 
-          className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 group"
-        >
-          <ArrowLeft className="w-5 h-5 text-gray-600 group-hover:text-gray-800" />
-        </button>
-        <h1 className="text-lg font-semibold">
-          Filters ({getActiveFilterCount()})
-        </h1>
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#FAFAFA]">
+      <div className="flex shrink-0 items-center justify-between border-b border-[#EBEBEB] bg-white px-4 py-3">
         <button
+          type="button"
+          onClick={onClose}
+          className="flex size-9 items-center justify-center rounded-full hover:bg-[#FAFAFA]"
+          aria-label="Close search"
+        >
+          <ArrowLeft className="size-5 text-[#303030]" strokeWidth={1.5} />
+        </button>
+        <div className="text-center">
+          <h1 className="font-manrope text-sm font-semibold text-[#222222]">
+            Search properties
+          </h1>
+          {activeCount > 0 ? (
+            <p className="font-manrope text-[11px] text-[#717171]">
+              {activeCount} filter{activeCount === 1 ? "" : "s"} applied
+            </p>
+          ) : null}
+        </div>
+        <button
+          type="button"
           onClick={resetFilters}
-          className="text-red-500 text-sm font-medium"
+          className="font-manrope text-xs font-medium text-[#717171] hover:text-[#303030]"
         >
           Reset
         </button>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto bg-gray-50/30">
-        {/* Filter Sections */}
-        <div className="px-4 space-y-4 py-4">
-          {/* Select Localities */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-900 mb-3">
-              Select Localities
-            </h3>
-
-            {/* Locality Search */}
-            {showLocalitySearch && (
-              <div className="mb-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    placeholder="Search localities..."
-                    value={localitySearchQuery}
-                    onChange={(e) => setLocalitySearchQuery(e.target.value)}
-                    onKeyDown={handleLocalitySearch}
-                    className="pl-10 pr-10 h-10 border-gray-200 focus:border-red-300 focus:ring-red-200 rounded-lg"
-                  />
-                  {isSearchingLocalities && (
-                    <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 animate-spin text-gray-400" />
-                  )}
-                </div>
-
-                {/* Suggestions */}
-                {localitySuggestions.length > 0 && (
-                  <div className="mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                    {localitySuggestions.map((suggestion) => (
-                      <div
-                        key={suggestion.place_id}
-                        className="px-3 py-2 hover:bg-red-50 cursor-pointer text-sm border-b border-gray-100 last:border-b-0 transition-colors duration-200 group"
-                        onClick={() => handleLocalitySelect(suggestion)}
-                      >
-                        <div className="flex items-center">
-                          <MapPin className="w-4 h-4 text-red-400 mr-2 group-hover:text-red-500" />
-                          <span className="text-gray-700 group-hover:text-gray-900">{suggestion.display_name}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Selected Localities */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              {selectedLocalities.map((locality) => (
-                <Badge
-                  key={locality}
-                  variant="secondary"
-                  className="bg-green-100 text-green-800"
-                >
-                  {locality}
-                  <button
-                    onClick={() => removeLocality(locality)}
-                    className="ml-1 hover:bg-green-200 rounded-full p-0.5 transition-colors duration-200"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              ))}
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="space-y-4">
+          <div className="rounded-[20px] border border-[#EBEBEB] bg-white p-4">
+            <h3 className="home-card-label mb-3">Search</h3>
+            <div className="flex items-center gap-2 rounded-full border border-[#DDDDDD] bg-[#FAFAFA] px-3 py-1">
+              <Search className="size-4 shrink-0 text-[#717171]" strokeWidth={1.5} />
+              <Input
+                type="search"
+                placeholder="Builder, project, city or locality"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearch();
+                }}
+                className="h-10 flex-1 border-0 bg-transparent px-0 font-manrope text-sm shadow-none focus-visible:ring-0"
+                style={{ fontSize: "16px" }}
+              />
             </div>
-
-            {/* Add Locality Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowLocalitySearch(!showLocalitySearch)}
-              className={`text-sm h-8 px-3 rounded-lg border transition-all duration-200 ${
-                showLocalitySearch 
-                  ? 'border-red-200 text-red-600 hover:bg-red-50' 
-                  : 'border-gray-200 text-gray-600 hover:border-red-200 hover:text-red-600 hover:bg-red-50'
-              }`}
-            >
-              {showLocalitySearch ? "Cancel" : "+ Add Locality"}
-            </Button>
           </div>
 
-          {/* Budget */}
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <h3 className="text-base font-semibold text-gray-900 mb-3">Budget Range</h3>
+          <div className="rounded-[20px] border border-[#EBEBEB] bg-white p-4">
+            <h3 className="home-card-label mb-3">Property type</h3>
+            <div className="flex flex-wrap gap-2">
+              {PROPERTY_TYPES.map((type) => (
+                <button
+                  key={type.value}
+                  type="button"
+                  onClick={() =>
+                    setFilters((prev) => ({ ...prev, type: type.value }))
+                  }
+                  className={cn(
+                    "rounded-full border px-4 py-2 font-manrope text-xs font-medium transition-colors",
+                    filters.type === type.value
+                      ? "border-[#303030] bg-[#303030] text-white"
+                      : "border-[#E8E8E8] bg-white text-[#484848] hover:border-[#D0D0D0]"
+                  )}
+                >
+                  {type.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[20px] border border-[#EBEBEB] bg-white p-4">
+            <h3 className="home-card-label mb-3">Preferred area</h3>
+            <Input
+              value={filters.area}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, area: e.target.value }))
+              }
+              placeholder="e.g. Whitefield, Hebbal, Sarjapur"
+              className="h-11 rounded-xl border-[#DDDDDD] font-manrope text-sm"
+              style={{ fontSize: "16px" }}
+            />
+          </div>
+
+          <div className="rounded-[20px] border border-[#EBEBEB] bg-white p-4">
+            <h3 className="home-card-label mb-3">Budget range</h3>
             <div className="grid grid-cols-2 gap-3">
               <Select
                 value={filters.minPrice}
@@ -321,17 +249,16 @@ export function MobileSearch({ onClose }: MobileSearchProps) {
                   setFilters((prev) => ({ ...prev, minPrice: value }))
                 }
               >
-                <SelectTrigger className="h-10 border-gray-200 focus:border-green-300 focus:ring-green-200 rounded-lg">
+                <SelectTrigger className="h-11 rounded-xl border-[#DDDDDD] font-manrope text-sm">
                   <SelectValue placeholder="Min" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">Min</SelectItem>
-                  <SelectItem value="500000">5 Lac</SelectItem>
-                  <SelectItem value="1000000">10 Lac</SelectItem>
-                  <SelectItem value="2000000">20 Lac</SelectItem>
-                  <SelectItem value="3000000">30 Lac</SelectItem>
-                  <SelectItem value="5000000">50 Lac</SelectItem>
-                  <SelectItem value="10000000">1 Cr</SelectItem>
+                  <SelectItem value="0">No min</SelectItem>
+                  <SelectItem value="500000">₹5 Lac</SelectItem>
+                  <SelectItem value="1000000">₹10 Lac</SelectItem>
+                  <SelectItem value="2000000">₹20 Lac</SelectItem>
+                  <SelectItem value="5000000">₹50 Lac</SelectItem>
+                  <SelectItem value="10000000">₹1 Cr</SelectItem>
                 </SelectContent>
               </Select>
               <Select
@@ -340,37 +267,63 @@ export function MobileSearch({ onClose }: MobileSearchProps) {
                   setFilters((prev) => ({ ...prev, maxPrice: value }))
                 }
               >
-                <SelectTrigger className="h-10 border-gray-200 focus:border-green-300 focus:ring-green-200 rounded-lg">
+                <SelectTrigger className="h-11 rounded-xl border-[#DDDDDD] font-manrope text-sm">
                   <SelectValue placeholder="Max" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">Max</SelectItem>
-                  <SelectItem value="1000000">10 Lac</SelectItem>
-                  <SelectItem value="2000000">20 Lac</SelectItem>
-                  <SelectItem value="3000000">30 Lac</SelectItem>
-                  <SelectItem value="5000000">50 Lac</SelectItem>
-                  <SelectItem value="10000000">1 Cr</SelectItem>
-                  <SelectItem value="20000000">2 Cr</SelectItem>
-                  <SelectItem value="50000000">5 Cr</SelectItem>
+                  <SelectItem value="0">No max</SelectItem>
+                  <SelectItem value="5000000">₹50 Lac</SelectItem>
+                  <SelectItem value="10000000">₹1 Cr</SelectItem>
+                  <SelectItem value="20000000">₹2 Cr</SelectItem>
+                  <SelectItem value="30000000">₹3 Cr</SelectItem>
+                  <SelectItem value="50000000">₹5 Cr</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {/* Property Category */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-900 mb-3">
-              Property Category
-            </h3>
-            <div className="grid grid-cols-3 gap-3">
-              {PROPERTY_CATEGORIES.slice(0, 3).map((category) => (
+          <div className="rounded-[20px] border border-[#EBEBEB] bg-white p-4">
+            <h3 className="home-card-label mb-3">Bedrooms</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {BHK_OPTIONS.slice(0, 6).map((bhk) => (
                 <div
+                  key={bhk.value}
+                  className="flex items-center rounded-lg p-2 hover:bg-[#FAFAFA]"
+                >
+                  <Checkbox
+                    id={`home-mobile-bhk-${bhk.value}`}
+                    checked={filters.bedrooms === bhk.value}
+                    onCheckedChange={(checked) => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        bedrooms: checked ? bhk.value : "",
+                      }));
+                    }}
+                  />
+                  <label
+                    htmlFor={`home-mobile-bhk-${bhk.value}`}
+                    className="ml-2 cursor-pointer font-manrope text-sm text-[#717171]"
+                  >
+                    {bhk.label}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[20px] border border-[#EBEBEB] bg-white p-4">
+            <h3 className="home-card-label mb-3">Property category</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {PROPERTY_CATEGORIES.slice(0, 4).map((category) => (
+                <button
                   key={category.value}
-                  className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all duration-200 hover:scale-105 ${
+                  type="button"
+                  className={cn(
+                    "rounded-xl border p-2.5 text-center transition-colors",
                     filters.propertyCategory === category.value
-                      ? "border-red-500 bg-red-50 shadow-md"
-                      : "border-gray-200 hover:border-red-200 hover:bg-red-50/30"
-                  }`}
+                      ? "border-[#303030] bg-[#FAFAFA]"
+                      : "border-[#EBEBEB] hover:border-[#DDDDDD]"
+                  )}
                   onClick={() =>
                     setFilters((prev) => ({
                       ...prev,
@@ -381,105 +334,24 @@ export function MobileSearch({ onClose }: MobileSearchProps) {
                     }))
                   }
                 >
-                  {filters.propertyCategory === category.value && (
-                    <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
-                      <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
-                    </div>
-                  )}
-                  <div className="text-center">
-                    <div className="w-8 h-8 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
-                      <MapPin className="w-4 h-4 text-gray-600" />
-                    </div>
-                    <span className="text-xs font-medium">
-                      {category.label}
-                    </span>
-                  </div>
-                </div>
+                  <span className="font-manrope text-xs text-[#484848]">
+                    {category.label}
+                  </span>
+                </button>
               ))}
             </div>
           </div>
 
-          {/* Covered Area */}
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <h3 className="text-base font-semibold text-gray-900 mb-3">Covered Area (sqft)</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <Select
-                value={filters.minArea}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, minArea: value }))
-                }
-              >
-                <SelectTrigger className="h-10 border-gray-200 focus:border-purple-300 focus:ring-purple-200 rounded-lg">
-                  <SelectValue placeholder="Min" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">Min</SelectItem>
-                  <SelectItem value="500">500 sq.ft</SelectItem>
-                  <SelectItem value="1000">1000 sq.ft</SelectItem>
-                  <SelectItem value="1500">1500 sq.ft</SelectItem>
-                  <SelectItem value="2000">2000 sq.ft</SelectItem>
-                  <SelectItem value="2500">2500 sq.ft</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.maxArea}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, maxArea: value }))
-                }
-              >
-                <SelectTrigger className="h-10 border-gray-200 focus:border-purple-300 focus:ring-purple-200 rounded-lg">
-                  <SelectValue placeholder="Max" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">Max</SelectItem>
-                  <SelectItem value="1000">1000 sq.ft</SelectItem>
-                  <SelectItem value="2000">2000 sq.ft</SelectItem>
-                  <SelectItem value="3000">3000 sq.ft</SelectItem>
-                  <SelectItem value="5000">5000 sq.ft</SelectItem>
-                  <SelectItem value="10000">10000 sq.ft</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Bedrooms */}
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <h3 className="text-base font-semibold text-gray-900 mb-3">Bedrooms</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {BHK_OPTIONS.slice(0, 6).map((bhk) => (
-                <div key={bhk.value} className="flex items-center p-2 rounded-lg hover:bg-orange-50 transition-colors duration-200">
-                  <Checkbox
-                    id={`mobile-bedroom-${bhk.value}`}
-                    checked={filters.bedrooms === bhk.value}
-                    onCheckedChange={(checked) => {
-                      setFilters((prev) => ({
-                        ...prev,
-                        bedrooms: checked ? bhk.value : "",
-                      }));
-                    }}
-                    className="data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
-                  />
-                  <label
-                    htmlFor={`mobile-bedroom-${bhk.value}`}
-                    className="ml-2 text-sm font-medium text-gray-700 cursor-pointer"
-                  >
-                    {bhk.label}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Furnishing Status */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-900 mb-3">
-              Furnishing Status
-            </h3>
-            <div className="space-y-2">
+          <div className="rounded-[20px] border border-[#EBEBEB] bg-white p-4">
+            <h3 className="home-card-label mb-3">Furnishing</h3>
+            <div className="space-y-1">
               {FURNISHING_STATUS.map((status) => (
-                <div key={status.value} className="flex items-center p-2 rounded-lg hover:bg-indigo-50 transition-colors duration-200">
+                <div
+                  key={status.value}
+                  className="flex items-center rounded-lg p-2 hover:bg-[#FAFAFA]"
+                >
                   <Checkbox
-                    id={`mobile-furnishing-${status.value}`}
+                    id={`home-mobile-furnishing-${status.value}`}
                     checked={filters.furnishingStatus === status.value}
                     onCheckedChange={(checked) => {
                       setFilters((prev) => ({
@@ -487,11 +359,10 @@ export function MobileSearch({ onClose }: MobileSearchProps) {
                         furnishingStatus: checked ? status.value : "",
                       }));
                     }}
-                    className="data-[state=checked]:bg-indigo-500 data-[state=checked]:border-indigo-500"
                   />
                   <label
-                    htmlFor={`mobile-furnishing-${status.value}`}
-                    className="ml-2 text-sm font-medium text-gray-700 cursor-pointer"
+                    htmlFor={`home-mobile-furnishing-${status.value}`}
+                    className="ml-2 cursor-pointer font-manrope text-sm text-[#717171]"
                   >
                     {status.label}
                   </label>
@@ -500,16 +371,16 @@ export function MobileSearch({ onClose }: MobileSearchProps) {
             </div>
           </div>
 
-          {/* Possession Status */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-900 mb-3">
-              Possession Status
-            </h3>
-            <div className="space-y-2">
+          <div className="rounded-[20px] border border-[#EBEBEB] bg-white p-4">
+            <h3 className="home-card-label mb-3">Possession</h3>
+            <div className="space-y-1">
               {POSSESSION_STATUS.map((status) => (
-                <div key={status.value} className="flex items-center p-2 rounded-lg hover:bg-teal-50 transition-colors duration-200">
+                <div
+                  key={status.value}
+                  className="flex items-center rounded-lg p-2 hover:bg-[#FAFAFA]"
+                >
                   <Checkbox
-                    id={`mobile-possession-${status.value}`}
+                    id={`home-mobile-possession-${status.value}`}
                     checked={filters.possessionStatus === status.value}
                     onCheckedChange={(checked) => {
                       setFilters((prev) => ({
@@ -517,11 +388,10 @@ export function MobileSearch({ onClose }: MobileSearchProps) {
                         possessionStatus: checked ? status.value : "",
                       }));
                     }}
-                    className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
                   />
                   <label
-                    htmlFor={`mobile-possession-${status.value}`}
-                    className="ml-2 text-sm font-medium text-gray-700 cursor-pointer"
+                    htmlFor={`home-mobile-possession-${status.value}`}
+                    className="ml-2 cursor-pointer font-manrope text-sm text-[#717171]"
                   >
                     {status.label}
                   </label>
@@ -532,14 +402,13 @@ export function MobileSearch({ onClose }: MobileSearchProps) {
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="p-4 border-t border-gray-100 bg-gradient-to-r from-white to-gray-50 flex-shrink-0 shadow-lg">
+      <div className="shrink-0 border-t border-[#EBEBEB] bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <Button
-          className="w-full h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+          className="property-btn-pill h-12 w-full rounded-full bg-[#303030] font-manrope text-white hover:bg-[#1a1a1a]"
           onClick={handleSearch}
         >
-          <Search className="w-5 h-5 mr-2" />
-          View Properties
+          <Search className="mr-2 size-4" strokeWidth={1.5} />
+          View properties
         </Button>
       </div>
     </div>

@@ -47,24 +47,24 @@ export function FilterSection({
       <div className="hidden sm:block lg:hidden mb-4">
         <Button
           variant="outline"
-          className="flex items-center gap-2 h-12 px-4 text-base font-medium w-full sm:w-auto"
+          className="flex h-11 w-full items-center gap-2 rounded-full border-[#DDDDDD] font-manrope text-sm text-[#484848] hover:bg-[#FAFAFA] sm:w-auto"
           onClick={() => setShowFilters(!showFilters)}
         >
-          <Filter className="w-5 h-5" />
-          {showFilters ? "Hide Filters" : "Show Filters"}
+          <Filter className="size-4" strokeWidth={1.5} />
+          {showFilters ? "Hide filters" : "Show filters"}
         </Button>
       </div>
 
-      {/* Filter sidebar - hidden on mobile, conditional on tablet, always visible on desktop */}
+      {/* Filter sidebar - tablet only; desktop uses horizontal bar */}
       <div
         className={`hidden sm:${
           showFilters ? "block" : "hidden"
-        } lg:block lg:w-72 flex-shrink-0`}
+        } sm:max-w-xs sm:flex-shrink-0 lg:hidden`}
       >
-        <Card className="p-4 sm:p-6 h-full overflow-y-auto mx-0 lg:mx-0 rounded-lg lg:rounded-lg border-0 lg:border shadow-lg lg:shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl sm:text-lg font-semibold">
-              Filter Properties
+        <Card className="h-full overflow-y-auto rounded-[20px] border border-[#EBEBEB] bg-white p-4 shadow-none sm:p-6">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="font-manrope text-base font-semibold text-[#222222]">
+              Filters
             </h2>
             <Button
               variant="ghost"
@@ -78,7 +78,7 @@ export function FilterSection({
 
           {/* Property Type */}
           <div className="space-y-4 mb-6">
-            <h3 className="font-medium text-base sm:text-sm text-gray-900">
+            <h3 className="home-card-label mb-3">
               Property Type
             </h3>
             <div className="space-y-3 sm:space-y-2">
@@ -97,7 +97,7 @@ export function FilterSection({
                   />
                   <label
                     htmlFor={`type-${type.value}`}
-                    className="ml-3 sm:ml-2 text-base sm:text-sm text-gray-600 cursor-pointer"
+                    className="ml-3 sm:ml-2 cursor-pointer font-manrope text-sm text-[#717171]"
                   >
                     {type.label}
                   </label>
@@ -110,9 +110,7 @@ export function FilterSection({
 
           {/* Budget */}
           <div className="space-y-4 mb-6">
-            <h3 className="font-medium text-base sm:text-sm text-gray-900">
-              Budget
-            </h3>
+            <h3 className="home-card-label mb-3">Budget</h3>
             <div className="flex items-center justify-between gap-3 sm:gap-2">
               <Select
                 value={searchFilters.minPrice?.toString() || ""}
@@ -120,7 +118,7 @@ export function FilterSection({
                   updateSearchFilters({ minPrice: parseInt(value) || 0 })
                 }
               >
-                <SelectTrigger className="w-full h-12 sm:h-10 text-base sm:text-sm">
+                <SelectTrigger className="h-11 w-full rounded-xl border-[#DDDDDD] font-manrope text-sm sm:h-10">
                   <SelectValue placeholder="Min" />
                 </SelectTrigger>
                 <SelectContent>
@@ -137,7 +135,7 @@ export function FilterSection({
                 </SelectContent>
               </Select>
 
-              <span className="text-gray-500 text-sm font-medium px-1">to</span>
+              <span className="px-1 font-manrope text-sm text-[#B0B0B0]">to</span>
 
               <Select
                 value={searchFilters.maxPrice?.toString() || ""}
@@ -145,7 +143,7 @@ export function FilterSection({
                   updateSearchFilters({ maxPrice: parseInt(value) || 0 })
                 }
               >
-                <SelectTrigger className="w-full h-12 sm:h-10 text-base sm:text-sm">
+                <SelectTrigger className="h-11 w-full rounded-xl border-[#DDDDDD] font-manrope text-sm sm:h-10">
                   <SelectValue placeholder="Max" />
                 </SelectTrigger>
                 <SelectContent>
@@ -168,9 +166,7 @@ export function FilterSection({
 
           {/* Size */}
           <div className="space-y-4 mb-6">
-            <h3 className="font-medium text-base sm:text-sm text-gray-900">
-              Size
-            </h3>
+            <h3 className="home-card-label mb-3">Size</h3>
             <div className="flex items-center justify-between gap-3 sm:gap-2">
               <Select
                 value={searchFilters.minArea?.toString() || ""}
@@ -178,7 +174,7 @@ export function FilterSection({
                   updateSearchFilters({ minArea: parseInt(value) || 0 })
                 }
               >
-                <SelectTrigger className="w-full h-12 sm:h-10 text-base sm:text-sm">
+                <SelectTrigger className="h-11 w-full rounded-xl border-[#DDDDDD] font-manrope text-sm sm:h-10">
                   <SelectValue placeholder="Min" />
                 </SelectTrigger>
                 <SelectContent>
@@ -192,7 +188,7 @@ export function FilterSection({
                 </SelectContent>
               </Select>
 
-              <span className="text-gray-500 text-sm font-medium px-1">to</span>
+              <span className="px-1 font-manrope text-sm text-[#B0B0B0]">to</span>
 
               <Select
                 value={searchFilters.maxArea?.toString() || ""}
@@ -200,7 +196,7 @@ export function FilterSection({
                   updateSearchFilters({ maxArea: parseInt(value) || 0 })
                 }
               >
-                <SelectTrigger className="w-full h-12 sm:h-10 text-base sm:text-sm">
+                <SelectTrigger className="h-11 w-full rounded-xl border-[#DDDDDD] font-manrope text-sm sm:h-10">
                   <SelectValue placeholder="Max" />
                 </SelectTrigger>
                 <SelectContent>
@@ -219,9 +215,7 @@ export function FilterSection({
 
           {/* Bedrooms */}
           <div className="space-y-4 mb-6">
-            <h3 className="font-medium text-base sm:text-sm text-gray-900">
-              Bedrooms
-            </h3>
+            <h3 className="home-card-label mb-3">Bedrooms</h3>
             <div className="grid grid-cols-2 gap-3 sm:gap-2">
               {BHK_OPTIONS.map((bhk) => (
                 <div key={bhk.value} className="flex items-center">
@@ -238,7 +232,7 @@ export function FilterSection({
                   />
                   <label
                     htmlFor={`bedroom-${bhk.value}`}
-                    className="ml-3 sm:ml-2 text-base sm:text-sm text-gray-600 cursor-pointer"
+                    className="ml-3 sm:ml-2 cursor-pointer font-manrope text-sm text-[#717171]"
                   >
                     {bhk.label}
                   </label>
@@ -251,7 +245,7 @@ export function FilterSection({
 
           {/* Property Category */}
           <div className="space-y-4 mb-6">
-            <h3 className="font-medium text-sm">Property Category</h3>
+            <h3 className="home-card-label mb-3">Property Category</h3>
             <div className="space-y-2">
               {PROPERTY_CATEGORIES.map((category) => (
                 <div key={category.value} className="flex items-center">
@@ -268,7 +262,7 @@ export function FilterSection({
                   />
                   <label
                     htmlFor={`category-${category.value}`}
-                    className="ml-2 text-sm text-gray-600"
+                    className="ml-2 cursor-pointer font-manrope text-sm text-[#717171]"
                   >
                     {category.label}
                   </label>
@@ -281,7 +275,7 @@ export function FilterSection({
 
           {/* Furnishing Status */}
           <div className="space-y-4 mb-6">
-            <h3 className="font-medium text-sm">Furnishing Status</h3>
+            <h3 className="home-card-label mb-3">Furnishing Status</h3>
             <div className="space-y-2">
               {FURNISHING_STATUS.map((status) => (
                 <div key={status.value} className="flex items-center">
@@ -298,7 +292,7 @@ export function FilterSection({
                   />
                   <label
                     htmlFor={`furnishing-${status.value}`}
-                    className="ml-2 text-sm text-gray-600"
+                    className="ml-2 cursor-pointer font-manrope text-sm text-[#717171]"
                   >
                     {status.label}
                   </label>
@@ -311,7 +305,7 @@ export function FilterSection({
 
           {/* Possession Status */}
           <div className="space-y-4 mb-6">
-            <h3 className="font-medium text-sm">Possession Status</h3>
+            <h3 className="home-card-label mb-3">Possession Status</h3>
             <div className="space-y-2">
               {POSSESSION_STATUS.map((status) => (
                 <div key={status.value} className="flex items-center">
@@ -328,7 +322,7 @@ export function FilterSection({
                   />
                   <label
                     htmlFor={`possession-${status.value}`}
-                    className="ml-2 text-sm text-gray-600"
+                    className="ml-2 cursor-pointer font-manrope text-sm text-[#717171]"
                   >
                     {status.label}
                   </label>
@@ -337,16 +331,16 @@ export function FilterSection({
             </div>
           </div>
 
-          <div className="mt-8 sm:mt-6 space-y-3 sm:space-y-2 sticky bottom-0 bg-white pt-4 border-t lg:border-t-0 lg:pt-0 lg:bg-transparent lg:static">
+          <div className="sticky bottom-0 mt-8 space-y-2 border-t border-[#F0F0F0] bg-white pt-4 lg:static lg:border-t-0 lg:bg-transparent lg:pt-0">
             <Button
-              className="w-full h-12 sm:h-10 text-base sm:text-sm font-medium"
+              className="property-btn-pill h-11 w-full rounded-full bg-[#303030] text-white hover:bg-[#1a1a1a]"
               onClick={onSearch}
             >
-              Apply Filters
+              Apply filters
             </Button>
             <Button
               variant="outline"
-              className="w-full h-12 sm:h-10 text-base sm:text-sm"
+              className="h-11 w-full rounded-full border-[#DDDDDD] font-manrope text-[#484848] hover:bg-[#FAFAFA]"
               onClick={() => {
                 updateSearchFilters({
                   type: "",

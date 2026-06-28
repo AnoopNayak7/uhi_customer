@@ -9,25 +9,19 @@ import { apiClient } from "@/lib/api";
 import { useAuthStore, useSearchStore } from "@/lib/store";
 import {
   trackPropertySearch,
-  trackUserInteraction,
 } from "@/components/analytics/GoogleAnalytics";
-import { Search, Navigation, Loader2, Grid3X3, MapIcon } from "lucide-react";
+import { Search, Navigation, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { FilterSection } from "@/components/propertyListing/FilterSection";
 import { PropertyList } from "@/components/propertyListing/PropertyList";
 import { MapView } from "@/components/propertyListing/MapView";
 import { MobileFilterDrawer } from "@/components/propertyListing/MobileFilterDrawer";
+import { ViewModeToggle } from "@/components/propertyListing/properties-view-controls";
+import { HorizontalFilterBar } from "@/components/propertyListing/HorizontalFilterBar";
 
 import { PageContent } from "@/components/animations/layout-wrapper";
 import { PropertyGridSkeleton } from "@/components/ui/PropertyCardSkeleton";
-
-// Location suggestion interface
-interface LocationSuggestion {
-  display_name: string;
-  lat: string;
-  lon: string;
-  place_id: string;
-}
+import { cn } from "@/lib/utils";
+import { FilterSection } from "@/components/propertyListing/FilterSection";
 
 export function PropertiesPageClient() {
   const searchParams: any = useSearchParams();
@@ -35,10 +29,9 @@ export function PropertiesPageClient() {
   const { user } = useAuthStore();
   const { searchFilters, updateSearchFilters } = useSearchStore();
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get("search") || ""
+  );
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
@@ -47,6 +40,7 @@ export function PropertiesPageClient() {
   const [showFilters, setShowFilters] = useState(false);
 
   const [properties, setProperties] = useState<any[]>([]);
+  const [mapMarkers, setMapMarkers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -62,6 +56,65 @@ export function PropertiesPageClient() {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const mobileLoadMoreRef = useRef<HTMLDivElement | null>(null);
+  const stickyToolbarRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setSearchQuery(searchParams.get("search") || "");
+  }, [searchParams]);
+
+  useEffect(() => {
+    const updateToolbarHeight = () => {
+      const toolbar = stickyToolbarRef.current;
+      if (!toolbar) return;
+
+      const bottom = toolbar.getBoundingClientRect().bottom;
+      document.documentElement.style.setProperty(
+        "--properties-toolbar-height",
+        `${Math.max(bottom, 0)}px`
+      );
+    };
+
+    updateToolbarHeight();
+
+    const observer = new ResizeObserver(updateToolbarHeight);
+    if (stickyToolbarRef.current) {
+      observer.observe(stickyToolbarRef.current);
+    }
+
+    window.addEventListener("resize", updateToolbarHeight);
+    window.addEventListener("scroll", updateToolbarHeight, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateToolbarHeight);
+      window.removeEventListener("scroll", updateToolbarHeight);
+      document.documentElement.style.removeProperty(
+        "--properties-toolbar-height"
+      );
+    };
+  }, [viewMode]);
+
+  useEffect(() => {
+    const isDesktopMap = viewMode === "map" && window.innerWidth >= 1024;
+
+    if (isDesktopMap) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    const onResize = () => {
+      const desktopMap = viewMode === "map" && window.innerWidth >= 1024;
+      document.body.style.overflow = desktopMap ? "hidden" : "";
+    };
+
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("resize", onResize);
+    };
+  }, [viewMode]);
 
   // Cleanup search timeout
   useEffect(() => {
@@ -166,6 +219,33 @@ export function PropertiesPageClient() {
     [searchParams]
   );
 
+  const buildFilterParams = useCallback(() => {
+    const params: Record<string, string> = {};
+    for (const [key, value] of searchParams.entries()) {
+      if (value) {
+        params[key] = value;
+      }
+    }
+    return params;
+  }, [searchParams]);
+
+  const fetchMapMarkers = useCallback(async () => {
+    try {
+      const response: any = await apiClient.getPropertyMapMarkers(
+        buildFilterParams()
+      );
+
+      if (response.success && Array.isArray(response.data)) {
+        setMapMarkers(response.data);
+      } else {
+        setMapMarkers([]);
+      }
+    } catch (error) {
+      console.error("Error fetching map markers:", error);
+      setMapMarkers([]);
+    }
+  }, [buildFilterParams]);
+
   useEffect(() => {
     // Update search filters from URL params
     const params = Object.fromEntries(searchParams.entries());
@@ -176,8 +256,10 @@ export function PropertiesPageClient() {
     setCurrentPage(1);
     setHasMore(true);
     setTotalCount(0);
+    setMapMarkers([]);
     fetchProperties(1, false);
-  }, [searchParams, updateSearchFilters, fetchProperties]);
+    fetchMapMarkers();
+  }, [searchParams, updateSearchFilters, fetchProperties, fetchMapMarkers]);
 
   // Handle load more for manual triggers (like MapView button)
   const handleLoadMore = useCallback(() => {
@@ -286,75 +368,49 @@ export function PropertiesPageClient() {
     setSelectedLocalities((prev) => prev.filter((l) => l !== locality));
   };
 
-  const handleSearch = () => {
-    const params = new URLSearchParams();
+  const applySearchToUrl = useCallback(
+    (query: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      const trimmed = query.trim();
 
-    // Add all current search filters to params
-    Object.entries(searchFilters).forEach(([key, value]) => {
-      if (value && value !== "" && value !== 0) {
-        params.append(key, value.toString());
+      if (trimmed) {
+        params.set("search", trimmed);
+      } else {
+        params.delete("search");
       }
-    });
 
-    // Track search event
+      router.push(`/properties?${params.toString()}`);
+    },
+    [router, searchParams]
+  );
+
+  const handleSearch = () => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    applySearchToUrl(searchQuery);
     trackPropertySearch(searchQuery || "property_search", searchFilters);
-
-    router.push(`/properties?${params.toString()}`);
   };
 
-  // Search locations function
-  const searchLocations = async (query: string) => {
-    if (!query.trim()) {
-      setSuggestions([]);
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          query
-        )}`
-      );
-      const data = await response.json();
-      setSuggestions(data);
-    } catch (error) {
-      console.error("Error searching locations:", error);
-      toast.error("Failed to search locations");
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // Debounced search
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    setShowSuggestions(true);
 
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
     searchTimeoutRef.current = setTimeout(() => {
-      searchLocations(query);
-    }, 300);
+      applySearchToUrl(query);
+    }, 500);
   };
 
-  const handleSuggestionClick = (suggestion: LocationSuggestion) => {
-    setSearchQuery(suggestion.display_name);
-    setSuggestions([]);
-    setShowSuggestions(false);
-
-    // Update area filter
-    const locationParts = suggestion.display_name.split(",");
-    const area = locationParts[0].trim();
-    updateSearchFilters({ area });
-
-    // Update URL params
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("area", area);
-    router.push(`/properties?${params.toString()}`);
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearch();
+    }
   };
 
   // Get user location
@@ -413,251 +469,160 @@ export function PropertiesPageClient() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden">
-      <Header />
+    <div className="flex min-h-screen flex-col bg-white">
+      <Header hideOnScroll />
 
-      <main className="flex-1 container mx-auto px-3 sm:px-4 md:px-6 lg:px-[3%] py-4 sm:py-6 md:py-8 max-w-full">
-        <PageContent className="overflow-x-hidden">
-          {/* Mobile Search Interface */}
-          <div className="block lg:hidden mb-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-              {/* Search Bar with Search Button */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  type="text"
-                  placeholder="Search by location, landmark, project..."
-                  className="pl-10 pr-20 py-3 w-full text-sm h-12 border border-gray-200 bg-white focus:bg-white focus:ring-2 focus:ring-red-200 rounded-lg transition-all duration-300"
-                  value={searchQuery}
-                  onChange={handleSearchInputChange}
-                  onFocus={() => setShowSuggestions(true)}
-                  onBlur={() =>
-                    setTimeout(() => setShowSuggestions(false), 200)
-                  }
-                  style={{ fontSize: "16px" }} // Prevent zoom on mobile
-                />
-
-                {/* Search Button beside search bar */}
-                <Button
-                  onClick={handleSearch}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 bg-red-500 hover:bg-red-600 text-white rounded-md transition-all duration-300"
-                >
-                  <Search className="w-4 h-4" />
-                </Button>
-
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute z-20 mt-2 w-full bg-white shadow-xl rounded-xl border border-gray-200 max-h-60 overflow-y-auto">
-                    {suggestions.map((suggestion) => (
-                      <div
-                        key={suggestion.place_id}
-                        className="px-4 py-3 hover:bg-red-50 cursor-pointer text-sm border-b border-gray-100 last:border-b-0 transition-colors duration-200"
-                        onClick={() => handleSuggestionClick(suggestion)}
-                      >
-                        <div className="flex items-center">
-                          <div className="w-2 h-2 bg-red-400 rounded-full mr-3"></div>
-                          <span className="text-gray-700">
-                            {suggestion.display_name}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {isSearching && (
-                  <div className="absolute right-16 top-1/2 transform -translate-y-1/2">
-                    <Loader2 className="animate-spin h-5 w-5 text-gray-400" />
-                  </div>
-                )}
-              </div>
-
-              {/* Near Me Button - Hidden on mobile */}
-              <div className="hidden">
-                <Button
-                  variant="outline"
-                  className="w-full h-12 border-gray-200 hover:border-red-300 hover:bg-red-50 text-gray-700 font-medium rounded-xl transition-all duration-300"
-                  onClick={getUserLocation}
-                  disabled={isGettingLocation}
-                >
-                  {isGettingLocation ? (
-                    <Loader2 className="animate-spin h-4 w-4 mr-2" />
-                  ) : (
-                    <Navigation className="h-4 w-4 mr-2" />
-                  )}
-                  Near Me
-                </Button>
-              </div>
+      <div
+        className={cn(
+          "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8",
+          viewMode === "map" ? "pt-4" : "pt-6 lg:pt-8"
+        )}
+      >
+        <PageContent>
+          <div
+            className={cn(
+              "relative mb-4 overflow-hidden rounded-[24px] border border-[#EBEBEB] bg-white px-5 py-6 sm:mb-6 sm:px-8 sm:py-8",
+              viewMode === "map" && "hidden"
+            )}
+          >
+            <div
+              aria-hidden
+              className="hero-cred-background pointer-events-none absolute inset-0 z-[1]"
+            />
+            <div className="relative z-10">
+              <p className="home-section-eyebrow mb-0">Browse</p>
+              <h1 className="home-section-headline mt-2 !text-[1.75rem] sm:!text-[2.5rem]">
+                {searchParams.get("search")
+                  ? `results for “${searchParams.get("search")}”`
+                  : searchParams.get("city")
+                    ? `properties in ${searchParams.get("city")?.toLowerCase()}`
+                    : "properties for you"}
+              </h1>
+              <p className="mt-3 font-manrope text-sm text-[#5C5C5C]">
+                {loading
+                  ? "Searching..."
+                  : `${totalCount} properties found`}
+              </p>
             </div>
           </div>
+        </PageContent>
+      </div>
 
-          {/* Desktop Search bar */}
-          <div className="hidden lg:block mb-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-              <div className="flex gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      {/* Full-width sticky toolbar — sibling of hero/main so nothing clips the bleed */}
+      <div
+        ref={stickyToolbarRef}
+        className="properties-sticky-toolbar sticky top-[var(--header-offset,4rem)] z-30 border-b border-[#F0F0F0] bg-white py-3 shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-[top] duration-300 ease-in-out"
+      >
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            {/* Mobile Search */}
+            <div className="lg:hidden">
+              <div className="relative">
+                <div className="flex items-center gap-2 rounded-full border border-[#DDDDDD] bg-white px-4 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                  <Search className="size-4 shrink-0 text-[#5C5C5C]" strokeWidth={1.5} />
                   <Input
                     type="text"
-                    placeholder="Search by location, landmark, project..."
-                    className="pl-10 pr-4 py-3 w-full text-sm h-12 border border-gray-200 focus:ring-2 focus:ring-red-200 rounded-lg"
+                    placeholder="Search builder, project, city or locality"
+                    className="h-10 flex-1 border-0 bg-transparent px-0 font-manrope text-sm text-[#222222] shadow-none placeholder:text-[#949494] focus-visible:ring-0"
                     value={searchQuery}
                     onChange={handleSearchInputChange}
-                    onFocus={() => setShowSuggestions(true)}
-                    onBlur={() =>
-                      setTimeout(() => setShowSuggestions(false), 200)
-                    }
-                    style={{ fontSize: "16px" }} // Prevent zoom on mobile
+                    onKeyDown={handleSearchKeyDown}
+                    style={{ fontSize: "16px" }}
                   />
+                  <Button
+                    onClick={handleSearch}
+                    className="property-btn-pill h-9 shrink-0 rounded-full bg-[#303030] px-4 text-white hover:bg-[#1a1a1a]"
+                  >
+                    <Search className="size-3.5" strokeWidth={1.5} />
+                  </Button>
+                </div>
+              </div>
+            </div>
 
-                  {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-y-auto">
-                      {suggestions.map((suggestion) => (
-                        <div
-                          key={suggestion.place_id}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                          onClick={() => handleSuggestionClick(suggestion)}
-                        >
-                          {suggestion.display_name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+            {/* Desktop Search */}
+            <div className="hidden w-full lg:block">
+              <div className="flex w-full items-center gap-3">
+                <div className="relative flex-1">
+                  <div className="flex items-center gap-3 rounded-full border border-[#DDDDDD] bg-white px-4 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                    <Search className="size-4 shrink-0 text-[#5C5C5C]" strokeWidth={1.5} />
+                    <Input
+                      type="text"
+                      placeholder="Search builder, project, city or locality"
+                      className="h-10 flex-1 border-0 bg-transparent px-0 font-manrope text-sm text-[#222222] shadow-none placeholder:text-[#949494] focus-visible:ring-0"
+                      value={searchQuery}
+                      onChange={handleSearchInputChange}
+                      onKeyDown={handleSearchKeyDown}
+                    />
 
-                  {isSearching && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <Loader2 className="animate-spin h-4 w-4 text-gray-400" />
-                    </div>
-                  )}
+                  </div>
                 </div>
 
                 <Button
                   variant="outline"
-                  className="flex items-center gap-2 h-12 px-4 text-sm border-gray-200 hover:border-red-300 hover:bg-red-50"
+                  className="h-11 rounded-full border-[#DDDDDD] font-manrope text-sm text-[#3A3A3A] hover:bg-[#FAFAFA]"
                   onClick={getUserLocation}
                   disabled={isGettingLocation}
                 >
                   {isGettingLocation ? (
-                    <Loader2 className="animate-spin h-4 w-4" />
+                    <Loader2 className="size-4 animate-spin" />
                   ) : (
-                    <Navigation className="h-4 w-4" />
+                    <Navigation className="size-4" strokeWidth={1.5} />
                   )}
-                  Near Me
+                  <span className="ml-2">Near me</span>
                 </Button>
 
                 <Button
                   onClick={handleSearch}
-                  className="h-12 px-6 text-sm bg-red-500 hover:bg-red-600 text-white"
+                  className="property-btn-pill h-11 rounded-full bg-[#303030] px-6 text-white hover:bg-[#1a1a1a]"
                 >
                   Search
                 </Button>
               </div>
+
+              <HorizontalFilterBar
+                onSearch={handleSearch}
+                handleFilterChange={handleFilterChange}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+              />
             </div>
-          </div>
 
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 overflow-x-hidden lg:h-[calc(100vh-200px)]">
-            {/* Filter Section */}
-            <FilterSection
-              onSearch={handleSearch}
-              handleFilterChange={handleFilterChange}
-              showFilters={showFilters}
-              setShowFilters={setShowFilters}
-              propertiesCount={properties.length}
-            />
+            {/* Mobile filters row */}
+            <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#F0F0F0] pt-3 lg:hidden">
+              <p className="min-w-0 truncate font-manrope text-sm text-[#5C5C5C]">
+                {loading ? "Searching..." : `${totalCount} results`}
+              </p>
+              <MobileFilterDrawer
+                onSearch={handleSearch}
+                handleFilterChange={handleFilterChange}
+              />
+            </div>
+        </div>
+      </div>
 
-            {/* Main Content */}
-            <div className="flex-1 min-w-0 overflow-x-hidden flex flex-col">
-              {/* Desktop Properties Count and View Toggle */}
-              <div className="hidden lg:block mb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-2xl font-bold text-gray-900">
-                      Properties
-                    </h1>
-                    <p className="text-gray-500 text-sm">
-                      {totalCount} properties found
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="bg-gray-100 rounded-md p-1 flex">
-                      <Button
-                        variant={viewMode === "grid" ? "default" : "ghost"}
-                        size="sm"
-                        className="h-8 px-2 text-sm"
-                        onClick={() => setViewMode("grid")}
-                      >
-                        <Grid3X3 className="w-4 h-4 mr-1" />
-                        Grid
-                      </Button>
-                      <Button
-                        variant={viewMode === "map" ? "default" : "ghost"}
-                        size="sm"
-                        className="h-8 px-2 text-sm"
-                        onClick={() => setViewMode("map")}
-                      >
-                        <MapIcon className="w-4 h-4 mr-1" />
-                        Map
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+      <main
+        className={cn(
+          "mx-auto w-full flex-1",
+          viewMode === "map"
+            ? "max-w-none px-0 pb-4 lg:px-4"
+            : "max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-12"
+        )}
+      >
+          <div className={cn("overflow-x-hidden", viewMode === "map" && "lg:overflow-hidden")}>
+            {viewMode !== "map" ? (
+              <FilterSection
+                onSearch={handleSearch}
+                handleFilterChange={handleFilterChange}
+                showFilters={showFilters}
+                setShowFilters={setShowFilters}
+                propertiesCount={properties.length}
+              />
+            ) : null}
 
-              {/* Mobile view - always show grid with proper scrolling */}
+            <div className="min-w-0 w-full">
+              {/* Mobile view */}
               <div className="block lg:hidden">
-                {/* Mobile Properties Count and Filter */}
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <h1 className="text-xl font-bold text-gray-900">
-                      Properties
-                    </h1>
-                    <p className="text-gray-500 text-sm">
-                      {totalCount} properties found
-                    </p>
-                  </div>
-                  <MobileFilterDrawer
-                    onSearch={handleSearch}
-                    handleFilterChange={handleFilterChange}
-                  />
-                </div>
-
-                {loading ? (
-                  <PropertyGridSkeleton count={9} />
-                ) : (
-                  <PropertyList
-                    properties={properties}
-                    loading={loading}
-                    viewMode="grid"
-                    setViewMode={setViewMode}
-                    onFavorite={handleFavorite}
-                  />
-                )}
-                {/* Infinite scroll trigger for mobile */}
-                <div
-                  ref={mobileLoadMoreRef}
-                  className="h-10 flex items-center justify-center mt-4"
-                >
-                  {loadingMore && (
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span className="text-sm text-gray-600">
-                        Loading more properties...
-                      </span>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Show skeleton when loading more */}
-                {loadingMore && (
-                  <div className="mt-4">
-                    <PropertyGridSkeleton count={3} />
-                  </div>
-                )}
-              </div>
-
-              {/* Desktop view - show grid or map based on viewMode */}
-              <div className="hidden lg:block flex-1 overflow-hidden">
                 {viewMode === "grid" ? (
-                  <div className="h-full overflow-y-auto">
+                  <>
                     {loading ? (
                       <PropertyGridSkeleton count={9} />
                     ) : (
@@ -669,47 +634,104 @@ export function PropertiesPageClient() {
                         onFavorite={handleFavorite}
                       />
                     )}
-                    {/* Infinite scroll trigger for desktop */}
+
                     <div
-                      ref={loadMoreRef}
-                      className="h-10 flex items-center justify-center"
+                      ref={mobileLoadMoreRef}
+                      className="mt-4 flex h-10 items-center justify-center"
                     >
-                      {loadingMore && (
+                      {loadingMore ? (
                         <div className="flex items-center space-x-2">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                          <span className="text-sm text-gray-600">
+                          <div className="size-5 animate-spin rounded-full border-2 border-[#EBEBEB] border-t-[#303030]" />
+                          <span className="font-manrope text-sm text-[#5C5C5C]">
                             Loading more properties...
                           </span>
                         </div>
-                      )}
+                      ) : null}
                     </div>
-                    
-                    {/* Show skeleton when loading more */}
-                    {loadingMore && (
+
+                    {loadingMore ? (
                       <div className="mt-4">
                         <PropertyGridSkeleton count={3} />
                       </div>
+                    ) : null}
+
+                    <div className="h-20" aria-hidden />
+                  </>
+                ) : (
+                  <MapView
+                    mobile
+                    properties={properties}
+                    mapMarkers={mapMarkers}
+                    userLocation={userLocation}
+                    mapType={mapType}
+                    setMapType={setMapType}
+                    hasMore={hasMore}
+                    loadingMore={loadingMore}
+                    onLoadMore={handleLoadMore}
+                    totalCount={totalCount}
+                  />
+                )}
+              </div>
+
+              <div className="hidden lg:block">
+                {viewMode === "grid" ? (
+                  <div>
+                    {loading ? (
+                      <PropertyGridSkeleton count={9} />
+                    ) : (
+                      <PropertyList
+                        properties={properties}
+                        loading={loading}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        onFavorite={handleFavorite}
+                      />
                     )}
+                    <div
+                      ref={loadMoreRef}
+                      className="flex h-10 items-center justify-center"
+                    >
+                      {loadingMore ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="size-5 animate-spin rounded-full border-2 border-[#EBEBEB] border-t-[#303030]" />
+                          <span className="font-manrope text-sm text-[#5C5C5C]">
+                            Loading more properties...
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {loadingMore ? (
+                      <div className="mt-4">
+                        <PropertyGridSkeleton count={3} />
+                      </div>
+                    ) : null}
                   </div>
                 ) : (
-                  <div className="h-full">
-                    <MapView
-                      properties={properties}
-                      userLocation={userLocation}
-                      mapType={mapType}
-                      setMapType={setMapType}
-                      hasMore={hasMore}
-                      loadingMore={loadingMore}
-                      onLoadMore={handleLoadMore}
-                      totalCount={totalCount}
-                    />
-                  </div>
+                  <MapView
+                    properties={properties}
+                    mapMarkers={mapMarkers}
+                    userLocation={userLocation}
+                    mapType={mapType}
+                    setMapType={setMapType}
+                    hasMore={hasMore}
+                    loadingMore={loadingMore}
+                    onLoadMore={handleLoadMore}
+                    totalCount={totalCount}
+                  />
                 )}
               </div>
             </div>
           </div>
-        </PageContent>
       </main>
+
+      <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 lg:hidden">
+        <ViewModeToggle
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          className="shadow-[0_8px_32px_rgba(0,0,0,0.14)]"
+        />
+      </div>
     </div>
   );
 }

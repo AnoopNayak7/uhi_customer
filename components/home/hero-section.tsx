@@ -120,11 +120,17 @@ export function HeroSection() {
   const heroBackground = useGTMHeroBackground();
 
   return (
-    <section className="relative bg-gradient-to-br from-gray-50 via-white to-gray-50 py-16 md:py-24 overflow-hidden">
+    <section className="relative overflow-hidden bg-white py-14 md:py-20">
+      {/* CRED-style vertical lines + soft top glow */}
+      <div
+        aria-hidden
+        className="hero-cred-background pointer-events-none absolute inset-0 z-[1]"
+      />
+
       {/* Hero Background Image from GTM */}
       {heroBackground?.enabled && heroBackground?.imageUrl && (
         <div
-          className="absolute inset-0 z-0"
+          className="absolute inset-0 z-[2]"
           style={{
             opacity: heroBackground.opacity || 0.15,
             backgroundImage: `url(${heroBackground.imageUrl})`,
@@ -134,7 +140,7 @@ export function HeroSection() {
           }}
         >
           {/* Overlay for better text readability */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/60 to-white/80" />
+          <div className="absolute inset-0 bg-white/85" />
         </div>
       )}
 
@@ -154,25 +160,25 @@ export function HeroSection() {
         <StaggerContainer className="text-center mb-12">
           <StaggerItem>
             <div className="flex items-center justify-center mb-4">
-              <Badge
-                variant="outline"
-                className="text-primary border-primary/20 bg-primary/10 px-4 py-2 font-medium"
-              >
-                <Star className="w-3 h-3 mr-2 fill-current" />
-                Trusted by 1000+ customers
-              </Badge>
+          <Badge
+            variant="outline"
+            className="rounded-full border-amber-200 bg-amber-50 px-4 py-2 font-manrope text-amber-800"
+          >
+            <Star className="mr-2 size-3 fill-amber-500 text-amber-500" />
+            Trusted by 470+ customers
+          </Badge>
             </div>
           </StaggerItem>
 
           <StaggerItem>
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              Find Your
-              <span className="text-primary block">Dream Home</span>
+            <h1 className="mb-6 font-manrope text-4xl font-bold tracking-[-0.03em] text-[#222222] md:text-6xl">
+              Find your
+              <span className="mt-1 block text-red-500">dream home</span>
             </h1>
           </StaggerItem>
 
           <StaggerItem>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+            <p className="mx-auto mb-8 max-w-2xl font-manrope text-lg text-[#717171]">
               Discover exceptional properties with our AI-powered search. Your
               perfect home is just a few clicks away.
             </p>
@@ -184,7 +190,7 @@ export function HeroSection() {
           <div className="max-w-4xl mx-auto">
             {/* Property Type Tabs - Horizontal Design */}
             <div className="flex justify-center mb-6">
-              <div className="bg-white rounded-2xl p-1 shadow-lg border border-gray-100 flex">
+              <div className="property-surface flex p-1">
                 {PROPERTY_TYPES.map((type) => (
                   <button
                     key={type.value}
@@ -194,10 +200,10 @@ export function HeroSection() {
                         type: type.value,
                       }))
                     }
-                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 font-manrope text-sm font-medium transition-all duration-200 ${
                       searchForm.type === type.value
-                        ? "bg-primary text-primary-foreground shadow-md"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                        ? "bg-[#303030] text-white"
+                        : "text-[#717171] hover:bg-[#F7F7F7] hover:text-[#222222]"
                     }`}
                   >
                     {getPropertyTypeIcon(type.value)}
@@ -208,7 +214,7 @@ export function HeroSection() {
             </div>
 
             {/* Airbnb-style Search Bar */}
-            <Card className="p-2 shadow-2xl border-0 bg-white/95 backdrop-blur-sm rounded-2xl hero-search">
+            <Card className="property-surface rounded-[24px] p-2 shadow-none hero-search">
               <div className="flex items-center gap-1 p-1">
                 {/* City Selection */}
                 <div className="flex-1 min-w-0">
@@ -304,7 +310,7 @@ export function HeroSection() {
                 <ButtonAnimation>
                   <Button
                     onClick={handleSearch}
-                    className="h-14 w-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex-shrink-0 focus:ring-0"
+                    className="property-btn-pill size-14 shrink-0 bg-red-500 p-0 text-white hover:bg-red-600"
                   >
                     <Search className="w-5 h-5" />
                   </Button>

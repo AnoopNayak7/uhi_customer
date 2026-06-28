@@ -1,93 +1,105 @@
 "use client";
 
-import { useEffect } from 'react';
-import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import { formatPrice } from '@/lib/utils';
+import { useEffect } from "react";
+import L from "leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import { formatPrice } from "@/lib/utils";
 
-// Fix Leaflet icon issues
 function fixLeafletIcons() {
   delete (L.Icon.Default.prototype as any)._getIconUrl;
-  
+
   L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+    iconRetinaUrl:
+      "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+    shadowUrl:
+      "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
   });
 }
 
-// Create custom red circle marker
-function createRedCircleMarker() {
+function createPropertyMarker() {
   return L.divIcon({
-    className: 'custom-red-marker',
+    className: "properties-map-marker",
     html: `
-      <div style="
-        width: 20px;
-        height: 20px;
-        background-color: #dc2626;
-        border-radius: 50%;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-        border: 2px solid white;
-      "></div>
+      <div class="properties-map-marker__dot"></div>
     `,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
   });
 }
 
-// Component to update map view when center changes
-function ChangeView({ center, zoom }: { center: [number, number], zoom: number }) {
+function ChangeView({
+  center,
+  zoom,
+}: {
+  center: [number, number];
+  zoom: number;
+}) {
   const map = useMap();
   map.setView(center, zoom);
   return null;
 }
 
-// Enable scroll wheel zoom only after user interaction
 function ScrollWheelControl() {
   const map = useMap();
-  
+
   useEffect(() => {
-    // Disable scroll wheel zoom by default
     map.scrollWheelZoom.disable();
-    
-    // Enable on focus/click
+
     const enableScrollZoom = () => {
       map.scrollWheelZoom.enable();
     };
-    
-    map.on('focus', enableScrollZoom);
-    map.on('click', enableScrollZoom);
-    
-    // Cleanup
+
+    map.on("focus", enableScrollZoom);
+    map.on("click", enableScrollZoom);
+
     return () => {
-      map.off('focus', enableScrollZoom);
-      map.off('click', enableScrollZoom);
+      map.off("focus", enableScrollZoom);
+      map.off("click", enableScrollZoom);
     };
   }, [map]);
-  
+
   return null;
 }
 
-// Component to auto-fit map to show all markers
 function AutoFitBounds({ properties }: { properties: any[] }) {
   const map = useMap();
-  
+
   useEffect(() => {
     if (properties.length > 0) {
-      // Create bounds from all property locations
       const bounds = L.latLngBounds(
-        properties.map(property => [property.latitude, property.longitude])
+        properties.map((property) => [property.latitude, property.longitude])
       );
-      
-      // Fit map to bounds with padding
+
       map.fitBounds(bounds, {
-        padding: [20, 20],
-        maxZoom: 15 // Limit max zoom to prevent too close view
+        padding: [24, 24],
+        maxZoom: 15,
       });
     }
   }, [map, properties]);
-  
+
+  return null;
+}
+
+function MapResizeHandler() {
+  const map = useMap();
+
+  useEffect(() => {
+    const resize = () => {
+      map.invalidateSize();
+    };
+
+    resize();
+    const timer = window.setTimeout(resize, 150);
+    window.addEventListener("resize", resize);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("resize", resize);
+    };
+  }, [map]);
+
   return null;
 }
 
@@ -95,63 +107,73 @@ interface MapProps {
   center: [number, number];
   zoom?: number;
   properties?: any[];
-  mapType?: 'map' | 'satellite';
+  mapType?: "map" | "satellite";
 }
 
-export default function Map({ center, zoom = 13, properties = [], mapType = 'map' }: MapProps) {
-  // Fix Leaflet icon issues on component mount
+export default function Map({
+  center,
+  zoom = 13,
+  properties = [],
+  mapType = "map",
+}: MapProps) {
   useEffect(() => {
     fixLeafletIcons();
   }, []);
-  
-  // Determine tile layer URL based on map type
-  const tileLayerUrl = mapType === 'satellite' 
-    ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-  
-  // Filter properties with valid coordinates
+
+  const isSatellite = mapType === "satellite";
+  const tileLayerUrl = isSatellite
+    ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+    : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+
+  const tileAttribution = isSatellite
+    ? "&copy; Esri"
+    : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+
   const propertiesWithCoordinates = properties.filter(
     (p) => p.latitude && p.longitude
   );
-  
+
   return (
-    <MapContainer 
-      center={center} 
-      zoom={zoom} 
-      style={{ height: '100%', width: '100%', zIndex: 1 }}
+    <MapContainer
+      center={center}
+      zoom={zoom}
+      style={{ height: "100%", width: "100%", zIndex: 1 }}
       scrollWheelZoom={false}
-      className="z-0"
+      className={isSatellite ? "properties-map-satellite" : "properties-map-light"}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution={tileAttribution}
         url={tileLayerUrl}
+        subdomains={isSatellite ? undefined : "abcd"}
       />
       <ChangeView center={center} zoom={zoom} />
       <ScrollWheelControl />
-      
-      {/* Auto-fit bounds to show all markers */}
-      {propertiesWithCoordinates.length > 0 && (
+      <MapResizeHandler />
+
+      {propertiesWithCoordinates.length > 0 ? (
         <AutoFitBounds properties={propertiesWithCoordinates} />
-      )}
-      
+      ) : null}
+
       {propertiesWithCoordinates.length > 0 ? (
         propertiesWithCoordinates.map((property) => (
-          <Marker 
-            key={property.id} 
+          <Marker
+            key={property.id}
             position={[property.latitude, property.longitude]}
-            icon={createRedCircleMarker()}
+            icon={createPropertyMarker()}
           >
-            <Popup>
-              <div className="text-sm">
-                <p className="font-semibold">{property.title}</p>
-                <p className="text-gray-600">{property.address}</p>
-                <p className="font-medium mt-1">{formatPrice(property.price)}</p>
+            <Popup className="properties-map-popup">
+              <div className="font-manrope text-sm">
+                <p className="font-semibold text-[#1A1A1A]">{property.title}</p>
+                <p className="text-[#484848]">{property.address}</p>
+                <p className="mt-1 font-semibold text-[#1A1A1A]">
+                  {formatPrice(property.price)}
+                </p>
               </div>
             </Popup>
           </Marker>
         ))
       ) : (
-        <Marker position={center} icon={createRedCircleMarker()}>
+        <Marker position={center} icon={createPropertyMarker()}>
           <Popup>You are here</Popup>
         </Marker>
       )}

@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Manrope, Montserrat, Playfair_Display } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { LocationProvider } from "@/components/layout/location-provider";
@@ -33,6 +33,22 @@ const manrope = Manrope({
   ],
   adjustFontFallback: true,
   variable: "--font-manrope",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
+  variable: "--font-playfair",
+  fallback: ["Georgia", "Times New Roman", "serif"],
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-montserrat",
+  fallback: ["system-ui", "sans-serif"],
 });
 
 export const metadata: Metadata = {
@@ -78,7 +94,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={manrope.variable}>
+    <html lang="en" className={`${manrope.variable} ${playfair.variable} ${montserrat.variable}`}>
       <head>
         {/* Google Tag Manager */}
         {/* eslint-disable-next-line @next/next/next-script-for-ga */}

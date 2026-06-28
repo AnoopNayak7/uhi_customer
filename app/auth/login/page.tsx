@@ -6,14 +6,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Logo } from "@/components/ui/logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,6 +14,13 @@ import { apiClient } from "@/lib/api";
 import { getOtpErrorMessage } from "@/lib/auth-errors";
 import { useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
+import {
+  AuthPageShell,
+  authInputClassName,
+  authLabelClassName,
+  authSubmitClassName,
+} from "@/components/auth/auth-page-shell";
+import { HERO_IMAGES } from "@/lib/images";
 
 const loginSchema = z.object({
   identifier: z.string().email("Please enter a valid email address"),
@@ -60,14 +59,19 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Failed to send OTP. Please try again.";
-      
-      // Check if it's a user not found error
-      if (errorMessage.includes("User not found") || errorMessage.includes("404") || error.response?.status === 404) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to send OTP. Please try again.";
+
+      if (
+        errorMessage.includes("User not found") ||
+        errorMessage.includes("404") ||
+        error.response?.status === 404
+      ) {
         toast.error("Account not found. Redirecting to signup...", {
           duration: 3000,
         });
-        // Redirect to signup page after a short delay
         setTimeout(() => {
           router.push("/auth/signup");
         }, 2000);
@@ -98,123 +102,126 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border shadow-sm">
-        <CardHeader className="space-y-3 pb-4">
-          <div className="flex items-center justify-center">
-            <Logo />
-          </div>
-          <div className="text-center space-y-1">
-            <CardTitle className="text-lg font-semibold">
-              {step === "identifier" ? "Welcome Back" : "Verify OTP"}
-            </CardTitle>
-            <CardDescription className="text-xs">
-              {step === "identifier"
-                ? "Enter your email address to sign in"
-                : `We've sent a 6-digit code to ${identifier}`}
-            </CardDescription>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          {step === "identifier" ? (
-            <form
-              onSubmit={identifierForm.handleSubmit(onIdentifierSubmit)}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="identifier" className="text-sm font-medium">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    {...identifierForm.register("identifier")}
-                    type="email"
-                    placeholder="Enter your email address"
-                    className="pl-10 h-10 text-sm"
-                    style={{ fontSize: '16px' }} // Prevent zoom on mobile
-                  />
-                </div>
-                {identifierForm.formState.errors.identifier && (
-                  <p className="text-xs text-destructive">
-                    {identifierForm.formState.errors.identifier.message}
-                  </p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-10 text-sm bg-red-500 hover:bg-red-600"
-                disabled={loading}
-              >
-                {loading ? "Sending OTP..." : "Send OTP"}
-              </Button>
-            </form>
-          ) : (
-            <div className="space-y-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setStep("identifier")}
-                className="h-8 text-xs -mb-2"
-              >
-                <ArrowLeft className="w-3 h-3 mr-1.5" />
-                Back to login
-              </Button>
-
-              <form
-                onSubmit={otpForm.handleSubmit(onOTPSubmit)}
-                className="space-y-4"
-              >
-                <div className="space-y-2">
-                  <Label htmlFor="otp" className="text-sm font-medium">Enter OTP</Label>
-                  <Input
-                    {...otpForm.register("otp")}
-                    type="text"
-                    placeholder="000000"
-                    maxLength={6}
-                    className="text-center text-base tracking-widest h-10"
-                    style={{ fontSize: '16px' }} // Prevent zoom on mobile
-                  />
-                  {otpForm.formState.errors.otp && (
-                    <p className="text-xs text-destructive">
-                      {otpForm.formState.errors.otp.message}
-                    </p>
-                  )}
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full h-10 text-sm bg-red-500 hover:bg-red-600"
-                  disabled={loading}
-                >
-                  {loading ? "Verifying..." : "Verify & Sign In"}
-                </Button>
-              </form>
-
-              <div className="text-center">
-                <Button
-                  variant="link"
-                  onClick={() => onIdentifierSubmit({ identifier })}
-                  disabled={loading}
-                  className="text-xs h-auto p-0"
-                >
-                  Didn&apos;t receive code? Resend
-                </Button>
-              </div>
+    <AuthPageShell
+      eyebrow="Welcome back"
+      title="sign in"
+      subtitle={
+        step === "identifier"
+          ? "Enter your email and we'll send you a one-time code to sign in securely."
+          : `We've sent a 6-digit code to ${identifier}`
+      }
+      image={HERO_IMAGES.main_hero}
+      imageAlt="Modern apartment building in Bengaluru"
+      imageEyebrow="Urbanhousein"
+      imageTagline="Find your next home in Bengaluru"
+      footer={
+        <p className="text-center font-manrope text-sm text-[#717171]">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/auth/signup"
+            className="font-semibold text-[#303030] underline-offset-4 hover:underline"
+          >
+            Sign up
+          </Link>
+        </p>
+      }
+    >
+      {step === "identifier" ? (
+        <form
+          onSubmit={identifierForm.handleSubmit(onIdentifierSubmit)}
+          className="space-y-5"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="identifier" className={authLabelClassName}>
+              Email address
+            </Label>
+            <div className="relative">
+              <Mail
+                className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8A8A8A]"
+                strokeWidth={1.5}
+              />
+              <Input
+                {...identifierForm.register("identifier")}
+                id="identifier"
+                type="email"
+                placeholder="you@example.com"
+                className={`${authInputClassName} pl-10`}
+                style={{ fontSize: "16px" }}
+              />
             </div>
-          )}
-
-          <div className="text-center text-xs text-muted-foreground pt-2 border-t">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/auth/signup"
-              className="text-red-500 hover:underline font-medium"
-            >
-              Sign up
-            </Link>
+            {identifierForm.formState.errors.identifier && (
+              <p className="font-manrope text-xs text-red-600">
+                {identifierForm.formState.errors.identifier.message}
+              </p>
+            )}
           </div>
-        </CardContent>
-      </Card>
-    </div>
+
+          <Button
+            type="submit"
+            className={authSubmitClassName}
+            disabled={loading}
+          >
+            {loading ? "Sending OTP..." : "Send OTP"}
+          </Button>
+        </form>
+      ) : (
+        <div className="space-y-5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setStep("identifier")}
+            className="-ml-2 h-8 font-manrope text-xs text-[#5C5C5C] hover:bg-[#F5F5F5] hover:text-[#1A1A1A]"
+          >
+            <ArrowLeft className="mr-1.5 size-3.5" strokeWidth={1.5} />
+            Change email
+          </Button>
+
+          <form
+            onSubmit={otpForm.handleSubmit(onOTPSubmit)}
+            className="space-y-5"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="otp" className={authLabelClassName}>
+                Enter OTP
+              </Label>
+              <Input
+                {...otpForm.register("otp")}
+                id="otp"
+                type="text"
+                inputMode="numeric"
+                placeholder="000000"
+                maxLength={6}
+                className={`${authInputClassName} text-center tracking-[0.35em]`}
+                style={{ fontSize: "16px" }}
+              />
+              {otpForm.formState.errors.otp && (
+                <p className="font-manrope text-xs text-red-600">
+                  {otpForm.formState.errors.otp.message}
+                </p>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              className={authSubmitClassName}
+              disabled={loading}
+            >
+              {loading ? "Verifying..." : "Verify & sign in"}
+            </Button>
+          </form>
+
+          <div className="text-center">
+            <Button
+              variant="link"
+              onClick={() => onIdentifierSubmit({ identifier })}
+              disabled={loading}
+              className="h-auto p-0 font-manrope text-xs text-[#5C5C5C] hover:text-[#303030]"
+            >
+              Didn&apos;t receive the code? Resend
+            </Button>
+          </div>
+        </div>
+      )}
+    </AuthPageShell>
   );
 }

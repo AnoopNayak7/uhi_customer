@@ -3,7 +3,9 @@
 import { HeroSection } from "@/components/home/hero-section";
 import { MobileSearchTrigger } from "@/components/home/mobile-search-trigger";
 import { FeaturedProperties } from "@/components/home/featured-properties";
+import { TrustStatsSection } from "@/components/home/trust-stats-section";
 import { ProminentProjects } from "@/components/home/prominent-projects";
+import { SiteVisitPlanSection } from "@/components/home/site-visit-plan-section";
 import { RealEstateTools } from "@/components/home/real-estate-tools";
 import { TrendingProperties } from "@/components/home/trending-properties";
 import { PropertyListings } from "@/components/home/property-listings";
@@ -15,7 +17,7 @@ import { SectionReveal } from "@/components/animations/page-transitions";
 
 export function HomepageClient() {
   return (
-    <main className="flex-1">
+    <main className="flex-1 bg-white">
       {/* Mobile Search Interface */}
       <MobileSearchTrigger />
       
@@ -29,7 +31,13 @@ export function HomepageClient() {
           <FeaturedProperties />
         </SectionReveal>
         <SectionReveal>
+          <TrustStatsSection />
+        </SectionReveal>
+        <SectionReveal>
           <ProminentProjects />
+        </SectionReveal>
+        <SectionReveal>
+          <SiteVisitPlanSection />
         </SectionReveal>
         <SectionReveal>
           <RealEstateTools />

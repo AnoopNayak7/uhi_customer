@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { MapPin } from "lucide-react";
 import dynamic from "next/dynamic";
-import { PropertyCard } from "./PropertyCard";
+import { HomePropertyCard } from "@/components/home/home-property-card";
 import { usePropertyStore } from "@/lib/store";
+import { MapTypeToggle } from "./properties-view-controls";
+import { cn } from "@/lib/utils";
 
-// Import Map component dynamically to avoid SSR issues
 const MapComponent: any = dynamic(
   () => import("@/components/propertyListing/Map"),
   { ssr: false }
@@ -15,6 +15,7 @@ const MapComponent: any = dynamic(
 
 interface MapViewProps {
   properties: any[];
+  mapMarkers?: any[];
   userLocation: [number, number] | null;
   mapType: "map" | "satellite";
   setMapType: (type: "map" | "satellite") => void;
@@ -22,10 +23,12 @@ interface MapViewProps {
   loadingMore?: boolean;
   onLoadMore?: () => void;
   totalCount?: number;
+  mobile?: boolean;
 }
 
 export function MapView({
   properties,
+  mapMarkers = [],
   userLocation,
   mapType,
   setMapType,
@@ -33,10 +36,25 @@ export function MapView({
   loadingMore = false,
   onLoadMore,
   totalCount = 0,
+  mobile = false,
 }: MapViewProps) {
-  const { favourites } = usePropertyStore();
-  const { addToFavourites, removeFromFavourites } = usePropertyStore();
+  const {
+    favourites,
+    compareList,
+    addToFavourites,
+    removeFromFavourites,
+    addToCompare,
+    removeFromCompare,
+  } = usePropertyStore();
   const mapLoadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      window.dispatchEvent(new Event("resize"));
+    }, 200);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const handleFavorite = (property: any) => {
     const isFavorite = favourites.some((p) => p.id === property.id);
@@ -47,15 +65,27 @@ export function MapView({
     }
   };
 
-  // Infinite scroll for map view
+  const toggleCompare = (property: any) => {
+    if (compareList.some((p) => p.id === property.id)) {
+      removeFromCompare(property.id);
+    } else {
+      addToCompare(property);
+    }
+  };
+
   useEffect(() => {
+    if (mobile) return;
+
+    const scrollContainer = mapLoadMoreRef.current?.parentElement;
+    if (!scrollContainer) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loadingMore && onLoadMore) {
           onLoadMore();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, root: scrollContainer }
     );
 
     if (mapLoadMoreRef.current) {
@@ -65,135 +95,143 @@ export function MapView({
     return () => {
       observer.disconnect();
     };
-  }, [hasMore, loadingMore, onLoadMore]);
+  }, [hasMore, loadingMore, onLoadMore, mobile, properties.length]);
 
-  // Filter properties with valid coordinates
   const propertiesWithCoordinates = properties.filter(
     (p) => p.latitude && p.longitude
   );
 
-  // Default center (Bengaluru)
+  const mapMarkerProperties =
+    mapMarkers.length > 0 ? mapMarkers : propertiesWithCoordinates;
+
   const defaultCenter: [number, number] = [12.9716, 77.5946];
 
+  const panelHeightClass =
+    "h-[calc(100dvh-var(--properties-toolbar-height,11rem)-1.25rem)] min-h-[420px]";
+
+  if (mobile) {
+    return (
+      <div
+        className={cn(
+          "flex flex-col overflow-hidden rounded-[20px]",
+          panelHeightClass
+        )}
+      >
+        <div className="relative min-h-0 flex-1 overflow-hidden bg-[#F5F5F5]">
+          <div className="absolute inset-0">
+            <div className="pointer-events-none absolute inset-x-3 top-3 z-[20] flex justify-end">
+              <div className="pointer-events-auto shrink-0">
+                <MapTypeToggle mapType={mapType} setMapType={setMapType} />
+              </div>
+            </div>
+            <MapComponent
+              center={userLocation || defaultCenter}
+              zoom={13}
+              properties={mapMarkerProperties}
+              mapType={mapType}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-full">
-      {/* Map */}
-      <div className="flex-1 bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100">
-        <div className="relative h-full">
-          <div className="absolute top-2 right-2 z-10 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-white shadow-sm text-xs sm:text-sm h-8 sm:h-auto px-2 sm:px-3"
-            >
-              <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-              <span className="hidden sm:inline">Bengaluru</span>
-              <span className="sm:hidden">BLR</span>
-            </Button>
-            <div className="flex rounded-md overflow-hidden border border-gray-200 shadow-sm">
-              <Button
-                variant={mapType === "map" ? "default" : "outline"}
-                size="sm"
-                className="rounded-none text-xs sm:text-sm h-8 sm:h-auto px-2 sm:px-3"
-                onClick={() => setMapType("map")}
-              >
-                Map
-              </Button>
-              <Button
-                variant={mapType === "satellite" ? "default" : "outline"}
-                size="sm"
-                className="rounded-none text-xs sm:text-sm h-8 sm:h-auto px-2 sm:px-3"
-                onClick={() => setMapType("satellite")}
-              >
-                Satellite
-              </Button>
+    <div
+      className={cn(
+        "flex min-h-0 gap-4 overflow-hidden",
+        panelHeightClass,
+        "lg:flex-row"
+      )}
+    >
+        <div className="relative min-h-0 flex-1 overflow-hidden rounded-[20px] border border-[#EBEBEB] bg-[#F5F5F5]">
+        <div className="absolute inset-0">
+          <div className="pointer-events-none absolute inset-x-3 top-3 z-[20] flex justify-end">
+            <div className="pointer-events-auto shrink-0">
+              <MapTypeToggle mapType={mapType} setMapType={setMapType} />
             </div>
           </div>
-
           <MapComponent
             center={userLocation || defaultCenter}
             zoom={13}
-            properties={propertiesWithCoordinates}
+            properties={mapMarkerProperties}
             mapType={mapType}
           />
         </div>
       </div>
 
-      {/* Property list */}
-      <div className="w-full lg:w-96 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-        <div className="p-4 sm:p-4 border-b flex-shrink-0">
-          <h3 className="font-medium text-base sm:text-base">Properties</h3>
-          <p className="text-sm text-gray-500">
-            {totalCount > 0 
+      <div className="flex h-full w-full min-h-0 flex-col overflow-hidden rounded-[20px] border border-[#EBEBEB] bg-white lg:w-[22rem] xl:w-96">
+        <div className="shrink-0 border-b border-[#F0F0F0] px-4 py-4">
+          <p className="home-section-eyebrow mb-0">Results</p>
+          <p className="mt-1 font-manrope text-sm text-[#5C5C5C]">
+            {totalCount > 0
               ? `${totalCount} properties found`
-              : `${propertiesWithCoordinates.length} properties found`
-            }
+              : `${propertiesWithCoordinates.length} properties found`}
+            {mapMarkerProperties.length > 0 ? (
+              <span className="text-[#949494]">
+                {" "}
+                · {mapMarkerProperties.length} on map
+              </span>
+            ) : null}
           </p>
         </div>
-        <div className="flex-1 overflow-y-auto">
+
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {propertiesWithCoordinates.length > 0 ? (
             <>
-              {propertiesWithCoordinates.map((property) => (
-                <div
-                  key={property.id}
-                  className="p-2 sm:p-2 border-b last:border-b-0"
-                >
-                  <PropertyCard
+              <div className="space-y-4 p-3">
+                {propertiesWithCoordinates.map((property) => (
+                  <HomePropertyCard
+                    key={property.id}
                     property={property}
-                    onFavorite={() => handleFavorite(property)}
-                    isFavorite={favourites.some((p) => p.id === property.id)}
-                    compact
+                    onFavourite={() => handleFavorite(property)}
+                    isFavourite={favourites.some((p) => p.id === property.id)}
+                    onCompare={() => toggleCompare(property)}
+                    isInCompare={compareList.some((p) => p.id === property.id)}
                   />
-                </div>
-              ))}
-              
-              {/* Infinite scroll trigger for map view */}
+                ))}
+              </div>
+
               <div
                 ref={mapLoadMoreRef}
-                className="h-10 flex items-center justify-center"
+                className="flex h-10 items-center justify-center"
               >
                 {loadingMore ? (
                   <div className="flex items-center space-x-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                    <span className="text-sm text-gray-600">
+                    <div className="size-4 animate-spin rounded-full border-2 border-[#EBEBEB] border-t-[#303030]" />
+                    <span className="font-manrope text-sm text-[#5C5C5C]">
                       Loading more properties...
                     </span>
                   </div>
                 ) : hasMore ? (
-                  <div className="text-sm text-gray-500">
-                    Scroll down to load more properties
-                  </div>
+                  <span className="font-manrope text-sm text-[#5C5C5C]">
+                    Scroll to load more
+                  </span>
                 ) : properties.length > 0 ? (
-                  <div className="text-sm text-gray-500">
+                  <span className="font-manrope text-sm text-[#5C5C5C]">
                     No more properties to load
-                  </div>
+                  </span>
                 ) : null}
               </div>
-              
-              {/* Load more button for map view (fallback) */}
-              {hasMore && onLoadMore && (
-                <div className="p-4 border-t">
+
+              {hasMore && onLoadMore ? (
+                <div className="border-t border-[#F0F0F0] p-4">
                   <Button
                     onClick={onLoadMore}
                     disabled={loadingMore}
-                    className="w-full"
+                    className="property-btn-pill h-11 w-full rounded-full border-[#DDDDDD] bg-white font-manrope text-[#3A3A3A] hover:bg-[#FAFAFA]"
                     variant="outline"
                   >
-                    {loadingMore ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                        <span>Loading more properties...</span>
-                      </div>
-                    ) : (
-                      "Load More Properties"
-                    )}
+                    {loadingMore ? "Loading..." : "Load more properties"}
                   </Button>
                 </div>
-              )}
+              ) : null}
             </>
           ) : (
-            <div className="p-6 text-center text-gray-500">
-              <p className="text-sm">No properties with location data found</p>
+            <div className="p-6 text-center">
+              <p className="font-manrope text-sm text-[#5C5C5C]">
+                No properties with location data found
+              </p>
             </div>
           )}
         </div>
